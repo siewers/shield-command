@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="NvidiaShieldManager.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Nvidia Shield Manager"
+        Width="900" Height="600"
+        MinWidth="700" MinHeight="450">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="200,*">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                BorderThickness="0,0,1,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Shield Manager"
+                           FontSize="18" FontWeight="Bold"
+                           Margin="16,20,16,20"/>
+
+                <ListBox SelectedIndex="{Binding SelectedNavIndex}"
+                         Background="Transparent">
+                    <ListBoxItem Padding="16,10">
+                        <TextBlock Text="Device" />
+                    </ListBoxItem>
+                    <ListBoxItem Padding="16,10" IsEnabled="{Binding IsDeviceConnected}">
+                        <TextBlock Text="Apps" />
+                    </ListBoxItem>
+                    <ListBoxItem Padding="16,10" IsEnabled="{Binding IsDeviceConnected}">
+                        <TextBlock Text="Install" />
+                    </ListBoxItem>
+                    <ListBoxItem Padding="16,10" IsEnabled="{Binding IsDeviceConnected}">
+                        <TextBlock Text="System Info" />
+                    </ListBoxItem>
+                    <ListBoxItem Padding="16,10" IsEnabled="{Binding IsDeviceConnected}">
+                        <TextBlock Text="Activity Monitor" />
+                    </ListBoxItem>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Content area -->
+        <ContentControl Grid.Column="1"
+                         Content="{Binding CurrentPage}"
+                         Margin="24,16"/>
+    </Grid>
+</Window>

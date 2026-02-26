@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
+             xmlns:models="using:NvidiaShieldManager.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="NvidiaShieldManager.UI.Views.AppsView"
+             x:DataType="vm:AppsViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Spacing="8">
+            <TextBlock Text="Installed Apps" FontSize="22" FontWeight="Bold"/>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Refresh"
+                        Command="{Binding RefreshCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        Classes="accent"/>
+                <TextBlock Text="{Binding StatusText}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+
+        <ListBox ItemsSource="{Binding Packages}"
+                 Margin="0,12,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:InstalledPackage">
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="4">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding PackageName}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding VersionName}"
+                                   Foreground="Gray"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0"/>
+                        <Button Grid.Column="2"
+                                Content="Uninstall"
+                                Command="{Binding $parent[ListBox].((vm:AppsViewModel)DataContext).UninstallCommand}"
+                                CommandParameter="{Binding}"
+                                Padding="8,4"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

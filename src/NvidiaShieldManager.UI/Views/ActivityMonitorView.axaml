@@ -1,0 +1,483 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="NvidiaShieldManager.UI.Views.ActivityMonitorView"
+             x:DataType="vm:ActivityMonitorViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,0,0,4">
+            <TextBlock Text="Refresh:" VerticalAlignment="Center" FontSize="12" Foreground="Gray"/>
+            <ComboBox ItemsSource="{Binding RefreshIntervals}"
+                      SelectedItem="{Binding SelectedRefreshInterval}"
+                      FontSize="12" MinWidth="80" Padding="6,4"/>
+        </StackPanel>
+        <TabControl>
+            <TabItem Header="CPU">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding CpuUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <!-- macOS-style CPU stats panel -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Left: System / User / Idle -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="System:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CpuSystemText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="User:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CpuUserText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Idle:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CpuIdleText}"
+                                               FontSize="12" Foreground="Gray"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <!-- Center: Mini CPU load chart -->
+                            <Border Grid.Column="1"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="8,4">
+                                <StackPanel>
+                                    <TextBlock Text="CPU LOAD" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"
+                                               Foreground="Gray"/>
+                                    <lvc:CartesianChart Series="{Binding CpuLoadSeries}"
+                                                        XAxes="{Binding CpuLoadXAxes}"
+                                                        YAxes="{Binding CpuLoadYAxes}"
+                                                        Height="55"
+                                                        LegendPosition="Hidden"
+                                                        TooltipPosition="Hidden"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Right: Threads / Processes -->
+                            <Border Grid.Column="2" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ThreadCount}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Processes:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ProcessCount}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border Background="Black"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <lvc:CartesianChart Series="{Binding CpuSeries}"
+                                                XAxes="{Binding CpuXAxes}"
+                                                YAxes="{Binding CpuYAxes}"
+                                                ZoomMode="X"
+                                                LegendPosition="Hidden"/>
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
+                                          VerticalAlignment="Top" Margin="12,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                            <Border Width="12" Height="3" CornerRadius="1"
+                                                    VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding Color}"/>
+                                                </Border.Background>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                       MinWidth="40"/>
+                                            <TextBlock Text="{Binding Value}" FontSize="11"
+                                                       Foreground="#888888" MinWidth="60"
+                                                       TextAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Memory">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding MemUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <!-- Memory stats panel -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Left: Physical / Used / Cached / Swap -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Physical Memory:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemPhysicalText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Memory Used:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MemUsedDetailText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Cached Files:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MemCachedText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Swap Used:" FontSize="12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SwapUsedText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <!-- Center: Mini memory pressure chart -->
+                            <Border Grid.Column="1"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="8,4">
+                                <StackPanel>
+                                    <TextBlock Text="MEMORY PRESSURE" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"
+                                               Foreground="Gray"/>
+                                    <lvc:CartesianChart Series="{Binding MemLoadSeries}"
+                                                        XAxes="{Binding MemLoadXAxes}"
+                                                        YAxes="{Binding MemLoadYAxes}"
+                                                        Height="55"
+                                                        LegendPosition="Hidden"
+                                                        TooltipPosition="Hidden"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Right: Free / Buffers -->
+                            <Border Grid.Column="2" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Free:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemFreeText}"
+                                               FontSize="12" Foreground="LimeGreen"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Buffers:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MemBuffersText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border Background="Black"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <lvc:CartesianChart Series="{Binding MemSeries}"
+                                            XAxes="{Binding MemXAxes}"
+                                            YAxes="{Binding MemYAxes}"
+                                            Sections="{Binding MemSections}"
+                                            ZoomMode="X"/>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Disk">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding DiskReadSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <!-- macOS-style Disk stats panel -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Left: Latency / Write speed from dumpsys -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Read/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DiskReadSpeedText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Write/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DiskWriteSpeedText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Write latency:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiskLatencyText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Recent write:" FontSize="12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DiskRecentWriteSpeedText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <!-- Center: Mini IO chart -->
+                            <Border Grid.Column="1"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="8,4">
+                                <StackPanel>
+                                    <TextBlock Text="IO" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"
+                                               Foreground="Gray"/>
+                                    <lvc:CartesianChart Series="{Binding DiskLoadSeries}"
+                                                        XAxes="{Binding DiskLoadXAxes}"
+                                                        YAxes="{Binding DiskLoadYAxes}"
+                                                        Sections="{Binding DiskLoadSections}"
+                                                        Height="55"
+                                                        LegendPosition="Hidden"
+                                                        TooltipPosition="Hidden"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Right: Data read / written totals -->
+                            <Border Grid.Column="2" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Data read:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DiskDataReadText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Data written:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DiskDataWrittenText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Data read/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiskReadSpeedText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Data written/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DiskWriteSpeedText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border Background="Black"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <lvc:CartesianChart Series="{Binding DiskSeries}"
+                                                XAxes="{Binding DiskXAxes}"
+                                                YAxes="{Binding DiskYAxes}"
+                                                ZoomMode="X"
+                                                LegendPosition="Hidden"/>
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding DiskLegend}"
+                                          VerticalAlignment="Top" Margin="12,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                            <Border Width="12" Height="3" CornerRadius="1"
+                                                    VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding Color}"/>
+                                                </Border.Background>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                       MinWidth="40"/>
+                                            <TextBlock Text="{Binding Value}" FontSize="11"
+                                                       Foreground="#888888" MinWidth="60"
+                                                       TextAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Network">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding NetInSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <!-- macOS-style Network stats panel -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Left: Packets in / out / per-sec -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Packets in:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetPacketsInText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Packets out:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetPacketsOutText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Packets in/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetPacketsInPerSecText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Packets out/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetPacketsOutPerSecText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <!-- Center: Mini DATA chart -->
+                            <Border Grid.Column="1"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="8,4">
+                                <StackPanel>
+                                    <TextBlock Text="DATA" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"
+                                               Foreground="Gray"/>
+                                    <lvc:CartesianChart Series="{Binding NetLoadSeries}"
+                                                        XAxes="{Binding NetLoadXAxes}"
+                                                        YAxes="{Binding NetLoadYAxes}"
+                                                        Sections="{Binding NetLoadSections}"
+                                                        Height="55"
+                                                        LegendPosition="Hidden"
+                                                        TooltipPosition="Hidden"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Right: Data received / sent totals + per-sec -->
+                            <Border Grid.Column="2" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Data received:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetDataInText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Data sent:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetDataOutText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Data received/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetInSpeedText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Data sent/sec:" FontSize="12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetOutSpeedText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border Background="Black"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <lvc:CartesianChart Series="{Binding NetSeries}"
+                                                XAxes="{Binding NetXAxes}"
+                                                YAxes="{Binding NetYAxes}"
+                                                ZoomMode="X"
+                                                LegendPosition="Hidden"/>
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding NetLegend}"
+                                          VerticalAlignment="Top" Margin="12,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                            <Border Width="12" Height="3" CornerRadius="1"
+                                                    VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding Color}"/>
+                                                </Border.Background>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                       MinWidth="40"/>
+                                            <TextBlock Text="{Binding Value}" FontSize="11"
+                                                       Foreground="#888888" MinWidth="60"
+                                                       TextAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Thermals">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding AvgTemperatureText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <!-- Thermal stats panel -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Left: Avg / Min / Max -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Average:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AvgTemperatureText}"
+                                               FontSize="12" Foreground="#4DA6FF"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Min:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MinTemperatureText}"
+                                               FontSize="12" Foreground="LimeGreen"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Max:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaxTemperatureText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <!-- Center: Mini thermal chart -->
+                            <Border Grid.Column="1"
+                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderThickness="0,0,1,0" Padding="8,4">
+                                <StackPanel>
+                                    <TextBlock Text="TEMPERATURE" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"
+                                               Foreground="Gray"/>
+                                    <lvc:CartesianChart Series="{Binding ThermalLoadSeries}"
+                                                        XAxes="{Binding ThermalLoadXAxes}"
+                                                        YAxes="{Binding ThermalLoadYAxes}"
+                                                        Height="55"
+                                                        LegendPosition="Hidden"
+                                                        TooltipPosition="Hidden"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Right: Hottest zone / Zone count / Fan -->
+                            <Border Grid.Column="2" Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="2" ColumnSpacing="12">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Hottest:" FontSize="12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HottestZoneText}"
+                                               FontSize="12" Foreground="#FF6B6B"
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Zones:" FontSize="12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ZoneCountText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Fan:" FontSize="12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FanStateText}"
+                                               FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border Background="Black"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <lvc:CartesianChart Series="{Binding ThermalSeries}"
+                                                XAxes="{Binding ThermalXAxes}"
+                                                YAxes="{Binding ThermalYAxes}"
+                                                ZoomMode="X"
+                                                LegendPosition="Hidden"/>
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding ThermalLegend}"
+                                          VerticalAlignment="Top" Margin="12,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                            <Border Width="12" Height="3" CornerRadius="1"
+                                                    VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding Color}"/>
+                                                </Border.Background>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                       MinWidth="40"/>
+                                            <TextBlock Text="{Binding Value}" FontSize="11"
+                                                       Foreground="#888888" MinWidth="60"
+                                                       TextAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

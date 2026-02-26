@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+.idea/
+*.DotSettings.user
+*.nupkg
+TestResults/
+.DS_Store

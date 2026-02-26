@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
+             xmlns:models="using:NvidiaShieldManager.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="NvidiaShieldManager.UI.Views.DeviceView"
+             x:DataType="vm:DeviceViewModel">
+
+    <StackPanel Spacing="16" MaxWidth="500">
+        <TextBlock Text="Device Connection" FontSize="22" FontWeight="Bold"/>
+
+        <!-- Connect form -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="Shield IP Address"/>
+            <Grid ColumnDefinitions="*,Auto" >
+                <TextBox Grid.Column="0"
+                         Text="{Binding IpAddress}"
+                         Watermark="192.168.1.x"
+                         Margin="0,0,8,0"/>
+                <Button Grid.Column="1"
+                        Content="Connect"
+                        Command="{Binding ConnectCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        IsVisible="{Binding !IsConnected}"
+                        Classes="accent"/>
+            </Grid>
+
+            <Button Content="Disconnect"
+                    Command="{Binding DisconnectCommand}"
+                    IsVisible="{Binding IsConnected}"
+                    IsEnabled="{Binding !IsBusy}"/>
+        </StackPanel>
+
+        <!-- Status -->
+        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                CornerRadius="4" Padding="12">
+            <TextBlock Text="{Binding StatusText}"/>
+        </Border>
+
+        <!-- Saved devices -->
+        <TextBlock Text="Saved Devices" FontSize="16" FontWeight="SemiBold"
+                   Margin="0,8,0,0"
+                   IsVisible="{Binding SavedDevices.Count}"/>
+
+        <ItemsControl ItemsSource="{Binding SavedDevices}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:SavedDevice">
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                            CornerRadius="4" Padding="12" Margin="0,4">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding IpAddress}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding DeviceName}" Foreground="Gray"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Connect"
+                                    Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).ConnectToSavedCommand}"
+                                    CommandParameter="{Binding}"
+                                    Margin="8,0"
+                                    Padding="8,4"/>
+                            <Button Grid.Column="2"
+                                    Content="Remove"
+                                    Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).RemoveSavedDeviceCommand}"
+                                    CommandParameter="{Binding}"
+                                    Padding="8,4"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Network discovery -->
+        <TextBlock Text="Network Discovery" FontSize="16" FontWeight="SemiBold"
+                   Margin="0,8,0,0"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Scan Network"
+                    Command="{Binding ScanNetworkCommand}"
+                    IsEnabled="{Binding !IsScanning}"
+                    HorizontalAlignment="Left"/>
+            <TextBlock Text="Scanning..."
+                       IsVisible="{Binding IsScanning}"
+                       VerticalAlignment="Center"
+                       Foreground="Gray"/>
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding DiscoveredDevices}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:DiscoveredDevice">
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                            CornerRadius="4" Padding="12" Margin="0,4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding IpAddress}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding DisplayName}" Foreground="Gray"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Connect"
+                                    Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).ConnectToDiscoveredCommand}"
+                                    CommandParameter="{Binding}"
+                                    Padding="8,4"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Connected devices list -->
+        <TextBlock Text="Connected Devices" FontSize="16" FontWeight="SemiBold"
+                   Margin="0,8,0,0"/>
+
+        <Button Content="Refresh"
+                Command="{Binding RefreshDevicesCommand}"
+                IsEnabled="{Binding !IsBusy}"
+                HorizontalAlignment="Left"/>
+
+        <ItemsControl ItemsSource="{Binding ConnectedDevices}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                            CornerRadius="4" Padding="12" Margin="0,4">
+                        <StackPanel>
+                            <TextBlock Text="{Binding IpAddress}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding DeviceName}" Foreground="Gray"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>
