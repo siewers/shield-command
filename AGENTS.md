@@ -20,3 +20,4 @@
 
 ### Commit messages
 - Do not include `Co-Authored-By` attribution lines in commit messages.
+- Use simple `git commit -m "message"` — do not use heredocs.
