@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
+             xmlns:models="using:NvidiaShieldManager.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="NvidiaShieldManager.UI.Views.ProcessesView"
+             x:DataType="vm:ProcessesViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+            <Button Content="Refresh"
+                    Command="{Binding RefreshCommand}"
+                    Classes="accent"/>
+            <TextBlock Text="{Binding LoadText}"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding StatusText}"
+                       VerticalAlignment="Center"
+                       Foreground="Gray"/>
+        </StackPanel>
+
+        <!-- Header -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="80,80,*" Margin="4,0,4,4">
+            <TextBlock Grid.Column="0" Text="CPU %" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="PID" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="2" Text="Process" FontWeight="SemiBold"/>
+        </Grid>
+
+        <ListBox ItemsSource="{Binding Processes}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:ProcessInfo">
+                    <Grid ColumnDefinitions="80,80,*" Margin="0,2">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding CpuPercent, StringFormat={}{0:F1}%}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Pid}"
+                                   Foreground="Gray"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Name}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

@@ -25,6 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public InstallViewModel InstallPage { get; }
     public SystemViewModel SystemPage { get; }
     public ActivityMonitorViewModel ActivityMonitorPage { get; }
+    public ProcessesViewModel ProcessesPage { get; }
 
     public MainWindowViewModel()
     {
@@ -33,6 +34,7 @@ public partial class MainWindowViewModel : ViewModelBase
         InstallPage = new InstallViewModel(_adbService);
         SystemPage = new SystemViewModel(_adbService);
         ActivityMonitorPage = new ActivityMonitorViewModel(_adbService);
+        ProcessesPage = new ProcessesViewModel(_adbService);
         _currentPage = SystemPage;
 
         DevicePage.PropertyChanged += (_, e) =>
@@ -55,6 +57,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
                 _ = SystemPage.ActivateAsync();
                 _ = ActivityMonitorPage.StartAsync();
+                _ = ProcessesPage.StartAsync();
 
                 if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0)
                     AppsPage.RefreshCommand.Execute(null);
@@ -64,6 +67,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 WindowTitle = "Nvidia Shield Manager — Disconnected";
                 ConnectionStatusText = "Disconnected";
                 ActivityMonitorPage.Stop();
+                ProcessesPage.Stop();
             }
         };
     }
@@ -75,6 +79,7 @@ public partial class MainWindowViewModel : ViewModelBase
             "Apps" => AppsPage,
             "SystemInfo" => SystemPage,
             "ActivityMonitor" => ActivityMonitorPage,
+            "Processes" => ProcessesPage,
             _ => SystemPage,
         };
 

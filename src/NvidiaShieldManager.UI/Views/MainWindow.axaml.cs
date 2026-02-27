@@ -27,6 +27,7 @@ public partial class MainWindow : Window
             if (DataContext is MainWindowViewModel vm)
             {
                 vm.ActivityMonitorPage.Stop();
+                vm.ProcessesPage.Stop();
 
                 if (vm.IsDeviceConnected)
                     await vm.DevicePage.DisconnectCommand.ExecuteAsync(null);
@@ -102,7 +103,7 @@ public partial class MainWindow : Window
 
     private void SetNavigationIcons()
     {
-        var symbols = new[] { Symbol.Settings, Symbol.AllApps, Symbol.Alert };
+        var symbols = new[] { Symbol.Settings, Symbol.AllApps, Symbol.Alert, Symbol.List };
         var items = NavView.MenuItems;
 
         for (var i = 0; i < items.Count && i < symbols.Length; i++)

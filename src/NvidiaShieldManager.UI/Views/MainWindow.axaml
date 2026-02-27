@@ -79,6 +79,8 @@
                                       IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="Activity Monitor" Tag="ActivityMonitor"
                                       IsEnabled="{Binding IsDeviceConnected}" />
+                <ui:NavigationViewItem Content="Processes" Tag="Processes"
+                                      IsEnabled="{Binding IsDeviceConnected}" />
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
     </Grid>

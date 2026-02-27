@@ -490,6 +490,41 @@ public class AdbService
         return parts.Length >= 2 ? parts[1] : "Unknown";
     }
 
+    public async Task<List<ProcessInfo>> GetProcessesAsync(string? deviceSerial = null)
+    {
+        var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
+        var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
+        var result = await RunAdbAsync($"{prefix} dumpsys cpuinfo", strictCheck: false);
+
+        var processes = new List<ProcessInfo>();
+        if (!result.Success)
+            return processes;
+
+        foreach (var line in result.Output.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            // Lines like: "7.4% 1234/com.example.app: 5.2% user + 2.2% kernel"
+            var slashIdx = trimmed.IndexOf('/');
+            if (slashIdx < 0) continue;
+
+            var colonIdx = trimmed.IndexOf(':', slashIdx);
+            if (colonIdx < 0) continue;
+
+            var pctEnd = trimmed.IndexOf('%');
+            if (pctEnd < 0 || pctEnd > slashIdx) continue;
+
+            if (!double.TryParse(trimmed[..pctEnd], out var cpu)) continue;
+
+            var pidStr = trimmed[(pctEnd + 1)..slashIdx].Trim();
+            if (!int.TryParse(pidStr, out var pid)) continue;
+
+            var name = trimmed[(slashIdx + 1)..colonIdx].Trim();
+            processes.Add(new ProcessInfo(pid, name, cpu));
+        }
+
+        return processes.OrderByDescending(p => p.CpuPercent).ToList();
+    }
+
     private Task<AdbResult> RunAdbAsync(string arguments) => RunAdbAsync(arguments, strictCheck: true);
 
     private async Task<AdbResult> RunAdbAsync(string arguments, bool strictCheck)
