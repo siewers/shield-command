@@ -8,9 +8,6 @@
              x:DataType="vm:InstallViewModel">
 
     <DockPanel>
-        <TextBlock DockPanel.Dock="Top"
-                   Text="Install APKs" FontSize="22" FontWeight="Bold"
-                   Margin="0,0,0,12"/>
 
         <!-- Drop zone -->
         <Border DockPanel.Dock="Top"

@@ -9,17 +9,13 @@
              x:DataType="vm:AppsViewModel">
 
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,12">
-            <TextBlock Text="Installed Apps" FontSize="22" FontWeight="Bold"/>
-
-            <StackPanel Orientation="Horizontal" Spacing="8">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
                 <Button Content="Refresh"
                         Command="{Binding RefreshCommand}"
                         IsEnabled="{Binding !IsBusy}"
                         Classes="accent"/>
                 <TextBlock Text="{Binding StatusText}"
                            VerticalAlignment="Center"/>
-            </StackPanel>
         </StackPanel>
 
         <ListBox ItemsSource="{Binding Packages}">

@@ -9,17 +9,6 @@
              x:DataType="vm:ActivityMonitorViewModel">
 
     <DockPanel>
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-            <TextBlock Text="Activity Monitor" FontSize="22" FontWeight="Bold"
-                       VerticalAlignment="Center"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
-                        VerticalAlignment="Center">
-                <TextBlock Text="Refresh:" VerticalAlignment="Center" FontSize="12" Foreground="Gray"/>
-                <ComboBox ItemsSource="{Binding RefreshIntervals}"
-                          SelectedItem="{Binding SelectedRefreshInterval}"
-                          FontSize="12" MinWidth="80" Padding="6,4"/>
-            </StackPanel>
-        </Grid>
         <TabControl>
             <TabItem Header="CPU">
                 <DockPanel Margin="0,8,0,0">

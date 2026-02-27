@@ -9,8 +9,6 @@
 
     <ScrollViewer>
         <StackPanel Spacing="16">
-            <TextBlock Text="System Info" FontSize="22" FontWeight="Bold"/>
-
             <TextBlock Text="{Binding StatusText}"
                        Foreground="Gray"
                        IsVisible="{Binding IsBusy}"/>

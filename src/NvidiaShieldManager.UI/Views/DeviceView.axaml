@@ -10,7 +10,6 @@
 
     <ScrollViewer>
     <StackPanel Spacing="16">
-        <TextBlock Text="Device Connection" FontSize="22" FontWeight="Bold"/>
 
         <!-- Connect form (shown when disconnected) -->
         <StackPanel Spacing="8" IsVisible="{Binding !IsConnected}">

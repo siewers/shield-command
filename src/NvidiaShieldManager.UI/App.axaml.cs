@@ -3,9 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Media;
 using Avalonia.Platform;
 using System.Linq;
 using Avalonia.Markup.Xaml;
+using FluentAvalonia.Styling;
 using NvidiaShieldManager.UI.ViewModels;
 using NvidiaShieldManager.UI.Views;
 
@@ -16,6 +18,12 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+        // Set Nvidia green as accent color
+        if (Styles[0] is FluentAvaloniaTheme theme)
+        {
+            theme.CustomAccentColor = Color.Parse("#76B900");
+        }
     }
 
     public override void OnFrameworkInitializationCompleted()

@@ -17,6 +17,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _windowTitle = "Nvidia Shield Manager — Disconnected";
 
+    [ObservableProperty]
+    private string _connectionStatusText = "Disconnected";
+
     public DeviceViewModel DevicePage { get; }
     public AppsViewModel AppsPage { get; }
     public InstallViewModel InstallPage { get; }
@@ -30,7 +33,7 @@ public partial class MainWindowViewModel : ViewModelBase
         InstallPage = new InstallViewModel(_adbService);
         SystemPage = new SystemViewModel(_adbService);
         ActivityMonitorPage = new ActivityMonitorViewModel(_adbService);
-        _currentPage = DevicePage;
+        _currentPage = AppsPage;
 
         DevicePage.PropertyChanged += (_, e) =>
         {
@@ -46,6 +49,9 @@ public partial class MainWindowViewModel : ViewModelBase
                 WindowTitle = string.IsNullOrEmpty(name)
                     ? $"Nvidia Shield Manager — {ip}"
                     : $"Nvidia Shield Manager — {name} ({ip})";
+                ConnectionStatusText = string.IsNullOrEmpty(name)
+                    ? $"Connected to {ip}"
+                    : $"Connected to {ip} — {name}";
 
                 _ = SystemPage.ActivateAsync();
                 _ = ActivityMonitorPage.StartAsync();
@@ -53,6 +59,7 @@ public partial class MainWindowViewModel : ViewModelBase
             else
             {
                 WindowTitle = "Nvidia Shield Manager — Disconnected";
+                ConnectionStatusText = "Disconnected";
                 ActivityMonitorPage.Stop();
             }
         };
@@ -62,12 +69,11 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentPage = tag switch
         {
-            "Device" => DevicePage,
             "Apps" => AppsPage,
             "Install" => InstallPage,
             "SystemInfo" => SystemPage,
             "ActivityMonitor" => ActivityMonitorPage,
-            _ => DevicePage,
+            _ => AppsPage,
         };
     }
 }
