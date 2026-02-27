@@ -15,7 +15,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool _isDeviceConnected;
 
     [ObservableProperty]
-    private string _windowTitle = "Nvidia Shield Manager";
+    private string _windowTitle = "Nvidia Shield Manager — Disconnected";
 
     public DeviceViewModel DevicePage { get; }
     public AppsViewModel AppsPage { get; }
@@ -52,7 +52,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
             else
             {
-                WindowTitle = "Nvidia Shield Manager";
+                WindowTitle = "Nvidia Shield Manager — Disconnected";
                 ActivityMonitorPage.Stop();
             }
         };

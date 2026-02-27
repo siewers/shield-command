@@ -9,7 +9,7 @@
              x:DataType="vm:AppsViewModel">
 
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Spacing="8">
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,12">
             <TextBlock Text="Installed Apps" FontSize="22" FontWeight="Bold"/>
 
             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -22,8 +22,7 @@
             </StackPanel>
         </StackPanel>
 
-        <ListBox ItemsSource="{Binding Packages}"
-                 Margin="0,12,0,0">
+        <ListBox ItemsSource="{Binding Packages}">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="models:InstalledPackage">
                     <Grid ColumnDefinitions="*,Auto,Auto" Margin="4">

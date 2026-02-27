@@ -15,8 +15,8 @@
         <!-- Connect form (shown when disconnected) -->
         <StackPanel Spacing="8" IsVisible="{Binding !IsConnected}">
             <TextBlock Text="Shield IP Address"/>
-            <Grid ColumnDefinitions="*,Auto,Auto" >
-                <Grid Grid.Column="0" Margin="0,0,8,0">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
+                <Grid Grid.Column="0">
                     <AutoCompleteBox x:Name="IpAutoComplete"
                                      Text="{Binding IpAddress, Mode=TwoWay}"
                                      ItemsSource="{Binding DeviceSuggestions}"
@@ -29,13 +29,16 @@
                             <Style Selector="ListBoxItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                             </Style>
+                            <Style Selector="TextBox">
+                                <Setter Property="MinHeight" Value="0"/>
+                                <Setter Property="Padding" Value="8,4"/>
+                            </Style>
                         </AutoCompleteBox.Styles>
                         <AutoCompleteBox.ItemTemplate>
                             <DataTemplate x:DataType="models:DeviceSuggestion">
                                 <Grid ColumnDefinitions="140,*,Auto">
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding IpAddress}"
-                                               FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding DisplayName}"
@@ -67,8 +70,7 @@
                         Content="Connect"
                         Command="{Binding ConnectCommand}"
                         IsEnabled="{Binding !IsBusy}"
-                        Classes="accent"
-                        Margin="0,0,4,0"/>
+                        Classes="accent"/>
                 <Button Grid.Column="2"
                         Content="Rescan"
                         Command="{Binding RescanCommand}"
@@ -88,7 +90,6 @@
                            Margin="0,0,8,0"/>
                 <TextBlock Grid.Column="1"
                            Text="{Binding IpAddress}"
-                           FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="2"
@@ -100,15 +101,9 @@
                         Content="Disconnect"
                         Command="{Binding DisconnectCommand}"
                         IsEnabled="{Binding !IsBusy}"
+                        VerticalAlignment="Center"
                         Padding="8,4"/>
             </Grid>
-        </Border>
-
-        <!-- Status (shown when disconnected) -->
-        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                CornerRadius="4" Padding="12"
-                IsVisible="{Binding !IsConnected}">
-            <TextBlock Text="{Binding StatusText}"/>
         </Border>
 
         <!-- Saved devices (only when disconnected) -->
@@ -125,14 +120,14 @@
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <TextBlock Grid.Column="0"
                                        Text="{Binding IpAddress}"
-                                       FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding DeviceName}"
                                        Foreground="Gray"
                                        Margin="12,0,0,0"
                                        VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"
+                                        VerticalAlignment="Center">
                                 <Button Content="Connect"
                                         Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).ConnectToSavedCommand}"
                                         CommandParameter="{Binding}"
