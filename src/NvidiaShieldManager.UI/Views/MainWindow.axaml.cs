@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -21,6 +22,9 @@ public partial class MainWindow : Window
 
     private void ReplaceHamburgerWithAppIcon()
     {
+        // Hide NavView until visual tweaks are applied to prevent layout shift
+        NavView.Opacity = 0;
+
         Loaded += async (_, _) =>
         {
             // Small delay to ensure all templates are fully applied
@@ -56,7 +60,16 @@ public partial class MainWindow : Window
                     {
                         tb.Margin = new Thickness(tb.Margin.Left, tb.Margin.Top + 2, tb.Margin.Right, tb.Margin.Bottom);
                     }
+
+                    // Nudge nav item text down to align with icon
+                    if (descendant is ContentPresenter cp && cp.Name == "ContentPresenter"
+                        && cp.GetVisualParent() is Control cpParent && cpParent.Name == "ContentGrid")
+                    {
+                        cp.Margin = new Thickness(cp.Margin.Left, cp.Margin.Top + 4, cp.Margin.Right, cp.Margin.Bottom);
+                    }
                 }
+
+                NavView.Opacity = 1;
             });
         };
     }
