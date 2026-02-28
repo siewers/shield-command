@@ -164,17 +164,10 @@ public class AdbService
 
     /// Tries am force-stop first (works for app packages without root), then falls back
     /// to kill -9 (requires same UID — only works for shell-owned or same-user processes).
-    public async Task<AdbResult> KillProcessAsync(int pid, string processName, string? deviceSerial = null)
+    public async Task<AdbResult> KillProcessAsync(int pid, string packageName, string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
         var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
-
-        // Resolve full package name from /proc/[pid]/cmdline (comm in /proc/stat is truncated to 15 chars).
-        // Uses a one-off adb call, not the persistent session — cmdline contains null bytes
-        // that corrupt the session's end-marker detection.
-        var cmdlineResult = await RunAdbAsync($"{prefix} \"cat /proc/{pid}/cmdline\"", strictCheck: false);
-        var packageName = cmdlineResult.Output?.Trim().Split('\0', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
-                          ?? processName;
 
         // First try am force-stop with the package name (works for app packages)
         var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
@@ -557,36 +550,43 @@ public class AdbService
     /// Reads /proc/stat total jiffies and per-process jiffies + names from /proc/[pid]/stat.
     /// Returns (perProcessJiffies, totalCpuJiffies).
     /// </summary>
-    public async Task<(Dictionary<int, (long Jiffies, string Name, long RssPages)> Procs, long TotalJiffies, long IdleJiffies)>
+    public async Task<(Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)> Procs, long TotalJiffies, long IdleJiffies)>
         GetProcessSnapshotAsync(string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
         var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
 
-        // Single call: read /proc/stat then all per-process stat files.
+        // Single call: read /proc/stat, per-process stat files, and directory ownership (for UID).
         // Some /proc/[pid]/stat files may vanish mid-read causing a non-zero exit,
         // but the output for surviving processes is still valid.
-        const string cmd = "cat /proc/stat; echo ---; cat /proc/[0-9]*/stat";
+        const string cmd = "cat /proc/stat; echo ---; cat /proc/[0-9]*/stat; echo ---; ls -ldn /proc/[0-9]*";
+
+        // Fire cmdline read concurrently via one-off adb call — ps is fast and avoids
+        // null bytes that corrupt the persistent session.
+        var cmdlineTask = RunAdbAsync($"{prefix} \"ps -A -o PID,ARGS\"", strictCheck: false);
 
         var output = await RunShellWithFallbackAsync(cmd, prefix);
 
-        var procs = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
+        var procs = new Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)>();
         var totalJiffies = 0L;
         var idleJiffies = 0L;
 
         if (string.IsNullOrWhiteSpace(output))
             return (procs, totalJiffies, idleJiffies);
 
-        var pastSeparator = false;
+        // Temporary storage without UID — filled during section 1, UIDs added in section 2
+        var procData = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
+        var section = 0;
+        var uidByPid = new Dictionary<int, int>();
 
         foreach (var line in output.Split('\n'))
         {
             var trimmed = line.Trim();
             if (trimmed.Length == 0) continue;
 
-            if (trimmed == "---") { pastSeparator = true; continue; }
+            if (trimmed == "---") { section++; continue; }
 
-            if (!pastSeparator)
+            if (section == 0)
             {
                 if (trimmed.StartsWith("cpu "))
                 {
@@ -597,31 +597,72 @@ public class AdbService
                     if (fields.Length > 4)
                         long.TryParse(fields[4], out idleJiffies);
                 }
-                continue;
             }
+            else if (section == 1)
+            {
+                // Format: pid (comm) state ppid ... utime stime ...
+                var commEnd = trimmed.LastIndexOf(')');
+                if (commEnd < 0) continue;
 
-            // Format: pid (comm) state ppid ... utime stime ...
-            var commEnd = trimmed.LastIndexOf(')');
-            if (commEnd < 0) continue;
+                var pidEnd = trimmed.IndexOf(' ');
+                if (pidEnd < 0) continue;
+                if (!int.TryParse(trimmed[..pidEnd], out var pid)) continue;
 
-            var pidEnd = trimmed.IndexOf(' ');
-            if (pidEnd < 0) continue;
-            if (!int.TryParse(trimmed[..pidEnd], out var pid)) continue;
+                var commStart = trimmed.IndexOf('(');
+                var name = commStart >= 0 && commEnd > commStart
+                    ? trimmed[(commStart + 1)..commEnd]
+                    : pid.ToString();
 
-            var commStart = trimmed.IndexOf('(');
-            var name = commStart >= 0 && commEnd > commStart
-                ? trimmed[(commStart + 1)..commEnd]
-                : pid.ToString();
+                var afterComm = trimmed[(commEnd + 1)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime ... [21]=rss (pages)
+                if (afterComm.Length < 22) continue;
 
-            var afterComm = trimmed[(commEnd + 1)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime ... [21]=rss (pages)
-            if (afterComm.Length < 22) continue;
+                if (!long.TryParse(afterComm[11], out var utime)) continue;
+                if (!long.TryParse(afterComm[12], out var stime)) continue;
+                long.TryParse(afterComm[21], out var rssPages);
 
-            if (!long.TryParse(afterComm[11], out var utime)) continue;
-            if (!long.TryParse(afterComm[12], out var stime)) continue;
-            long.TryParse(afterComm[21], out var rssPages);
+                procData[pid] = (utime + stime, name, rssPages);
+            }
+            else if (section == 2)
+            {
+                // Format: drwxr-xr-x NN UID GID SIZE DATE TIME /proc/PID
+                var cols = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (cols.Length < 8) continue;
+                var path = cols[^1]; // last column is path
+                var pidStr = path.StartsWith("/proc/") ? path["/proc/".Length..] : null;
+                if (pidStr is not null && int.TryParse(pidStr, out var dirPid) && int.TryParse(cols[2], out var uid))
+                    uidByPid[dirPid] = uid;
+            }
+        }
 
-            procs[pid] = (utime + stime, name, rssPages);
+        // Parse ps output for cmdline (runs concurrently with the main snapshot)
+        var cmdlineResult = await cmdlineTask;
+        var cmdlineByPid = new Dictionary<int, string>();
+        if (cmdlineResult.Output is { Length: > 0 })
+        {
+            foreach (var line in cmdlineResult.Output.Split('\n'))
+            {
+                var trimmed2 = line.Trim();
+                if (trimmed2.Length == 0 || trimmed2.StartsWith("PID")) continue; // skip header
+                // Format: PID ARGS (e.g. "  123 com.google.android.youtube")
+                var spaceIdx = trimmed2.IndexOf(' ');
+                if (spaceIdx < 0) continue;
+                if (!int.TryParse(trimmed2[..spaceIdx], out var cmdPid)) continue;
+                var args = trimmed2[(spaceIdx + 1)..].Trim();
+                // Take only the first argument (the executable/package name)
+                var firstArgEnd = args.IndexOf(' ');
+                if (firstArgEnd > 0) args = args[..firstArgEnd];
+                if (args.Length > 0)
+                    cmdlineByPid[cmdPid] = args;
+            }
+        }
+
+        // Merge UID and cmdline info into process data
+        foreach (var (pid, (jiffies, name, rssPages)) in procData)
+        {
+            uidByPid.TryGetValue(pid, out var uid);
+            cmdlineByPid.TryGetValue(pid, out var cmdline);
+            procs[pid] = (jiffies, name, rssPages, uid, cmdline ?? name);
         }
 
         return (procs, totalJiffies, idleJiffies);

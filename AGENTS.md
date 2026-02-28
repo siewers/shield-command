@@ -21,3 +21,7 @@
 ### Commit messages
 - Do not include `Co-Authored-By` attribution lines in commit messages.
 - Use simple `git commit -m "message"` — do not use heredocs.
+
+### Device testing
+- At the start of each session, ask the user for the NVIDIA Shield IP address so you can run `adb connect <IP>` to test changes on the device. Last known IP: 10.0.0.99.
+- Disconnect with `adb disconnect <IP>` when done testing.

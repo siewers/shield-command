@@ -40,6 +40,9 @@
                 <DataGridTextColumn Header="Memory"
                                     Binding="{Binding MemoryMb, StringFormat={}{0:F1} MB}"
                                     Width="100" />
+                <DataGridTextColumn Header="Kind"
+                                    Binding="{Binding Kind}"
+                                    Width="70" />
                 <DataGridTextColumn Header="PID"
                                     Binding="{Binding Pid}"
                                     Width="80" />

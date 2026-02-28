@@ -14,7 +14,7 @@ public partial class ProcessesViewModel : ViewModelBase
     private CancellationTokenSource? _cts;
 
     // Previous snapshot for computing CPU% deltas
-    private Dictionary<int, (long Jiffies, string Name, long RssPages)> _prevProcs = new();
+    private Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)> _prevProcs = new();
     private long _prevTotalJiffies;
     private long _prevIdleJiffies;
 
@@ -38,7 +38,7 @@ public partial class ProcessesViewModel : ViewModelBase
     private async Task KillProcessAsync()
     {
         if (SelectedProcess is not { } proc) return;
-        var result = await _adbService.KillProcessAsync(proc.Pid, proc.Name);
+        var result = await _adbService.KillProcessAsync(proc.Pid, proc.PackageName);
         if (result.Success)
         {
             Processes.Remove(proc);
@@ -132,7 +132,7 @@ public partial class ProcessesViewModel : ViewModelBase
         var deltaTotalJiffies = totalJiffies - _prevTotalJiffies;
         var hasPrev = deltaTotalJiffies > 0 && _prevProcs.Count > 0;
 
-        foreach (var (pid, (jiffies, name, rssPages)) in procs)
+        foreach (var (pid, (jiffies, name, rssPages, uid, cmdline)) in procs)
         {
             var cpuPct = 0.0;
             if (hasPrev && _prevProcs.TryGetValue(pid, out var prev))
@@ -146,7 +146,9 @@ public partial class ProcessesViewModel : ViewModelBase
             if (pid <= 2) continue;
 
             var memMb = Math.Round(rssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
-            processes.Add(new ProcessInfo(pid, name, Math.Round(cpuPct, 1), memMb));
+            // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
+            var isUserApp = uid >= 10000;
+            processes.Add(new ProcessInfo(pid, name, cmdline, Math.Round(cpuPct, 1), memMb, isUserApp));
         }
 
         // System-wide CPU% from /proc/stat idle delta (not the sum of per-process CPU%).
