@@ -47,7 +47,9 @@ public partial class DeviceViewModel : ViewModelBase
     {
         SavedDevices.Clear();
         foreach (var device in _settingsService.SavedDevices.OrderByDescending(d => d.LastConnected))
+        {
             SavedDevices.Add(device);
+        }
     }
 
     [RelayCommand]
@@ -96,7 +98,9 @@ public partial class DeviceViewModel : ViewModelBase
     {
         var device = _settingsService.SavedDevices.FirstOrDefault(d => d.AutoConnect);
         if (device == null)
+        {
             return false;
+        }
 
         IpAddress = device.IpAddress;
         await ConnectAsync();
@@ -183,6 +187,8 @@ public partial class DeviceViewModel : ViewModelBase
         var devices = await _adbService.GetConnectedDevicesAsync();
         ConnectedDevices.Clear();
         foreach (var device in devices)
+        {
             ConnectedDevices.Add(device);
+        }
     }
 }

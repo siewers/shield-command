@@ -31,7 +31,9 @@ public class SettingsService
         {
             existing.LastConnected = DateTime.UtcNow;
             if (deviceName != null)
+            {
                 existing.DeviceName = deviceName;
+            }
         }
         else
         {
@@ -67,7 +69,9 @@ public class SettingsService
     private void Load()
     {
         if (!File.Exists(_filePath))
+        {
             return;
+        }
 
         try
         {

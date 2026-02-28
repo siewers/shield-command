@@ -32,7 +32,9 @@ public partial class AppsViewModel : ViewModelBase
         var packages = await _adbService.GetInstalledPackagesAsync();
         Packages.Clear();
         foreach (var pkg in packages)
+        {
             Packages.Add(pkg);
+        }
 
         StatusText = $"{Packages.Count} packages found";
         IsBusy = false;

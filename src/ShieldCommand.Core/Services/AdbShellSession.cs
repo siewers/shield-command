@@ -35,21 +35,28 @@ public sealed class AdbShellSession : IDisposable
 
     public async Task<string?> RunAsync(string command, CancellationToken ct = default)
     {
-        if (_disposed) return null;
+        if (_disposed)
+        {
+            return null;
+        }
 
         await _semaphore.WaitAsync(ct);
         try
         {
             if (_process is null || _process.HasExited)
+            {
                 StartProcess();
+            }
 
             if (_stdin is null || _stdout is null)
+            {
                 return null;
+            }
 
             // Write the command followed by an echo of our end marker
             await _stdin.WriteLineAsync(command);
             await _stdin.WriteLineAsync($"echo '{EndMarker}'");
-            await _stdin.FlushAsync();
+            await _stdin.FlushAsync(ct);
 
             var sb = new StringBuilder();
             while (true)
@@ -65,7 +72,9 @@ public sealed class AdbShellSession : IDisposable
                 }
 
                 if (line == EndMarker)
+                {
                     break;
+                }
 
                 sb.AppendLine(line);
             }
@@ -116,12 +125,17 @@ public sealed class AdbShellSession : IDisposable
 
     private void KillProcess()
     {
-        if (_process is null) return;
+        if (_process is null)
+        {
+            return;
+        }
 
         try
         {
             if (!_process.HasExited)
+            {
                 _process.Kill();
+            }
         }
         catch { }
 
@@ -133,7 +147,11 @@ public sealed class AdbShellSession : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         KillProcess();
         _semaphore.Dispose();

@@ -33,14 +33,20 @@ public class DeviceDiscoveryService
                 foreach (var prop in svc.Properties)
                 {
                     if (prop.TryGetValue("fn", out var friendlyName) && !string.IsNullOrEmpty(friendlyName))
+                    {
                         name = friendlyName;
+                    }
                     else if (prop.TryGetValue("n", out var n) && !string.IsNullOrEmpty(n))
+                    {
                         name = n;
+                    }
                 }
             }
 
             if (!devices.Any(d => d.IpAddress == ip))
+            {
                 devices.Add(new DiscoveredDevice(ip, name));
+            }
         }
 
         return devices;

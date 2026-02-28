@@ -34,7 +34,9 @@ public partial class InstallViewModel : ViewModelBase
         foreach (var path in filePaths)
         {
             if (path.EndsWith(".apk", StringComparison.OrdinalIgnoreCase) && !ApkQueue.Contains(path))
+            {
                 ApkQueue.Add(path);
+            }
         }
     }
 
@@ -72,16 +74,25 @@ public partial class InstallViewModel : ViewModelBase
 
             var result = await _adbService.InstallApkAsync(apk);
             if (result.Success)
+            {
                 succeeded++;
+            }
             else
+            {
                 StatusText = $"Failed: {fileName} - {(string.IsNullOrEmpty(result.Error) ? result.Output : result.Error)}";
+            }
         }
 
         StatusText = $"Done: {succeeded}/{total} installed successfully";
         if (succeeded > 0)
+        {
             DidInstall = true;
+        }
+
         if (succeeded == total)
+        {
             ApkQueue.Clear();
+        }
 
         IsBusy = false;
     }

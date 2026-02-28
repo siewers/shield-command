@@ -30,7 +30,10 @@ public partial class ProcessesView : UserControl
         var isFirstClick = _lastSortedColumnIndex != idx;
         _lastSortedColumnIndex = idx;
 
-        if (!isFirstClick || !DescendingFirstHeaders.Contains(header)) return;
+        if (!isFirstClick || !DescendingFirstHeaders.Contains(header))
+        {
+            return;
+        }
 
         // Switching to this column — prevent the DataGrid's default Ascending sort
         // and sort Descending directly (no flicker from double-sort).
@@ -40,8 +43,15 @@ public partial class ProcessesView : UserControl
 
     private void OnGridPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (e.InitialPressMouseButton != MouseButton.Right) return;
-        if (DataContext is not ProcessesViewModel vm || vm.SelectedProcess is null) return;
+        if (e.InitialPressMouseButton != MouseButton.Right)
+        {
+            return;
+        }
+
+        if (DataContext is not ProcessesViewModel vm || vm.SelectedProcess is null)
+        {
+            return;
+        }
 
         e.Handled = true;
         var proc = vm.SelectedProcess;
@@ -87,10 +97,16 @@ public partial class ProcessesView : UserControl
     private static void OpenBrowser(string url)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
             Process.Start("open", url);
+        }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
         else
+        {
             Process.Start("xdg-open", url);
+        }
     }
 }

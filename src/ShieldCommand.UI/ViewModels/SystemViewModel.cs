@@ -34,7 +34,10 @@ public partial class SystemViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoadAsync()
     {
-        if (IsBusy) return;
+        if (IsBusy)
+        {
+            return;
+        }
 
         IsBusy = true;
         StatusText = "Loading...";

@@ -13,7 +13,10 @@ public partial class DeviceView : UserControl
     private async void DropdownButton_Click(object? sender, RoutedEventArgs e)
     {
         var autoComplete = this.FindControl<AutoCompleteBox>("IpAutoComplete");
-        if (autoComplete is null) return;
+        if (autoComplete is null)
+        {
+            return;
+        }
 
         autoComplete.Text = string.Empty;
         autoComplete.Focus();

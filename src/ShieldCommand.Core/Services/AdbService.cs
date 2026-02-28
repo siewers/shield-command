@@ -29,7 +29,10 @@ public class AdbService
     private async Task<string?> RunShellAsync(string command, CancellationToken ct = default)
     {
         if (_session is not null)
+        {
             return await _session.RunAsync(command, ct);
+        }
+
         return null;
     }
 
@@ -41,7 +44,9 @@ public class AdbService
         {
             var output = await RunShellAsync(command);
             if (output is not null)
+            {
                 return output;
+            }
         }
 
         var result = await RunAdbAsync($"{adbPrefix} \"{command}\"", strictCheck: false);
@@ -69,16 +74,22 @@ public class AdbService
         var devices = new List<ShieldDevice>();
 
         if (!result.Success)
+        {
             return devices;
+        }
 
         foreach (var line in result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             if (line.StartsWith("List of") || line.StartsWith("*"))
+            {
                 continue;
+            }
 
             var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2 || parts[1] != "device")
+            {
                 continue;
+            }
 
             var address = parts[0];
             var model = parts
@@ -98,7 +109,9 @@ public class AdbService
         var packages = new List<InstalledPackage>();
 
         if (!result.Success)
+        {
             return packages;
+        }
 
         var packageNames = result.Output
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -125,7 +138,9 @@ public class AdbService
         var result = await RunAdbAsync($"{deviceArg} shell dumpsys package {packageName}".Trim());
 
         if (!result.Success)
+        {
             return (null, null);
+        }
 
         string? versionName = null;
         string? versionCode = null;
@@ -135,7 +150,9 @@ public class AdbService
             var trimmed = line.Trim();
 
             if (versionName == null && trimmed.StartsWith("versionName="))
+            {
                 versionName = trimmed["versionName=".Length..];
+            }
             else if (versionCode == null && trimmed.StartsWith("versionCode="))
             {
                 var value = trimmed["versionCode=".Length..];
@@ -144,7 +161,9 @@ public class AdbService
             }
 
             if (versionName != null && versionCode != null)
+            {
                 break;
+            }
         }
 
         return (versionName, versionCode);
@@ -173,7 +192,9 @@ public class AdbService
         var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
         var output = (await RunShellWithFallbackAsync(forceStopCmd, prefix)).Trim();
         if (output.Contains("EXIT:0") && !output.Contains("Error"))
+        {
             return new AdbResult(true, output);
+        }
 
         // Fall back to kill -9 for non-app processes
         var killCmd = $"kill -9 {pid} 2>&1; echo EXIT:$?";
@@ -245,20 +266,30 @@ public class AdbService
                     info.MemTotalKb = ParseKb(trimmed);
                 }
                 else if (trimmed.StartsWith("MemFree:"))
+                {
                     info.MemFreeKb = ParseKb(trimmed);
+                }
                 else if (trimmed.StartsWith("MemAvailable:"))
                 {
                     info.AvailableRam = FormatKb(trimmed);
                     info.MemAvailableKb = ParseKb(trimmed);
                 }
                 else if (trimmed.StartsWith("Buffers:"))
+                {
                     info.MemBuffersKb = ParseKb(trimmed);
+                }
                 else if (trimmed.StartsWith("Cached:"))
+                {
                     info.MemCachedKb = ParseKb(trimmed);
+                }
                 else if (trimmed.StartsWith("SwapTotal:"))
+                {
                     info.SwapTotalKb = ParseKb(trimmed);
+                }
                 else if (trimmed.StartsWith("SwapFree:"))
+                {
                     info.SwapFreeKb = ParseKb(trimmed);
+                }
             }
         }
 
@@ -291,14 +322,22 @@ public class AdbService
                     var afterFirst = rest[(commaIdx + 1)..];
                     var secondComma = afterFirst.IndexOf(',');
                     if (secondComma > 0 && afterFirst[..secondComma].Trim().Contains(':'))
+                    {
                         info.Uptime = rest[..commaIdx].Trim();
+                    }
                     else if (secondComma > 0)
+                    {
                         info.Uptime = rest[..(commaIdx + 1 + secondComma)].Trim().TrimEnd(',');
+                    }
                     else
+                    {
                         info.Uptime = rest[..commaIdx].Trim();
+                    }
                 }
                 else
+                {
                     info.Uptime = rest.Trim();
+                }
             }
         }
 
@@ -320,16 +359,22 @@ public class AdbService
                 }
 
                 if (inCurrentSection && trimmed.StartsWith("Current cooling"))
+                {
                     break;
+                }
 
                 if (!inCurrentSection || !trimmed.Contains("mValue="))
+                {
                     continue;
+                }
 
                 var mValueIdx = trimmed.IndexOf("mValue=");
                 var valueStr = trimmed[(mValueIdx + "mValue=".Length)..];
                 var endIdx = valueStr.IndexOfAny([',', ' ', '}']);
                 if (endIdx > 0)
+                {
                     valueStr = valueStr[..endIdx];
+                }
 
                 var nameStr = "Unknown";
                 var mNameIdx = trimmed.IndexOf("mName=");
@@ -338,14 +383,18 @@ public class AdbService
                     var nameVal = trimmed[(mNameIdx + "mName=".Length)..];
                     var nameEnd = nameVal.IndexOfAny([',', ' ', '}']);
                     if (nameEnd > 0)
+                    {
                         nameStr = nameVal[..nameEnd];
+                    }
                 }
 
                 if (float.TryParse(valueStr, System.Globalization.CultureInfo.InvariantCulture, out var temp))
                 {
                     temps.Add((nameStr, temp));
                     if (temp > maxTemp)
+                    {
                         maxTemp = temp;
+                    }
                 }
             }
 
@@ -369,16 +418,22 @@ public class AdbService
                 }
 
                 if (inCoolingSection && trimmed.Length > 0 && !trimmed.Contains("mValue="))
+                {
                     break;
+                }
 
                 if (!inCoolingSection || !trimmed.Contains("mValue="))
+                {
                     continue;
+                }
 
                 var mValueIdx = trimmed.IndexOf("mValue=");
                 var valueStr = trimmed[(mValueIdx + "mValue=".Length)..];
                 var endIdx = valueStr.IndexOfAny([',', ' ', '}']);
                 if (endIdx > 0)
+                {
                     valueStr = valueStr[..endIdx];
+                }
 
                 if (int.TryParse(valueStr, out var fanLevel))
                 {
@@ -393,11 +448,15 @@ public class AdbService
             foreach (var statLine in GetSection(4).Split('\n'))
             {
                 if (!statLine.StartsWith("cpu"))
+                {
                     continue;
+                }
 
                 var vals = statLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (vals.Length < 8)
+                {
                     continue;
+                }
 
                 long.TryParse(vals[1], out var u);
                 long.TryParse(vals[2], out var n);
@@ -407,7 +466,10 @@ public class AdbService
                 long.TryParse(vals[6], out var q);
                 long.TryParse(vals[7], out var sq);
                 long st = 0;
-                if (vals.Length >= 9) long.TryParse(vals[8], out st);
+                if (vals.Length >= 9)
+                {
+                    long.TryParse(vals[8], out st);
+                }
 
                 var active = u + n + s + w + q + sq + st;
                 var total = active + idle;
@@ -438,7 +500,9 @@ public class AdbService
             {
                 var parts = fields[3].Split('/');
                 if (parts.Length == 2 && int.TryParse(parts[1], out var threads))
+                {
                     info.ThreadCount = threads;
+                }
             }
         }
 
@@ -456,24 +520,43 @@ public class AdbService
             foreach (var line in GetSection(7).Split('\n', StringSplitOptions.RemoveEmptyEntries))
             {
                 var colonIdx = line.IndexOf(':');
-                if (colonIdx < 0) continue;
+                if (colonIdx < 0)
+                {
+                    continue;
+                }
 
                 var iface = line[..colonIdx].Trim();
                 if (iface == "lo" || iface.StartsWith("Inter") || iface.StartsWith("face"))
+                {
                     continue;
+                }
 
                 var vals = line[(colonIdx + 1)..].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (vals.Length < 10) continue;
+                if (vals.Length < 10)
+                {
+                    continue;
+                }
 
                 // rx: bytes=0, packets=1; tx: bytes=8, packets=9
                 if (long.TryParse(vals[0], out var rxBytes))
+                {
                     info.NetBytesIn += rxBytes;
+                }
+
                 if (long.TryParse(vals[1], out var rxPackets))
+                {
                     info.NetPacketsIn += rxPackets;
+                }
+
                 if (long.TryParse(vals[8], out var txBytes))
+                {
                     info.NetBytesOut += txBytes;
+                }
+
                 if (long.TryParse(vals[9], out var txPackets))
+                {
                     info.NetPacketsOut += txPackets;
+                }
             }
         }
 
@@ -483,12 +566,19 @@ public class AdbService
             foreach (var line in GetSection(8).Split('\n', StringSplitOptions.RemoveEmptyEntries))
             {
                 var parts = line.Trim().Split(' ');
-                if (parts.Length < 2) continue;
+                if (parts.Length < 2)
+                {
+                    continue;
+                }
 
                 if (parts[0] == "pgpgin" && long.TryParse(parts[1], out var pgIn))
+                {
                     info.DiskKbRead = pgIn;
+                }
                 else if (parts[0] == "pgpgout" && long.TryParse(parts[1], out var pgOut))
+                {
                     info.DiskKbWritten = pgOut;
+                }
             }
         }
 
@@ -505,7 +595,9 @@ public class AdbService
                     {
                         var numStr = trimmed["Latency:".Length..msIdx].Trim();
                         if (int.TryParse(numStr, out var ms))
+                        {
                             info.DiskWriteLatencyMs = ms;
+                        }
                     }
                 }
                 else if (trimmed.StartsWith("Recent Disk Write Speed"))
@@ -516,7 +608,9 @@ public class AdbService
                     {
                         var numStr = trimmed[(eqIdx + 1)..].Trim();
                         if (double.TryParse(numStr, System.Globalization.CultureInfo.InvariantCulture, out var speed))
+                        {
                             info.DiskWriteSpeedKbps = speed;
+                        }
                     }
                 }
             }
@@ -572,7 +666,9 @@ public class AdbService
         var idleJiffies = 0L;
 
         if (string.IsNullOrWhiteSpace(output))
+        {
             return (procs, totalJiffies, idleJiffies);
+        }
 
         // Temporary storage without UID — filled during section 1, UIDs added in section 2
         var procData = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
@@ -582,7 +678,10 @@ public class AdbService
         foreach (var line in output.Split('\n'))
         {
             var trimmed = line.Trim();
-            if (trimmed.Length == 0) continue;
+            if (trimmed.Length == 0)
+            {
+                continue;
+            }
 
             if (trimmed == "---") { section++; continue; }
 
@@ -592,21 +691,38 @@ public class AdbService
                 {
                     var fields = trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                     for (var i = 1; i < fields.Length; i++)
-                        if (long.TryParse(fields[i], out var v)) totalJiffies += v;
+                    {
+                        if (long.TryParse(fields[i], out var v))
+                        {
+                            totalJiffies += v;
+                        }
+                    }
                     // fields[4] is idle
                     if (fields.Length > 4)
+                    {
                         long.TryParse(fields[4], out idleJiffies);
+                    }
                 }
             }
             else if (section == 1)
             {
                 // Format: pid (comm) state ppid ... utime stime ...
                 var commEnd = trimmed.LastIndexOf(')');
-                if (commEnd < 0) continue;
+                if (commEnd < 0)
+                {
+                    continue;
+                }
 
                 var pidEnd = trimmed.IndexOf(' ');
-                if (pidEnd < 0) continue;
-                if (!int.TryParse(trimmed[..pidEnd], out var pid)) continue;
+                if (pidEnd < 0)
+                {
+                    continue;
+                }
+
+                if (!int.TryParse(trimmed[..pidEnd], out var pid))
+                {
+                    continue;
+                }
 
                 var commStart = trimmed.IndexOf('(');
                 var name = commStart >= 0 && commEnd > commStart
@@ -615,10 +731,21 @@ public class AdbService
 
                 var afterComm = trimmed[(commEnd + 1)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                 // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime ... [21]=rss (pages)
-                if (afterComm.Length < 22) continue;
+                if (afterComm.Length < 22)
+                {
+                    continue;
+                }
 
-                if (!long.TryParse(afterComm[11], out var utime)) continue;
-                if (!long.TryParse(afterComm[12], out var stime)) continue;
+                if (!long.TryParse(afterComm[11], out var utime))
+                {
+                    continue;
+                }
+
+                if (!long.TryParse(afterComm[12], out var stime))
+                {
+                    continue;
+                }
+
                 long.TryParse(afterComm[21], out var rssPages);
 
                 procData[pid] = (utime + stime, name, rssPages);
@@ -627,11 +754,17 @@ public class AdbService
             {
                 // Format: drwxr-xr-x NN UID GID SIZE DATE TIME /proc/PID
                 var cols = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (cols.Length < 8) continue;
+                if (cols.Length < 8)
+                {
+                    continue;
+                }
+
                 var path = cols[^1]; // last column is path
                 var pidStr = path.StartsWith("/proc/") ? path["/proc/".Length..] : null;
                 if (pidStr is not null && int.TryParse(pidStr, out var dirPid) && int.TryParse(cols[2], out var uid))
+                {
                     uidByPid[dirPid] = uid;
+                }
             }
         }
 
@@ -643,17 +776,34 @@ public class AdbService
             foreach (var line in cmdlineResult.Output.Split('\n'))
             {
                 var trimmed2 = line.Trim();
-                if (trimmed2.Length == 0 || trimmed2.StartsWith("PID")) continue; // skip header
+                if (trimmed2.Length == 0 || trimmed2.StartsWith("PID"))
+                {
+                    continue; // skip header
+                }
                 // Format: PID ARGS (e.g. "  123 com.google.android.youtube")
                 var spaceIdx = trimmed2.IndexOf(' ');
-                if (spaceIdx < 0) continue;
-                if (!int.TryParse(trimmed2[..spaceIdx], out var cmdPid)) continue;
+                if (spaceIdx < 0)
+                {
+                    continue;
+                }
+
+                if (!int.TryParse(trimmed2[..spaceIdx], out var cmdPid))
+                {
+                    continue;
+                }
+
                 var args = trimmed2[(spaceIdx + 1)..].Trim();
                 // Take only the first argument (the executable/package name)
                 var firstArgEnd = args.IndexOf(' ');
-                if (firstArgEnd > 0) args = args[..firstArgEnd];
+                if (firstArgEnd > 0)
+                {
+                    args = args[..firstArgEnd];
+                }
+
                 if (args.Length > 0)
+                {
                     cmdlineByPid[cmdPid] = args;
+                }
             }
         }
 
@@ -693,9 +843,11 @@ public class AdbService
 
             var success = process.ExitCode == 0;
             if (strictCheck)
+            {
                 success = success
                     && !output.Contains("error", StringComparison.OrdinalIgnoreCase)
                     && !output.Contains("failed", StringComparison.OrdinalIgnoreCase);
+            }
 
             return new AdbResult(success, output.Trim(), error.Trim());
         }

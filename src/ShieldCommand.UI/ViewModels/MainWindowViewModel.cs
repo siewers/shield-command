@@ -40,7 +40,9 @@ public partial class MainWindowViewModel : ViewModelBase
         DevicePage.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(DeviceViewModel.IsConnected))
+            {
                 return;
+            }
 
             IsDeviceConnected = DevicePage.IsConnected;
 
@@ -60,10 +62,14 @@ public partial class MainWindowViewModel : ViewModelBase
                 _ = ActivityMonitorPage.StartAsync();
 
                 if (CurrentPage == ProcessesPage)
+                {
                     _ = ProcessesPage.StartAsync();
+                }
 
                 if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0)
+                {
                     AppsPage.RefreshCommand.Execute(null);
+                }
             }
             else
             {
@@ -92,12 +98,18 @@ public partial class MainWindowViewModel : ViewModelBase
         };
 
         if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0 && IsDeviceConnected)
+        {
             AppsPage.RefreshCommand.Execute(null);
+        }
 
         // Start/stop processes polling based on page visibility
         if (CurrentPage == ProcessesPage && !ProcessesPage.IsMonitoring && IsDeviceConnected)
+        {
             _ = ProcessesPage.StartAsync();
+        }
         else if (previousPage == ProcessesPage && CurrentPage != ProcessesPage)
+        {
             ProcessesPage.Stop();
+        }
     }
 }

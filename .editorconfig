@@ -1,0 +1,25 @@
+root = true
+
+# All files
+[*]
+indent_style = space
+insert_final_newline = true
+
+[*.{cs,razor}]
+indent_size = 4
+
+# Forward CancellationToken to methods that accept one
+dotnet_diagnostic.CA2016.severity = warning
+csharp_preferred_modifier_order = public, protected, override, internal, file, new, required, private, virtual, sealed, static, async, extern, unsafe, volatile, readonly, abstract:suggestion
+csharp_preserve_single_line_blocks = true
+csharp_indent_braces = false
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:warning
+
+# JavaScript files
+[*.js]
+indent_size = 4
+
+# Xml files
+[{*.xml,*.slnx,*.props,*.targets,*.csproj}]
+indent_size = 2

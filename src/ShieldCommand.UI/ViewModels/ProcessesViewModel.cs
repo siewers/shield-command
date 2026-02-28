@@ -37,7 +37,11 @@ public partial class ProcessesViewModel : ViewModelBase
     [RelayCommand]
     private async Task KillProcessAsync()
     {
-        if (SelectedProcess is not { } proc) return;
+        if (SelectedProcess is not { } proc)
+        {
+            return;
+        }
+
         var result = await _adbService.KillProcessAsync(proc.Pid, proc.PackageName);
         if (result.Success)
         {
@@ -67,7 +71,10 @@ public partial class ProcessesViewModel : ViewModelBase
 
     public async Task StartAsync()
     {
-        if (IsMonitoring) return;
+        if (IsMonitoring)
+        {
+            return;
+        }
 
         IsMonitoring = true;
         _cts = new CancellationTokenSource();
@@ -113,7 +120,9 @@ public partial class ProcessesViewModel : ViewModelBase
                 while (timer is not null && await timer.WaitForNextTickAsync(cts!.Token))
                 {
                     if (!IsPollingSuspended)
+                    {
                         await PollAsync();
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -126,7 +135,9 @@ public partial class ProcessesViewModel : ViewModelBase
     {
         var (procs, totalJiffies, idleJiffies) = await _adbService.GetProcessSnapshotAsync();
         if (procs.Count == 0)
+        {
             return; // Bad read, skip this cycle
+        }
 
         var processes = new List<ProcessInfo>();
         var deltaTotalJiffies = totalJiffies - _prevTotalJiffies;
@@ -139,11 +150,16 @@ public partial class ProcessesViewModel : ViewModelBase
             {
                 var deltaProc = jiffies - prev.Jiffies;
                 if (deltaProc > 0)
+                {
                     cpuPct = (double)deltaProc / deltaTotalJiffies * 100.0;
+                }
             }
 
             // Skip kernel threads (pid <= 2 or name starts with common kernel prefixes)
-            if (pid <= 2) continue;
+            if (pid <= 2)
+            {
+                continue;
+            }
 
             var memMb = Math.Round(rssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
             // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
@@ -177,13 +193,17 @@ public partial class ProcessesViewModel : ViewModelBase
             for (var i = Processes.Count - 1; i >= 0; i--)
             {
                 if (!newByPid.ContainsKey(Processes[i].Pid))
+                {
                     Processes.RemoveAt(i);
+                }
             }
 
             // Update existing and insert new processes in sorted order
             var existingByPid = new Dictionary<int, ProcessInfo>();
             foreach (var p in Processes)
+            {
                 existingByPid[p.Pid] = p;
+            }
 
             for (var i = 0; i < sorted.Count; i++)
             {
@@ -198,7 +218,10 @@ public partial class ProcessesViewModel : ViewModelBase
                     // Exists but wrong position — move it
                     var oldIndex = Processes.IndexOf(existing);
                     if (oldIndex >= 0 && oldIndex != i)
+                    {
                         Processes.Move(oldIndex, i);
+                    }
+
                     CopyProcessFields(existing, incoming);
                 }
                 else

@@ -18,12 +18,16 @@ public partial class AppsView : UserControl
     private async void OnInstallApkClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not AppsViewModel appsVm)
+        {
             return;
+        }
 
         // Get the InstallViewModel from the main window
         var mainWindow = TopLevel.GetTopLevel(this) as Window;
         if (mainWindow?.DataContext is not MainWindowViewModel mainVm)
+        {
             return;
+        }
 
         var installView = new InstallView
         {

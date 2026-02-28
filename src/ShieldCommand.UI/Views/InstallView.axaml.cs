@@ -30,7 +30,9 @@ public partial class InstallView : UserControl
     private void OnDrop(object? sender, DragEventArgs e)
     {
         if (DataContext is not InstallViewModel vm)
+        {
             return;
+        }
 
 #pragma warning disable CS0618 // Data is obsolete, use DataTransfer
         var files = e.Data.GetFiles();
@@ -49,11 +51,15 @@ public partial class InstallView : UserControl
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not InstallViewModel vm)
+        {
             return;
+        }
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null)
+        {
             return;
+        }
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {

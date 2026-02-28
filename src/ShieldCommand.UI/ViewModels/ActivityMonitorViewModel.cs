@@ -485,7 +485,10 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
     public async Task StartAsync()
     {
-        if (IsMonitoring) return;
+        if (IsMonitoring)
+        {
+            return;
+        }
 
         IsMonitoring = true;
         _cts = new CancellationTokenSource();
@@ -644,7 +647,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
                 state.Points.Add(new DateTimePoint(now, corePct));
                 TrimOldPoints(state.Points, now);
-                state.Legend.Value =$"{corePct:F0}%";
+                state.Legend.Value = $"{corePct:F0}%";
             }
 
             _coreState[name] = (state.Points, coreActive, coreTotal, state.Series, state.Legend);
@@ -657,7 +660,10 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
     private void UpdateMemoryChart(DeviceInfo info)
     {
-        if (info.MemTotalKb <= 0) return;
+        if (info.MemTotalKb <= 0)
+        {
+            return;
+        }
 
         var usedMb = (info.MemTotalKb - info.MemAvailableKb) / 1024.0;
         var totalMb = info.MemTotalKb / 1024.0;
@@ -717,7 +723,10 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
     private void UpdateDiskChart(DeviceInfo info)
     {
-        if (info.DiskKbRead == 0 && info.DiskKbWritten == 0) return;
+        if (info.DiskKbRead == 0 && info.DiskKbWritten == 0)
+        {
+            return;
+        }
 
         var now = DateTime.Now;
 
@@ -845,7 +854,9 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     private void AddTemperaturePoints(List<(string Name, double Value)> temperatures, string? fanState)
     {
         if (temperatures.Count == 0)
+        {
             return;
+        }
 
         var now = DateTime.Now;
 
@@ -930,12 +941,18 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         // Keep points slightly beyond the visible window so the left edge isn't clipped
         var cutoff = now - window - TimeSpan.FromSeconds(window.TotalSeconds * 0.1);
         while (points.Count > 0 && points[0].DateTime < cutoff)
+        {
             points.RemoveAt(0);
+        }
     }
 
     private void UpdateAxisLimits(DateTimeAxis axis, bool mini = false, DateTime now = default)
     {
-        if (now == default) now = DateTime.Now;
+        if (now == default)
+        {
+            now = DateTime.Now;
+        }
+
         var window = mini ? _miniWindow : _chartWindow;
         axis.MinLimit = (now - window).Ticks;
         axis.MaxLimit = now.Ticks;

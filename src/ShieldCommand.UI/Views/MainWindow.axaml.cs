@@ -32,7 +32,9 @@ public partial class MainWindow : Window
                 vm.CloseAdbSession();
 
                 if (vm.IsDeviceConnected)
+                {
                     await vm.DevicePage.DisconnectCommand.ExecuteAsync(null);
+                }
             }
         };
     }
@@ -99,7 +101,9 @@ public partial class MainWindow : Window
                 {
                     var autoConnected = await vm.DevicePage.AutoConnectAsync();
                     if (!autoConnected)
+                    {
                         _ = OpenDeviceDialog();
+                    }
                 }
             });
         };
@@ -157,7 +161,9 @@ public partial class MainWindow : Window
     private async System.Threading.Tasks.Task OpenDeviceDialog()
     {
         if (DataContext is not MainWindowViewModel vm)
+        {
             return;
+        }
 
         var deviceView = new DeviceView
         {
@@ -199,11 +205,15 @@ public partial class MainWindow : Window
         {
             // Uncheck all siblings, check the clicked item
             foreach (var item in parentMenu.Items.OfType<NativeMenuItem>())
+            {
                 item.IsChecked = item == menuItem;
+            }
 
             var rate = RefreshRate.All.FirstOrDefault(r => r.Label == header);
             if (rate is not null)
+            {
                 vm.ActivityMonitorPage.SelectedRefreshRate = rate;
+            }
         }
     }
 
