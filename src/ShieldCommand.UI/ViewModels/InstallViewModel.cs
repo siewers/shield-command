@@ -20,6 +20,10 @@ public partial class InstallViewModel : ViewModelBase
 
     public ObservableCollection<string> ApkQueue { get; } = [];
 
+    public bool DidInstall { get; private set; }
+
+    public void ResetDidInstall() => DidInstall = false;
+
     public InstallViewModel(AdbService adbService)
     {
         _adbService = adbService;
@@ -74,6 +78,8 @@ public partial class InstallViewModel : ViewModelBase
         }
 
         StatusText = $"Done: {succeeded}/{total} installed successfully";
+        if (succeeded > 0)
+            DidInstall = true;
         if (succeeded == total)
             ApkQueue.Clear();
 

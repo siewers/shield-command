@@ -64,10 +64,11 @@
         <ui:NavigationView Grid.Row="1"
                            x:Name="NavView"
                            PaneDisplayMode="Left"
+                           OpenPaneLength="200"
                            IsBackButtonVisible="False"
                            IsPaneToggleButtonVisible="True"
                            IsSettingsVisible="False"
-                           PaneTitle="Shield Manager"
+                           PaneTitle="Shield Command"
                            SelectionChanged="NavView_SelectionChanged">
             <ui:NavigationView.Content>
                 <ContentControl Content="{Binding CurrentPage}" Margin="24,16" />

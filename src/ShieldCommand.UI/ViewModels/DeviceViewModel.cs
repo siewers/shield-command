@@ -86,6 +86,24 @@ public partial class DeviceViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void ToggleAutoConnect(SavedDevice device)
+    {
+        _settingsService.SetAutoConnect(device.IpAddress, !device.AutoConnect);
+        LoadSavedDevices();
+    }
+
+    public async Task<bool> AutoConnectAsync()
+    {
+        var device = _settingsService.SavedDevices.FirstOrDefault(d => d.AutoConnect);
+        if (device == null)
+            return false;
+
+        IpAddress = device.IpAddress;
+        await ConnectAsync();
+        return IsConnected;
+    }
+
+    [RelayCommand]
     private async Task ConnectToSavedAsync(SavedDevice device)
     {
         IpAddress = device.IpAddress;

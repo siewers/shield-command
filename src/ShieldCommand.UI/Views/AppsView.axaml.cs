@@ -41,7 +41,11 @@ public partial class AppsView : UserControl
 
         await dialog.ShowAsync();
 
-        // Refresh apps list after dialog closes
-        appsVm.RefreshCommand.Execute(null);
+        // Refresh apps list only if something was installed
+        if (mainVm.InstallPage.DidInstall)
+        {
+            mainVm.InstallPage.ResetDidInstall();
+            appsVm.RefreshCommand.Execute(null);
+        }
     }
 }

@@ -46,6 +46,17 @@ public class SettingsService
         Save();
     }
 
+    public void SetAutoConnect(string ipAddress, bool autoConnect)
+    {
+        foreach (var device in _settings.SavedDevices)
+        {
+            device.AutoConnect = autoConnect
+                && device.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase);
+        }
+
+        Save();
+    }
+
     public void RemoveDevice(string ipAddress)
     {
         _settings.SavedDevices.RemoveAll(
