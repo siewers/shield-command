@@ -14,9 +14,9 @@ Shield Command connects to your NVIDIA Shield TV over Wi-Fi and gives you full v
 
 **Activity Monitor** — Live charts for CPU, memory, disk I/O, network, and thermals with configurable refresh rates.
 
-**Processes** — See every running process sorted by CPU usage, updated in real time.
+**Processes** — See every running process sorted by CPU usage, updated in real time. Right-click or double-click any process to view detailed info from `/proc` and `dumpsys package`.
 
-**App Management** — Browse installed apps, uninstall what you don't need, and install APKs with drag-and-drop.
+**App Management** — Browse installed apps, uninstall what you don't need, and install APKs with drag-and-drop. Double-click any app for full package details including version, SDK levels, install dates, and size.
 
 **System Info** — Device model, Android version, RAM, storage, and more at a glance.
 
@@ -32,6 +32,12 @@ Shield Command connects to your NVIDIA Shield TV over Wi-Fi and gives you full v
 - [ADB (Android Debug Bridge)](https://developer.android.com/tools/adb) installed
 - An NVIDIA Shield TV with **Developer Options** and **Network Debugging** enabled
 
+## Built With
+
+- [Avalonia UI](https://avaloniaui.net/) with [Fluent Avalonia](https://github.com/amwx/FluentAvalonia)
+- [LiveCharts2](https://livecharts.dev/) for real-time charting
+- [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/) for MVVM
+
 ## License
 
-Copyright 2026 Siewers Software
+[MIT](LICENSE)
