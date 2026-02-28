@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:models="using:ShieldCommander.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="ShieldCommander.UI.Views.ProcessesView"
+             x:DataType="vm:ProcessesViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+            <TextBlock Text="{Binding LoadText}"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding StatusText}"
+                       VerticalAlignment="Center"
+                       Foreground="Gray"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Processes}"
+                  SelectedItem="{Binding SelectedProcess}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserReorderColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  BorderThickness="0"
+                  x:Name="ProcessGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Process"
+                                    Binding="{Binding FullName}"
+                                    Width="*" />
+                <DataGridTextColumn Header="% CPU"
+                                    Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
+                                    Width="80" />
+                <DataGridTemplateColumn Header="Memory"
+                                        Width="100"
+                                        SortMemberPath="MemoryMb"
+                                        x:DataType="models:ProcessInfo">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:ProcessInfo">
+                            <TextBlock Text="{Binding MemoryDisplay}"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Kind"
+                                    Binding="{Binding Kind}"
+                                    Width="70" />
+                <DataGridTextColumn Header="PID"
+                                    Binding="{Binding Pid}"
+                                    Width="80" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

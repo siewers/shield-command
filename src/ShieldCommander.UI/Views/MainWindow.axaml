@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ShieldCommander.UI.ViewModels"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="ShieldCommander.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Width="900" Height="600"
+        MinWidth="700" MinHeight="450"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="38">
+
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="View">
+                <NativeMenu>
+                    <NativeMenuItem Header="Update Frequency">
+                        <NativeMenu>
+                            <NativeMenuItem Header="Very often (1 sec)" ToggleType="CheckBox" Click="UpdateFrequency_Click" />
+                            <NativeMenuItem Header="Often (2 sec)" ToggleType="CheckBox" Click="UpdateFrequency_Click" />
+                            <NativeMenuItem Header="Normally (5 sec)" ToggleType="CheckBox" IsChecked="True" Click="UpdateFrequency_Click" />
+                        </NativeMenu>
+                    </NativeMenuItem>
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="38,*">
+        <!-- Title bar overlay -->
+        <Grid Grid.Row="0" ColumnDefinitions="78,*,Auto">
+            <!-- Col 0: spacer for macOS traffic lights -->
+            <!-- Col 1: drag region (transparent, not hit testable) -->
+            <!-- Col 2: clickable status -->
+            <Button Grid.Column="2"
+                    x:Name="TitleBarStatusButton"
+                    Click="TitleBarStatusButton_Click"
+                    Background="#01000000"
+                    BorderThickness="0"
+                    Padding="12,6,16,6"
+                    VerticalAlignment="Stretch"
+                    Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Ellipse x:Name="ConnectionIndicator"
+                             Width="8" Height="8"
+                             Fill="#FF4444"
+                             VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ConnectionStatusText}"
+                               FontSize="12"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Main content -->
+        <ui:NavigationView Grid.Row="1"
+                           x:Name="NavView"
+                           PaneDisplayMode="Left"
+                           OpenPaneLength="200"
+                           IsBackButtonVisible="False"
+                           IsPaneToggleButtonVisible="True"
+                           IsSettingsVisible="False"
+                           PaneTitle="Shield Commander"
+                           SelectionChanged="NavView_SelectionChanged">
+            <ui:NavigationView.Content>
+                <ContentControl Content="{Binding CurrentPage}" Margin="24,16" />
+            </ui:NavigationView.Content>
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="System Info" Tag="SystemInfo"
+                                      IsEnabled="{Binding IsDeviceConnected}" />
+                <ui:NavigationViewItem Content="Apps" Tag="Apps"
+                                      IsEnabled="{Binding IsDeviceConnected}" />
+                <ui:NavigationViewItem Content="Activity Monitor" Tag="CPU"
+                                      IsEnabled="{Binding IsDeviceConnected}"
+                                      IsExpanded="True" SelectsOnInvoked="True">
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="CPU" Tag="CPU" />
+                        <ui:NavigationViewItem Content="Memory" Tag="Memory" />
+                        <ui:NavigationViewItem Content="Disk I/O" Tag="Disk" />
+                        <ui:NavigationViewItem Content="Network" Tag="Network" />
+                        <ui:NavigationViewItem Content="Thermals" Tag="Thermals" />
+                        <ui:NavigationViewItem Content="Processes" Tag="Processes" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+        </ui:NavigationView>
+    </Grid>
+</Window>

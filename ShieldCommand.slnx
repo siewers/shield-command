@@ -1,6 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/ShieldCommand.Core/ShieldCommand.Core.csproj" />
-    <Project Path="src/ShieldCommand.UI/ShieldCommand.UI.csproj" />
-  </Folder>
-</Solution>

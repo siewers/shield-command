@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="ShieldCommander.UI.Views.InstallView"
+             x:DataType="vm:InstallViewModel">
+
+    <DockPanel>
+
+        <!-- Drop zone -->
+        <Border DockPanel.Dock="Top"
+                Name="DropZone"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="2"
+                CornerRadius="8"
+                MinHeight="120"
+                Margin="0,0,0,12"
+                DragDrop.AllowDrop="True">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                <TextBlock Text="Drop APK files here"
+                           HorizontalAlignment="Center"
+                           FontSize="16" Foreground="Gray"/>
+                <Button Content="Browse..."
+                        Name="BrowseButton"
+                        HorizontalAlignment="Center"
+                        IsEnabled="{Binding !IsBusy}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Action buttons -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
+                    Margin="0,12,0,0">
+            <Button Content="Install All"
+                    Command="{Binding InstallAllCommand}"
+                    IsEnabled="{Binding !IsBusy}"
+                    Classes="accent"/>
+            <Button Content="Clear"
+                    Command="{Binding ClearQueueCommand}"
+                    IsEnabled="{Binding !IsBusy}"/>
+            <TextBlock Text="{Binding StatusText}"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"/>
+        </StackPanel>
+
+        <!-- Queued APKs -->
+        <ListBox ItemsSource="{Binding ApkQueue}"
+                 Margin="0,0,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Grid ColumnDefinitions="*,Auto" Margin="4">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <Button Grid.Column="1"
+                                Content="Remove"
+                                Command="{Binding $parent[ListBox].((vm:InstallViewModel)DataContext).RemoveApkCommand}"
+                                CommandParameter="{Binding}"
+                                Padding="8,4"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

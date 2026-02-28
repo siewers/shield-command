@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Publish Shield Command as a macOS .app bundle
+# Publish Shield Commander as a macOS .app bundle
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-PROJECT="$REPO_ROOT/src/ShieldCommand.UI/ShieldCommand.UI.csproj"
-APP_NAME="Shield Command"
+PROJECT="$REPO_ROOT/src/ShieldCommander.UI/ShieldCommander.UI.csproj"
+APP_NAME="Shield Commander"
 BUNDLE_ID="com.shieldcommand.app"
 OUTPUT_DIR="$REPO_ROOT/publish"
 APP_BUNDLE="$OUTPUT_DIR/$APP_NAME.app"
@@ -32,7 +32,7 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 cp -R "$OUTPUT_DIR/bin/"* "$APP_BUNDLE/Contents/MacOS/"
 
 # Copy icon
-cp "$REPO_ROOT/src/ShieldCommand.UI/Assets/app-icon.icns" \
+cp "$REPO_ROOT/src/ShieldCommander.UI/Assets/app-icon.icns" \
    "$APP_BUNDLE/Contents/Resources/app-icon.icns"
 
 # Create Info.plist
@@ -52,7 +52,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
     <key>CFBundleShortVersionString</key>
     <string>1.0.0</string>
     <key>CFBundleExecutable</key>
-    <string>ShieldCommand</string>
+    <string>ShieldCommander</string>
     <key>CFBundleIconFile</key>
     <string>app-icon</string>
     <key>CFBundlePackageType</key>

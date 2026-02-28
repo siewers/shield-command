@@ -1,0 +1,115 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="ShieldCommander.UI.Views.NetworkView"
+             x:DataType="vm:ActivityMonitorViewModel">
+
+    <DockPanel Margin="0,8,0,0">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding NetInSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+        <!-- macOS-style Network stats panel -->
+        <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                BorderBrush="#555555"
+                BorderThickness="1" CornerRadius="4">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Left: Packets in / out / per-sec -->
+                <Border Grid.Column="0"
+                        BorderBrush="#555555"
+                        BorderThickness="0,0,1,0" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="2" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Packets in:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetPacketsInText}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Packets out:" FontSize="12"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetPacketsOutText}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Packets in/sec:" FontSize="12"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetPacketsInPerSecText}"
+                                   FontSize="12" Foreground="#4DA6FF"
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Packets out/sec:" FontSize="12"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetPacketsOutPerSecText}"
+                                   FontSize="12" Foreground="#FF6B6B"
+                                   HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+                <!-- Center: Mini DATA chart -->
+                <Border Grid.Column="1"
+                        BorderBrush="#555555"
+                        BorderThickness="0,0,1,0" Padding="8,4">
+                    <StackPanel>
+                        <TextBlock Text="DATA" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,0,0,2"
+                                   Foreground="Gray"/>
+                        <Border BorderBrush="#555555"
+                                BorderThickness="1" CornerRadius="2">
+                            <lvc:CartesianChart Series="{Binding NetLoadSeries}"
+                                                XAxes="{Binding NetLoadXAxes}"
+                                                YAxes="{Binding NetLoadYAxes}"
+                                                Sections="{Binding NetLoadSections}"
+                                                Height="55"
+                                                LegendPosition="Hidden"
+                                                TooltipPosition="Hidden"
+                                                />
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <!-- Right: Data received / sent totals + per-sec -->
+                <Border Grid.Column="2" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="2" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Data received:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetDataInText}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Data sent:" FontSize="12"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetDataOutText}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Data received/sec:" FontSize="12"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetInSpeedText}"
+                                   FontSize="12" Foreground="#4DA6FF"
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Data sent/sec:" FontSize="12"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetOutSpeedText}"
+                                   FontSize="12" Foreground="#FF6B6B"
+                                   HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+        <Border BorderBrush="#555555"
+                BorderThickness="1" CornerRadius="4" Padding="8">
+            <Grid ColumnDefinitions="*,Auto">
+                <lvc:CartesianChart Series="{Binding NetSeries}"
+                                    XAxes="{Binding NetXAxes}"
+                                    YAxes="{Binding NetYAxes}"
+                                    ZoomMode="X"
+                                    LegendPosition="Hidden"
+                                    />
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding NetLegend}"
+                              VerticalAlignment="Top" Margin="12,8,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                <Border Width="12" Height="3" CornerRadius="1"
+                                        VerticalAlignment="Center">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding Color}"/>
+                                    </Border.Background>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" FontSize="12"
+                                           MinWidth="40"/>
+                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                           Foreground="#888888" MinWidth="60"
+                                           TextAlignment="Right"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

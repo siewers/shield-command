@@ -1,14 +1,14 @@
-# Shield Command
+# Shield Commander
 
 <p align="center">
-  <img src="src/ShieldCommand.UI/Assets/app-icon.png" width="128" alt="Shield Command icon" />
+  <img src="src/ShieldCommander.UI/Assets/app-icon.png" width="128" alt="Shield Commander icon" />
 </p>
 
 <p align="center">
   <strong>Monitoring and app management for your NVIDIA Shield TV</strong>
 </p>
 
-Shield Command connects to your NVIDIA Shield TV over Wi-Fi and gives you full visibility into what's happening on your device — real-time performance charts, running processes, and complete control over installed apps.
+Shield Commander connects to your NVIDIA Shield TV over Wi-Fi and gives you full visibility into what's happening on your device — real-time performance charts, running processes, and complete control over installed apps.
 
 ## Features
 

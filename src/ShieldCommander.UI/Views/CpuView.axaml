@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="ShieldCommander.UI.Views.CpuView"
+             x:DataType="vm:ActivityMonitorViewModel">
+
+    <DockPanel Margin="0,8,0,0">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding CpuUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
+        <!-- macOS-style CPU stats panel -->
+        <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                BorderBrush="#555555"
+                BorderThickness="1" CornerRadius="4">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Left: System / User / Idle -->
+                <Border Grid.Column="0"
+                        BorderBrush="#555555"
+                        BorderThickness="0,0,1,0" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
+                          RowSpacing="2" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="System:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CpuSystemText}"
+                                   FontSize="12" Foreground="#FF6B6B"
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="User:" FontSize="12"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CpuUserText}"
+                                   FontSize="12" Foreground="#4DA6FF"
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Idle:" FontSize="12"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CpuIdleText}"
+                                   FontSize="12" Foreground="Gray"
+                                   HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+                <!-- Center: Mini CPU load chart -->
+                <Border Grid.Column="1"
+                        BorderBrush="#555555"
+                        BorderThickness="0,0,1,0" Padding="8,4">
+                    <StackPanel>
+                        <TextBlock Text="CPU LOAD" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,0,0,2"
+                                   Foreground="Gray"/>
+                        <Border BorderBrush="#555555"
+                                BorderThickness="1" CornerRadius="2">
+                            <lvc:CartesianChart Series="{Binding CpuLoadSeries}"
+                                                XAxes="{Binding CpuLoadXAxes}"
+                                                YAxes="{Binding CpuLoadYAxes}"
+                                                Height="55"
+                                                LegendPosition="Hidden"
+                                                TooltipPosition="Hidden"
+                                                />
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <!-- Right: Threads / Processes -->
+                <Border Grid.Column="2" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
+                          RowSpacing="2" ColumnSpacing="12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ThreadCount}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Processes:" FontSize="12"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ProcessCount}"
+                                   FontSize="12" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+        <Border BorderBrush="#555555"
+                BorderThickness="1" CornerRadius="4" Padding="8">
+            <Grid ColumnDefinitions="*,Auto">
+                <lvc:CartesianChart Series="{Binding CpuSeries}"
+                                    XAxes="{Binding CpuXAxes}"
+                                    YAxes="{Binding CpuYAxes}"
+                                    ZoomMode="X"
+                                    LegendPosition="Hidden"
+                                    />
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
+                              VerticalAlignment="Top" Margin="12,8,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                <Border Width="12" Height="3" CornerRadius="1"
+                                        VerticalAlignment="Center">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding Color}"/>
+                                    </Border.Background>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" FontSize="12"
+                                           MinWidth="40"/>
+                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                           Foreground="#888888" MinWidth="60"
+                                           TextAlignment="Right"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

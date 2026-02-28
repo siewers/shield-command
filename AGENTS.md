@@ -1,4 +1,4 @@
-## Shield Command project guide for agents
+## Shield Commander project guide for agents
 
 ### Coding conventions
 - Target framework `net10.0` with nullable and implicit usings enabled. Keep Core types dependency-free beyond the BCL.

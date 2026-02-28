@@ -15,19 +15,19 @@ jobs:
         include:
           - os: macos-latest
             rid: osx-arm64
-            artifact: ShieldCommand-macos-arm64.dmg
+            artifact: ShieldCommander-macos-arm64.dmg
           - os: macos-latest
             rid: osx-x64
-            artifact: ShieldCommand-macos-x64.dmg
+            artifact: ShieldCommander-macos-x64.dmg
           - os: windows-latest
             rid: win-x64
-            artifact: ShieldCommand-windows-x64.zip
+            artifact: ShieldCommander-windows-x64.zip
           - os: ubuntu-latest
             rid: linux-x64
-            artifact: ShieldCommand-linux-x64.tar.gz
+            artifact: ShieldCommander-linux-x64.tar.gz
           - os: ubuntu-latest
             rid: linux-arm64
-            artifact: ShieldCommand-linux-arm64.tar.gz
+            artifact: ShieldCommander-linux-arm64.tar.gz
 
     runs-on: ${{ matrix.os }}
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish src/ShieldCommand.UI/ShieldCommand.UI.csproj
+          dotnet publish src/ShieldCommander.UI/ShieldCommander.UI.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained true
@@ -52,14 +52,14 @@ jobs:
         if: startsWith(matrix.rid, 'osx')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          APP="publish/Shield Command.app"
+          APP="publish/Shield Commander.app"
 
           mkdir -p "$APP/Contents/MacOS"
           mkdir -p "$APP/Contents/Resources"
 
           cp -R publish/bin/* "$APP/Contents/MacOS/"
 
-          cp src/ShieldCommand.UI/Assets/app-icon.icns \
+          cp src/ShieldCommander.UI/Assets/app-icon.icns \
              "$APP/Contents/Resources/app-icon.icns"
 
           cat > "$APP/Contents/Info.plist" << EOF
@@ -68,9 +68,9 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>CFBundleName</key>
-              <string>Shield Command</string>
+              <string>Shield Commander</string>
               <key>CFBundleDisplayName</key>
-              <string>Shield Command</string>
+              <string>Shield Commander</string>
               <key>CFBundleIdentifier</key>
               <string>com.shieldcommand.app</string>
               <key>CFBundleVersion</key>
@@ -78,7 +78,7 @@ jobs:
               <key>CFBundleShortVersionString</key>
               <string>${VERSION}</string>
               <key>CFBundleExecutable</key>
-              <string>ShieldCommand</string>
+              <string>ShieldCommander</string>
               <key>CFBundleIconFile</key>
               <string>app-icon</string>
               <key>CFBundlePackageType</key>
@@ -93,8 +93,8 @@ jobs:
           </plist>
           EOF
 
-          hdiutil create -volname "Shield Command" \
-            -srcfolder "publish/Shield Command.app" \
+          hdiutil create -volname "Shield Commander" \
+            -srcfolder "publish/Shield Commander.app" \
             -ov -format UDZO \
             "${{ matrix.artifact }}"
 

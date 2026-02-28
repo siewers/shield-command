@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="ShieldCommander.UI.Views.AppsView"
+             x:DataType="vm:AppsViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+                <Button Content="Refresh"
+                        Command="{Binding RefreshCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        Classes="accent"/>
+                <Button Content="Install APK"
+                        Name="InstallApkButton"
+                        IsEnabled="{Binding !IsBusy}"/>
+                <TextBlock Text="{Binding StatusText}"
+                           VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Packages}"
+                  SelectedItem="{Binding SelectedPackage}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserReorderColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  BorderThickness="0"
+                  x:Name="PackageGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Package Name"
+                                    Binding="{Binding PackageName}"
+                                    Width="*" />
+                <DataGridTextColumn Header="Version"
+                                    Binding="{Binding VersionName}"
+                                    Width="Auto" />
+                <DataGridTemplateColumn Header="Size"
+                                        MinWidth="100"
+                                        Width="Auto"
+                                        SortMemberPath="CodeSize"
+                                        x:DataType="vm:PackageRow">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:PackageRow">
+                            <TextBlock Text="{Binding SizeDisplay}"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>
