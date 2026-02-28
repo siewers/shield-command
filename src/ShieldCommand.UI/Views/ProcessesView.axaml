@@ -19,24 +19,30 @@
         </StackPanel>
 
         <DataGrid ItemsSource="{Binding Processes}"
+                  SelectedItem="{Binding SelectedProcess}"
                   AutoGenerateColumns="False"
                   CanUserSortColumns="True"
                   CanUserResizeColumns="True"
                   CanUserReorderColumns="False"
                   IsReadOnly="True"
+                  SelectionMode="Single"
                   GridLinesVisibility="None"
                   HeadersVisibility="Column"
-                  BorderThickness="0">
+                  BorderThickness="0"
+                  x:Name="ProcessGrid">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="CPU %"
-                                    Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
-                                    Width="80" />
-                <DataGridTextColumn Header="PID"
-                                    Binding="{Binding Pid}"
-                                    Width="80" />
                 <DataGridTextColumn Header="Process"
                                     Binding="{Binding Name}"
                                     Width="*" />
+                <DataGridTextColumn Header="% CPU"
+                                    Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
+                                    Width="80" />
+                <DataGridTextColumn Header="Memory"
+                                    Binding="{Binding MemoryMb, StringFormat={}{0:F1} MB}"
+                                    Width="100" />
+                <DataGridTextColumn Header="PID"
+                                    Binding="{Binding Pid}"
+                                    Width="80" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

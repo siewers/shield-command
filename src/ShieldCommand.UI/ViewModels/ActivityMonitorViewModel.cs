@@ -8,6 +8,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
 using ShieldCommand.Core.Models;
 using ShieldCommand.Core.Services;
+using ShieldCommand.UI.Models;
 using SkiaSharp;
 
 namespace ShieldCommand.UI.ViewModels;
@@ -24,28 +25,8 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     private readonly AdbService _adbService;
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
-    private TimeSpan _chartWindow = GetChartWindow("5s");
-    private TimeSpan _miniWindow = GetMiniWindow("5s");
-
-    private static TimeSpan GetChartWindow(string interval) => interval switch
-    {
-        "1s" => TimeSpan.FromMinutes(1),
-        "2s" => TimeSpan.FromMinutes(2),
-        "5s" => TimeSpan.FromMinutes(5),
-        "10s" => TimeSpan.FromMinutes(5),
-        "30s" => TimeSpan.FromMinutes(10),
-        _ => TimeSpan.FromMinutes(5),
-    };
-
-    private static TimeSpan GetMiniWindow(string interval) => interval switch
-    {
-        "1s" => TimeSpan.FromSeconds(15),
-        "2s" => TimeSpan.FromSeconds(20),
-        "5s" => TimeSpan.FromSeconds(30),
-        "10s" => TimeSpan.FromMinutes(1),
-        "30s" => TimeSpan.FromMinutes(3),
-        _ => TimeSpan.FromSeconds(30),
-    };
+    private TimeSpan _chartWindow = RefreshRate.Default.ChartWindow;
+    private TimeSpan _miniWindow = RefreshRate.Default.MiniWindow;
 
     private static readonly SKColor[] ZoneColors =
     [
@@ -63,13 +44,12 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     [ObservableProperty] private bool _isMonitoring;
 
     // Refresh interval
-    public string[] RefreshIntervals { get; } = ["1s", "2s", "5s", "10s", "30s"];
-    [ObservableProperty] private string _selectedRefreshInterval = "5s";
+    [ObservableProperty] private RefreshRate _selectedRefreshRate = RefreshRate.Default;
 
-    partial void OnSelectedRefreshIntervalChanged(string value)
+    partial void OnSelectedRefreshRateChanged(RefreshRate value)
     {
-        _chartWindow = GetChartWindow(value);
-        _miniWindow = GetMiniWindow(value);
+        _chartWindow = value.ChartWindow;
+        _miniWindow = value.MiniWindow;
 
         if (!IsMonitoring) return;
         // Cancel old loop and start a new one with the new interval
@@ -77,19 +57,10 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         _cts?.Dispose();
         _timer?.Dispose();
         _cts = new CancellationTokenSource();
-        _timer = new PeriodicTimer(ParseInterval(value));
+        _timer = new PeriodicTimer(value.Interval);
         StartMonitoringLoop();
     }
 
-    private static TimeSpan ParseInterval(string interval) => interval switch
-    {
-        "1s" => TimeSpan.FromSeconds(1),
-        "2s" => TimeSpan.FromSeconds(2),
-        "5s" => TimeSpan.FromSeconds(5),
-        "10s" => TimeSpan.FromSeconds(10),
-        "30s" => TimeSpan.FromSeconds(30),
-        _ => TimeSpan.FromSeconds(5),
-    };
 
     [ObservableProperty] private string _cpuUsageText = "—";
     [ObservableProperty] private string _cpuUserText = "—";
@@ -133,7 +104,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] CpuXAxes { get; }
     public Axis[] CpuYAxes { get; } =
     [
-        new Axis { Name = "%", MinLimit = 0, MaxLimit = 100 }
+        new Axis { Name = "%", MinLimit = 0, MaxLimit = 100, Labeler = v => v.ToString("F1") }
     ];
 
     // Mini CPU load chart (stacked user + system)
@@ -156,7 +127,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] MemXAxes { get; }
     public Axis[] MemYAxes { get; } =
     [
-        new Axis { Name = "MB", MinLimit = 0 }
+        new Axis { Name = "MB", MinLimit = 0, Labeler = v => v.ToString("F1") }
     ];
 
     private bool _memMaxSet;
@@ -165,6 +136,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     // Mini memory pressure chart (stacked: used + cached)
     private readonly ObservableCollection<DateTimePoint> _miniMemUsedPoints = [];
     private readonly ObservableCollection<DateTimePoint> _miniMemCachedPoints = [];
+    private readonly ObservableCollection<DateTimePoint> _miniMemFreePoints = [];
     private readonly DateTimeAxis _miniMemXAxis;
 
     public ObservableCollection<ISeries> MemLoadSeries { get; } = [];
@@ -192,7 +164,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] ThermalXAxes { get; }
     public Axis[] ThermalYAxes { get; } =
     [
-        new Axis { Name = "°C" }
+        new Axis { Name = "°C", Labeler = v => v.ToString("F1") }
     ];
 
     // Mini thermal chart (avg + hottest zone trend)
@@ -224,7 +196,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] DiskXAxes { get; }
     public Axis[] DiskYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0 }
+        new Axis { Name = "KB/s", MinLimit = 0, Labeler = v => v.ToString("F1") }
     ];
 
     public ObservableCollection<ISeries> DiskLoadSeries { get; } = [];
@@ -256,7 +228,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] NetXAxes { get; }
     public Axis[] NetYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0 }
+        new Axis { Name = "KB/s", MinLimit = 0, Labeler = v => v.ToString("F1") }
     ];
 
     public ObservableCollection<ISeries> NetLoadSeries { get; } = [];
@@ -347,18 +319,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
             Name = "Used MB",
         });
 
-        // Mini memory pressure chart (stacked: used + cached)
-        MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
-        {
-            Values = _miniMemCachedPoints,
-            Fill = new SolidColorPaint(SKColors.DodgerBlue.WithAlpha(180)),
-            GeometrySize = 0,
-            GeometryFill = null,
-            GeometryStroke = null,
-            Stroke = new SolidColorPaint(SKColors.DodgerBlue, 1f),
-            LineSmoothness = 0,
-            Name = "Cached",
-        });
+        // Mini memory pressure chart (stacked bottom→top: used, cached, free)
         MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
         {
             Values = _miniMemUsedPoints,
@@ -366,9 +327,31 @@ public partial class ActivityMonitorViewModel : ViewModelBase
             GeometrySize = 0,
             GeometryFill = null,
             GeometryStroke = null,
-            Stroke = new SolidColorPaint(SKColors.OrangeRed, 1f),
+            Stroke = null,
             LineSmoothness = 0,
             Name = "Used",
+        });
+        MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
+        {
+            Values = _miniMemCachedPoints,
+            Fill = new SolidColorPaint(SKColors.DodgerBlue.WithAlpha(180)),
+            GeometrySize = 0,
+            GeometryFill = null,
+            GeometryStroke = null,
+            Stroke = null,
+            LineSmoothness = 0,
+            Name = "Cached",
+        });
+        MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
+        {
+            Values = _miniMemFreePoints,
+            Fill = new SolidColorPaint(SKColors.LimeGreen.WithAlpha(120)),
+            GeometrySize = 0,
+            GeometryFill = null,
+            GeometryStroke = null,
+            Stroke = null,
+            LineSmoothness = 0,
+            Name = "Free",
         });
 
         // Disk I/O series
@@ -504,7 +487,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
         IsMonitoring = true;
         _cts = new CancellationTokenSource();
-        _timer = new PeriodicTimer(ParseInterval(SelectedRefreshInterval));
+        _timer = new PeriodicTimer(SelectedRefreshRate.Interval);
         StatusText = "Starting...";
 
         // Initial poll immediately
@@ -717,10 +700,13 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         // Mini memory pressure chart (used pct + cached pct)
         var usedPct = appUsedMb / totalMb * 100.0;
         var cachedPct = cachedMb / totalMb * 100.0;
+        var freePct = freeMb / totalMb * 100.0;
         _miniMemUsedPoints.Add(new DateTimePoint(now, usedPct));
         _miniMemCachedPoints.Add(new DateTimePoint(now, cachedPct));
+        _miniMemFreePoints.Add(new DateTimePoint(now, freePct));
         TrimOldPoints(_miniMemUsedPoints, now, mini: true);
         TrimOldPoints(_miniMemCachedPoints, now, mini: true);
+        TrimOldPoints(_miniMemFreePoints, now, mini: true);
         UpdateAxisLimits(_miniMemXAxis, mini: true);
         MemLoadYAxes[0].MaxLimit = 100;
     }

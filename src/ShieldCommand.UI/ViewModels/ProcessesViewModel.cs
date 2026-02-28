@@ -14,8 +14,9 @@ public partial class ProcessesViewModel : ViewModelBase
     private CancellationTokenSource? _cts;
 
     // Previous snapshot for computing CPU% deltas
-    private Dictionary<int, (long Jiffies, string Name)> _prevProcs = new();
+    private Dictionary<int, (long Jiffies, string Name, long RssPages)> _prevProcs = new();
     private long _prevTotalJiffies;
+    private long _prevIdleJiffies;
 
     [ObservableProperty]
     private bool _isMonitoring;
@@ -26,7 +27,28 @@ public partial class ProcessesViewModel : ViewModelBase
     [ObservableProperty]
     private string _loadText = "";
 
+    [ObservableProperty]
+    private ProcessInfo? _selectedProcess;
+
     public ObservableCollection<ProcessInfo> Processes { get; } = [];
+
+    public bool IsPollingSuspended { get; set; }
+
+    [RelayCommand]
+    private async Task KillProcessAsync()
+    {
+        if (SelectedProcess is not { } proc) return;
+        var result = await _adbService.KillProcessAsync(proc.Pid, proc.Name);
+        if (result.Success)
+        {
+            Processes.Remove(proc);
+            StatusText = $"Killed {proc.Name} (PID {proc.Pid})";
+        }
+        else
+        {
+            StatusText = $"Failed to kill PID {proc.Pid}: {result.Error}";
+        }
+    }
 
     public ProcessesViewModel(AdbService adbService, ActivityMonitorViewModel activityMonitor)
     {
@@ -35,7 +57,7 @@ public partial class ProcessesViewModel : ViewModelBase
 
         _activityMonitor.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ActivityMonitorViewModel.SelectedRefreshInterval) && IsMonitoring)
+            if (e.PropertyName == nameof(ActivityMonitorViewModel.SelectedRefreshRate) && IsMonitoring)
             {
                 Stop();
                 _ = StartAsync();
@@ -49,17 +71,18 @@ public partial class ProcessesViewModel : ViewModelBase
 
         IsMonitoring = true;
         _cts = new CancellationTokenSource();
-        _timer = new PeriodicTimer(ParseInterval(_activityMonitor.SelectedRefreshInterval));
+        _timer = new PeriodicTimer(_activityMonitor.SelectedRefreshRate.Interval);
         StatusText = "Starting...";
 
         // Take two snapshots back-to-back so the first render has CPU% deltas
         if (_prevProcs.Count == 0)
         {
-            var (baseProcs, baseJiffies) = await _adbService.GetProcessSnapshotAsync();
+            var (baseProcs, baseJiffies, baseIdle) = await _adbService.GetProcessSnapshotAsync();
             if (baseProcs.Count > 0)
             {
                 _prevProcs = baseProcs;
                 _prevTotalJiffies = baseJiffies;
+                _prevIdleJiffies = baseIdle;
                 await Task.Delay(500);
             }
         }
@@ -79,16 +102,6 @@ public partial class ProcessesViewModel : ViewModelBase
         StatusText = "Monitoring stopped";
     }
 
-    private static TimeSpan ParseInterval(string interval) => interval switch
-    {
-        "1s" => TimeSpan.FromSeconds(1),
-        "2s" => TimeSpan.FromSeconds(2),
-        "5s" => TimeSpan.FromSeconds(5),
-        "10s" => TimeSpan.FromSeconds(10),
-        "30s" => TimeSpan.FromSeconds(30),
-        _ => TimeSpan.FromSeconds(5),
-    };
-
     private void StartMonitoringLoop()
     {
         var timer = _timer;
@@ -99,7 +112,8 @@ public partial class ProcessesViewModel : ViewModelBase
             {
                 while (timer is not null && await timer.WaitForNextTickAsync(cts!.Token))
                 {
-                    await PollAsync();
+                    if (!IsPollingSuspended)
+                        await PollAsync();
                 }
             }
             catch (OperationCanceledException)
@@ -110,7 +124,7 @@ public partial class ProcessesViewModel : ViewModelBase
 
     private async Task PollAsync()
     {
-        var (procs, totalJiffies) = await _adbService.GetProcessSnapshotAsync();
+        var (procs, totalJiffies, idleJiffies) = await _adbService.GetProcessSnapshotAsync();
         if (procs.Count == 0)
             return; // Bad read, skip this cycle
 
@@ -118,7 +132,7 @@ public partial class ProcessesViewModel : ViewModelBase
         var deltaTotalJiffies = totalJiffies - _prevTotalJiffies;
         var hasPrev = deltaTotalJiffies > 0 && _prevProcs.Count > 0;
 
-        foreach (var (pid, (jiffies, name)) in procs)
+        foreach (var (pid, (jiffies, name, rssPages)) in procs)
         {
             var cpuPct = 0.0;
             if (hasPrev && _prevProcs.TryGetValue(pid, out var prev))
@@ -131,22 +145,73 @@ public partial class ProcessesViewModel : ViewModelBase
             // Skip kernel threads (pid <= 2 or name starts with common kernel prefixes)
             if (pid <= 2) continue;
 
-            processes.Add(new ProcessInfo(pid, name, Math.Round(cpuPct, 1)));
+            var memMb = Math.Round(rssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
+            processes.Add(new ProcessInfo(pid, name, Math.Round(cpuPct, 1), memMb));
+        }
+
+        // System-wide CPU% from /proc/stat idle delta (not the sum of per-process CPU%).
+        // Per-process sum is always lower because kernel/irq/iowait time isn't tied to any PID.
+        var systemCpuPct = 0.0;
+        if (hasPrev)
+        {
+            var deltaIdle = idleJiffies - _prevIdleJiffies;
+            systemCpuPct = (double)(deltaTotalJiffies - deltaIdle) / deltaTotalJiffies * 100.0;
         }
 
         _prevProcs = procs;
         _prevTotalJiffies = totalJiffies;
+        _prevIdleJiffies = idleJiffies;
 
         var sorted = processes.OrderByDescending(p => p.CpuPercent).ToList();
 
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-            Processes.Clear();
-            foreach (var p in sorted)
-                Processes.Add(p);
+            // In-place sync: update existing ProcessInfo objects via INotifyPropertyChanged
+            // instead of Clear()+re-add. This avoids destroying items that the UI holds
+            // references to (selection, context menus, scroll position).
+            var newByPid = sorted.ToDictionary(p => p.Pid);
 
-            var totalCpu = sorted.Sum(p => p.CpuPercent);
-            LoadText = $"Total CPU: {totalCpu:F1}%";
+            // Remove processes that no longer exist
+            for (var i = Processes.Count - 1; i >= 0; i--)
+            {
+                if (!newByPid.ContainsKey(Processes[i].Pid))
+                    Processes.RemoveAt(i);
+            }
+
+            // Update existing and insert new processes in sorted order
+            var existingByPid = new Dictionary<int, ProcessInfo>();
+            foreach (var p in Processes)
+                existingByPid[p.Pid] = p;
+
+            for (var i = 0; i < sorted.Count; i++)
+            {
+                var incoming = sorted[i];
+                if (i < Processes.Count && Processes[i].Pid == incoming.Pid)
+                {
+                    // Same position — update in place
+                    Processes[i].Name = incoming.Name;
+                    Processes[i].CpuPercent = incoming.CpuPercent;
+                    Processes[i].MemoryMb = incoming.MemoryMb;
+                }
+                else if (existingByPid.TryGetValue(incoming.Pid, out var existing))
+                {
+                    // Exists but wrong position — move it
+                    var oldIndex = Processes.IndexOf(existing);
+                    if (oldIndex >= 0 && oldIndex != i)
+                        Processes.Move(oldIndex, i);
+                    existing.Name = incoming.Name;
+                    existing.CpuPercent = incoming.CpuPercent;
+                    existing.MemoryMb = incoming.MemoryMb;
+                }
+                else
+                {
+                    // New process
+                    Processes.Insert(i, incoming);
+                    existingByPid[incoming.Pid] = incoming;
+                }
+            }
+
+            LoadText = $"Total CPU: {systemCpuPct:F1}%";
             StatusText = $"{sorted.Count} processes";
         });
     }

@@ -21,11 +21,19 @@ public class ProcessInfo : INotifyPropertyChanged
         set { if (_cpuPercent != value) { _cpuPercent = value; OnPropertyChanged(); } }
     }
 
-    public ProcessInfo(int pid, string name, double cpuPercent)
+    private double _memoryMb;
+    public double MemoryMb
+    {
+        get => _memoryMb;
+        set { if (_memoryMb != value) { _memoryMb = value; OnPropertyChanged(); } }
+    }
+
+    public ProcessInfo(int pid, string name, double cpuPercent, double memoryMb)
     {
         Pid = pid;
         _name = name;
         _cpuPercent = cpuPercent;
+        _memoryMb = memoryMb;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

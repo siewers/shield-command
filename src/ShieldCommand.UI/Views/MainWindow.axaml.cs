@@ -10,6 +10,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
+using ShieldCommand.UI.Models;
 using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
@@ -200,13 +201,9 @@ public partial class MainWindow : Window
             foreach (var item in parentMenu.Items.OfType<NativeMenuItem>())
                 item.IsChecked = item == menuItem;
 
-            // Extract seconds from header like "Very often (1 sec)" → "1s"
-            var start = header.IndexOf('(') + 1;
-            var end = header.IndexOf(' ', start);
-            if (start > 0 && end > start)
-            {
-                vm.ActivityMonitorPage.SelectedRefreshInterval = header[start..end] + "s";
-            }
+            var rate = RefreshRate.All.FirstOrDefault(r => r.Label == header);
+            if (rate is not null)
+                vm.ActivityMonitorPage.SelectedRefreshRate = rate;
         }
     }
 

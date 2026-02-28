@@ -147,6 +147,56 @@ public class AdbService
         return await RunAdbAsync($"{deviceArg} uninstall {packageName}".Trim());
     }
 
+    /// Tries am force-stop first (works for app packages without root), then falls back
+    /// to kill -9 (requires same UID — only works for shell-owned or same-user processes).
+    public async Task<AdbResult> KillProcessAsync(int pid, string processName, string? deviceSerial = null)
+    {
+        var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
+        var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
+
+        // Resolve full package name from /proc/[pid]/cmdline (comm in /proc/stat is truncated to 15 chars).
+        // Uses a one-off adb call, not the persistent session — cmdline contains null bytes
+        // that corrupt the session's end-marker detection.
+        var cmdlineResult = await RunAdbAsync($"{prefix} \"cat /proc/{pid}/cmdline\"", strictCheck: false);
+        var packageName = cmdlineResult.Output?.Trim().Split('\0', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+                          ?? processName;
+
+        // First try am force-stop with the package name (works for app packages)
+        var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
+        string? output = null;
+
+        if (_session is not null)
+            output = await RunShellAsync(forceStopCmd);
+
+        if (output is null)
+        {
+            var result = await RunAdbAsync($"{prefix} \"{forceStopCmd}\"", strictCheck: false);
+            output = result.Output;
+        }
+
+        output = output?.Trim() ?? "";
+        if (output.Contains("EXIT:0") && !output.Contains("Error"))
+            return new AdbResult(true, output);
+
+        // Fall back to kill -9 for non-app processes
+        var killCmd = $"kill -9 {pid} 2>&1; echo EXIT:$?";
+        output = null;
+
+        if (_session is not null)
+            output = await RunShellAsync(killCmd);
+
+        if (output is null)
+        {
+            var result = await RunAdbAsync($"{prefix} \"{killCmd}\"", strictCheck: false);
+            output = result.Output;
+        }
+
+        output = output?.Trim() ?? "";
+        var success = output.Contains("EXIT:0");
+        var error = output.Replace("EXIT:0", "").Replace("EXIT:1", "").Trim();
+        return new AdbResult(success, output, error);
+    }
+
     public async Task<DeviceInfo> GetDeviceInfoAsync(string? deviceSerial = null, bool dynamicOnly = false)
     {
         var info = new DeviceInfo();
@@ -528,7 +578,7 @@ public class AdbService
     /// Reads /proc/stat total jiffies and per-process jiffies + names from /proc/[pid]/stat.
     /// Returns (perProcessJiffies, totalCpuJiffies).
     /// </summary>
-    public async Task<(Dictionary<int, (long Jiffies, string Name)> Procs, long TotalJiffies)>
+    public async Task<(Dictionary<int, (long Jiffies, string Name, long RssPages)> Procs, long TotalJiffies, long IdleJiffies)>
         GetProcessSnapshotAsync(string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
@@ -550,11 +600,12 @@ public class AdbService
             output = result.Output;
         }
 
-        var procs = new Dictionary<int, (long Jiffies, string Name)>();
+        var procs = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
         var totalJiffies = 0L;
+        var idleJiffies = 0L;
 
         if (string.IsNullOrWhiteSpace(output))
-            return (procs, totalJiffies);
+            return (procs, totalJiffies, idleJiffies);
 
         var pastSeparator = false;
 
@@ -572,6 +623,9 @@ public class AdbService
                     var fields = trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                     for (var i = 1; i < fields.Length; i++)
                         if (long.TryParse(fields[i], out var v)) totalJiffies += v;
+                    // fields[4] is idle
+                    if (fields.Length > 4)
+                        long.TryParse(fields[4], out idleJiffies);
                 }
                 continue;
             }
@@ -590,16 +644,17 @@ public class AdbService
                 : pid.ToString();
 
             var afterComm = trimmed[(commEnd + 1)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime
-            if (afterComm.Length < 13) continue;
+            // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime ... [21]=rss (pages)
+            if (afterComm.Length < 22) continue;
 
             if (!long.TryParse(afterComm[11], out var utime)) continue;
             if (!long.TryParse(afterComm[12], out var stime)) continue;
+            long.TryParse(afterComm[21], out var rssPages);
 
-            procs[pid] = (utime + stime, name);
+            procs[pid] = (utime + stime, name, rssPages);
         }
 
-        return (procs, totalJiffies);
+        return (procs, totalJiffies, idleJiffies);
     }
 
     private Task<AdbResult> RunAdbAsync(string arguments) => RunAdbAsync(arguments, strictCheck: true);
