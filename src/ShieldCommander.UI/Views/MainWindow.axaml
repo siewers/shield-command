@@ -48,14 +48,14 @@
                     Padding="12,6,16,6"
                     VerticalAlignment="Stretch"
                     Cursor="Hand">
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="6"
+                            VerticalAlignment="Center">
                     <Ellipse x:Name="ConnectionIndicator"
                              Width="8" Height="8"
                              Fill="#FF4444"
-                             VerticalAlignment="Center"/>
+                             Margin="0,0,0,2"/>
                     <TextBlock Text="{Binding ConnectionStatusText}"
-                               FontSize="12"
-                               VerticalAlignment="Center"/>
+                               FontSize="12"/>
                 </StackPanel>
             </Button>
         </Grid>
