@@ -15,10 +15,10 @@ jobs:
         include:
           - os: macos-latest
             rid: osx-arm64
-            artifact: ShieldCommand-macos-arm64.zip
+            artifact: ShieldCommand-macos-arm64.dmg
           - os: macos-latest
             rid: osx-x64
-            artifact: ShieldCommand-macos-x64.zip
+            artifact: ShieldCommand-macos-x64.dmg
           - os: windows-latest
             rid: win-x64
             artifact: ShieldCommand-windows-x64.zip
@@ -93,8 +93,10 @@ jobs:
           </plist>
           EOF
 
-          cd publish
-          zip -r -y "../${{ matrix.artifact }}" "Shield Command.app"
+          hdiutil create -volname "Shield Command" \
+            -srcfolder "publish/Shield Command.app" \
+            -ov -format UDZO \
+            "${{ matrix.artifact }}"
 
       - name: Package Windows
         if: matrix.rid == 'win-x64'
@@ -127,3 +129,7 @@ jobs:
         with:
           generate_release_notes: true
           files: artifacts/*
+          append_body: true
+          body: |
+            ## macOS
+            The app is not signed with an Apple Developer certificate. To open it, right-click the app and select **Open**, then confirm in the dialog.
