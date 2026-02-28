@@ -1,10 +1,9 @@
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using ShieldCommand.UI.Helpers;
 using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
@@ -68,8 +67,7 @@ public sealed partial class ProcessesView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                CreateMenuItem($"Search Google for \"{searchName}\"",
-                    () => OpenBrowser($"https://www.google.com/search?q=what+is+%22{Uri.EscapeDataString(searchName)}%22+android")),
+                MenuHelper.CreateGoogleSearchItem(searchName),
                 new Separator(),
                 new MenuItem
                 {
@@ -87,26 +85,4 @@ public sealed partial class ProcessesView : UserControl
         flyout.ShowAt(ProcessGrid, true);
     }
 
-    private static MenuItem CreateMenuItem(string header, Action onClick)
-    {
-        var item = new MenuItem { Header = header };
-        item.Click += (_, _) => onClick();
-        return item;
-    }
-
-    private static void OpenBrowser(string url)
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            Process.Start("open", url);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        else
-        {
-            Process.Start("xdg-open", url);
-        }
-    }
 }

@@ -120,18 +120,12 @@ public sealed class AdbService
             .ToList();
 
         var infoTasks = packageNames.Select(name => GetPackageInfoAsync(name, deviceSerial));
-        var infos = await Task.WhenAll(infoTasks);
-
-        for (var i = 0; i < packageNames.Count; i++)
-        {
-            var info = infos[i];
-            packages.Add(new InstalledPackage(packageNames[i], info.VersionName, info.VersionCode));
-        }
+        packages.AddRange(await Task.WhenAll(infoTasks));
 
         return packages.OrderBy(p => p.PackageName).ToList();
     }
 
-    private async Task<(string? VersionName, string? VersionCode)> GetPackageInfoAsync(
+    private async Task<InstalledPackage> GetPackageInfoAsync(
         string packageName, string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
@@ -139,11 +133,18 @@ public sealed class AdbService
 
         if (!result.Success)
         {
-            return (null, null);
+            return new InstalledPackage(packageName);
         }
 
         string? versionName = null;
         string? versionCode = null;
+        string? installerPackageName = null;
+        string? firstInstallTime = null;
+        string? lastUpdateTime = null;
+        string? targetSdk = null;
+        string? minSdk = null;
+        string? dataDir = null;
+        string? uid = null;
 
         foreach (var line in result.Output.Split('\n'))
         {
@@ -159,14 +160,40 @@ public sealed class AdbService
                 var spaceIdx = value.IndexOf(' ');
                 versionCode = spaceIdx > 0 ? value[..spaceIdx] : value;
             }
-
-            if (versionName != null && versionCode != null)
+            else if (installerPackageName == null && trimmed.StartsWith("installerPackageName="))
             {
-                break;
+                installerPackageName = trimmed["installerPackageName=".Length..];
+            }
+            else if (firstInstallTime == null && trimmed.StartsWith("firstInstallTime="))
+            {
+                firstInstallTime = trimmed["firstInstallTime=".Length..];
+            }
+            else if (lastUpdateTime == null && trimmed.StartsWith("lastUpdateTime="))
+            {
+                lastUpdateTime = trimmed["lastUpdateTime=".Length..];
+            }
+            else if (targetSdk == null && trimmed.StartsWith("targetSdk="))
+            {
+                targetSdk = trimmed["targetSdk=".Length..];
+            }
+            else if (minSdk == null && trimmed.StartsWith("minSdk="))
+            {
+                minSdk = trimmed["minSdk=".Length..];
+            }
+            else if (dataDir == null && trimmed.StartsWith("dataDir="))
+            {
+                dataDir = trimmed["dataDir=".Length..];
+            }
+            else if (uid == null && trimmed.StartsWith("userId="))
+            {
+                uid = trimmed["userId=".Length..];
             }
         }
 
-        return (versionName, versionCode);
+        return new InstalledPackage(
+            packageName, versionName, versionCode,
+            installerPackageName, firstInstallTime, lastUpdateTime,
+            targetSdk, minSdk, dataDir, uid);
     }
 
     public async Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null)

@@ -21,10 +21,10 @@
                            VerticalAlignment="Center"/>
         </StackPanel>
 
-        <ListBox ItemsSource="{Binding Packages}">
+        <ListBox Name="PackageList" ItemsSource="{Binding Packages}">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="models:InstalledPackage">
-                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="4">
+                    <Grid ColumnDefinitions="*,Auto" Margin="4">
                         <TextBlock Grid.Column="0"
                                    Text="{Binding PackageName}"
                                    VerticalAlignment="Center"/>
@@ -33,11 +33,6 @@
                                    Foreground="Gray"
                                    VerticalAlignment="Center"
                                    Margin="12,0"/>
-                        <Button Grid.Column="2"
-                                Content="Uninstall"
-                                Command="{Binding $parent[ListBox].((vm:AppsViewModel)DataContext).UninstallCommand}"
-                                CommandParameter="{Binding}"
-                                Padding="8,4"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
