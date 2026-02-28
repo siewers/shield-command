@@ -5,12 +5,53 @@ namespace ShieldCommander.Core.Services;
 
 public sealed class AdbService
 {
-    private readonly string _adbPath;
+    private string _adbPath;
     private AdbShellSession? _session;
 
     public AdbService(string? adbPath = null)
     {
-        _adbPath = adbPath ?? "adb";
+        _adbPath = adbPath
+                   ?? AppSettingsAccessor.Settings.AdbPath
+                   ?? FindAdb();
+    }
+
+    public string ResolvedPath => _adbPath;
+
+    public void SetAdbPath(string? path)
+    {
+        _adbPath = string.IsNullOrWhiteSpace(path) ? FindAdb() : path;
+    }
+
+    public static string FindAdb()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var exe = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
+
+        var candidates = new List<string>();
+
+        if (OperatingSystem.IsWindows())
+        {
+            candidates.Add(Path.Combine(localAppData, "Android", "Sdk", "platform-tools", exe));
+            candidates.Add(Path.Combine(home, "AppData", "Local", "Android", "Sdk", "platform-tools", exe));
+        }
+        else
+        {
+            candidates.Add("/opt/homebrew/bin/adb");
+            candidates.Add("/usr/local/bin/adb");
+            candidates.Add(Path.Combine(home, "Library", "Android", "sdk", "platform-tools", exe));
+            candidates.Add(Path.Combine(home, "Android", "Sdk", "platform-tools", exe));
+        }
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        return exe;
     }
 
     public async Task OpenSessionAsync(string? deviceSerial = null)

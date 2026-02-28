@@ -29,6 +29,11 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isScanning;
 
+    [ObservableProperty]
+    private string _adbPath = string.Empty;
+
+    public string AdbPathPlaceholder => AdbService.FindAdb();
+
     public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
     public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
     public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
@@ -36,9 +41,17 @@ public sealed partial class DeviceViewModel : ViewModelBase
     public DeviceViewModel(AdbService adbService)
     {
         _adbService = adbService;
+        _adbPath = AppSettingsAccessor.Settings.AdbPath ?? string.Empty;
         LoadSavedDevices();
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
+    }
+
+    partial void OnAdbPathChanged(string value)
+    {
+        var path = string.IsNullOrWhiteSpace(value) ? null : value;
+        AppSettingsAccessor.Settings.AdbPath = path;
+        _adbService.SetAdbPath(path);
     }
 
     private void LoadSavedDevices()

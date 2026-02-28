@@ -83,6 +83,22 @@
             </Grid>
         </StackPanel>
 
+        <!-- ADB path (shown when disconnected) -->
+        <StackPanel Spacing="4" IsVisible="{Binding !IsConnected}">
+            <TextBlock Text="ADB Path" FontSize="12" Foreground="Gray"/>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                <TextBox Grid.Column="0"
+                         Text="{Binding AdbPath, Mode=TwoWay}"
+                         Watermark="{Binding AdbPathPlaceholder}"
+                         Padding="8,4"/>
+                <Button Grid.Column="1"
+                        Content="Browse"
+                        x:Name="BrowseAdbButton"
+                        Click="BrowseAdbButton_Click"
+                        Padding="8,4"/>
+            </Grid>
+        </StackPanel>
+
         <!-- Connected banner (shown when connected) -->
         <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                 CornerRadius="4" Padding="12"

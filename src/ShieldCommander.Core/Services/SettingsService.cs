@@ -45,6 +45,16 @@ public sealed class SettingsService
         Save();
     }
 
+    public string? AdbPath
+    {
+        get => _settings.AdbPath;
+        set
+        {
+            _settings.AdbPath = string.IsNullOrWhiteSpace(value) ? null : value;
+            Save();
+        }
+    }
+
     public void AddOrUpdateDevice(string ipAddress, string? deviceName = null)
     {
         var existing = _settings.SavedDevices.FirstOrDefault(
@@ -120,5 +130,6 @@ public sealed class SettingsService
         public double WindowHeight { get; set; }
         public double? WindowX { get; set; }
         public double? WindowY { get; set; }
+        public string? AdbPath { get; set; }
     }
 }
