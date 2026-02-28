@@ -644,8 +644,7 @@ public class AdbService
     /// Reads /proc/stat total jiffies and per-process jiffies + names from /proc/[pid]/stat.
     /// Returns (perProcessJiffies, totalCpuJiffies).
     /// </summary>
-    public async Task<(Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)> Procs, long TotalJiffies, long IdleJiffies)>
-        GetProcessSnapshotAsync(string? deviceSerial = null)
+    public async Task<ProcessSnapshot> GetProcessSnapshotAsync(string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
         var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
@@ -661,13 +660,13 @@ public class AdbService
 
         var output = await RunShellWithFallbackAsync(cmd, prefix);
 
-        var procs = new Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)>();
+        var procs = new Dictionary<int, RawProcessEntry>();
         var totalJiffies = 0L;
         var idleJiffies = 0L;
 
         if (string.IsNullOrWhiteSpace(output))
         {
-            return (procs, totalJiffies, idleJiffies);
+            return new ProcessSnapshot(procs, totalJiffies, idleJiffies);
         }
 
         // Temporary storage without UID — filled during section 1, UIDs added in section 2
@@ -812,10 +811,10 @@ public class AdbService
         {
             uidByPid.TryGetValue(pid, out var uid);
             cmdlineByPid.TryGetValue(pid, out var cmdline);
-            procs[pid] = (jiffies, name, rssPages, uid, cmdline ?? name);
+            procs[pid] = new RawProcessEntry(pid, jiffies, name, rssPages, uid, cmdline ?? name);
         }
 
-        return (procs, totalJiffies, idleJiffies);
+        return new ProcessSnapshot(procs, totalJiffies, idleJiffies);
     }
 
     private Task<AdbResult> RunAdbAsync(string arguments) => RunAdbAsync(arguments, strictCheck: true);

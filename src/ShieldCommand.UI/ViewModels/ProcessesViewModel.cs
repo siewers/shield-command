@@ -14,7 +14,7 @@ public partial class ProcessesViewModel : ViewModelBase
     private CancellationTokenSource? _cts;
 
     // Previous snapshot for computing CPU% deltas
-    private Dictionary<int, (long Jiffies, string Name, long RssPages, int Uid, string Cmdline)> _prevProcs = new();
+    private Dictionary<int, RawProcessEntry> _prevProcs = new();
     private long _prevTotalJiffies;
     private long _prevIdleJiffies;
 
@@ -84,12 +84,12 @@ public partial class ProcessesViewModel : ViewModelBase
         // Take two snapshots back-to-back so the first render has CPU% deltas
         if (_prevProcs.Count == 0)
         {
-            var (baseProcs, baseJiffies, baseIdle) = await _adbService.GetProcessSnapshotAsync();
-            if (baseProcs.Count > 0)
+            var baseSnapshot = await _adbService.GetProcessSnapshotAsync();
+            if (baseSnapshot.Processes.Count > 0)
             {
-                _prevProcs = baseProcs;
-                _prevTotalJiffies = baseJiffies;
-                _prevIdleJiffies = baseIdle;
+                _prevProcs = baseSnapshot.Processes;
+                _prevTotalJiffies = baseSnapshot.TotalJiffies;
+                _prevIdleJiffies = baseSnapshot.IdleJiffies;
                 await Task.Delay(500);
             }
         }
@@ -133,22 +133,22 @@ public partial class ProcessesViewModel : ViewModelBase
 
     private async Task PollAsync()
     {
-        var (procs, totalJiffies, idleJiffies) = await _adbService.GetProcessSnapshotAsync();
-        if (procs.Count == 0)
+        var snapshot = await _adbService.GetProcessSnapshotAsync();
+        if (snapshot.Processes.Count == 0)
         {
             return; // Bad read, skip this cycle
         }
 
         var processes = new List<ProcessInfo>();
-        var deltaTotalJiffies = totalJiffies - _prevTotalJiffies;
+        var deltaTotalJiffies = snapshot.TotalJiffies - _prevTotalJiffies;
         var hasPrev = deltaTotalJiffies > 0 && _prevProcs.Count > 0;
 
-        foreach (var (pid, (jiffies, name, rssPages, uid, cmdline)) in procs)
+        foreach (var (pid, entry) in snapshot.Processes)
         {
             var cpuPct = 0.0;
             if (hasPrev && _prevProcs.TryGetValue(pid, out var prev))
             {
-                var deltaProc = jiffies - prev.Jiffies;
+                var deltaProc = entry.Jiffies - prev.Jiffies;
                 if (deltaProc > 0)
                 {
                     cpuPct = (double)deltaProc / deltaTotalJiffies * 100.0;
@@ -161,10 +161,10 @@ public partial class ProcessesViewModel : ViewModelBase
                 continue;
             }
 
-            var memMb = Math.Round(rssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
+            var memMb = Math.Round(entry.RssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
             // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
-            var isUserApp = uid >= 10000;
-            processes.Add(new ProcessInfo(pid, name, cmdline, Math.Round(cpuPct, 1), memMb, isUserApp));
+            var isUserApp = entry.Uid >= 10000;
+            processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memMb, isUserApp));
         }
 
         // System-wide CPU% from /proc/stat idle delta (not the sum of per-process CPU%).
@@ -172,13 +172,13 @@ public partial class ProcessesViewModel : ViewModelBase
         var systemCpuPct = 0.0;
         if (hasPrev)
         {
-            var deltaIdle = idleJiffies - _prevIdleJiffies;
+            var deltaIdle = snapshot.IdleJiffies - _prevIdleJiffies;
             systemCpuPct = (double)(deltaTotalJiffies - deltaIdle) / deltaTotalJiffies * 100.0;
         }
 
-        _prevProcs = procs;
-        _prevTotalJiffies = totalJiffies;
-        _prevIdleJiffies = idleJiffies;
+        _prevProcs = snapshot.Processes;
+        _prevTotalJiffies = snapshot.TotalJiffies;
+        _prevIdleJiffies = snapshot.IdleJiffies;
 
         var sorted = processes.OrderByDescending(p => p.CpuPercent).ToList();
 

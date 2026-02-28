@@ -13,6 +13,7 @@
 - Store the actual dependency you need, not an intermediary object you repeatedly drill into.
 - Actively reduce duplication when introducing repetitive code. Consider whether shared abstractions can eliminate repetition structurally rather than just hiding it behind a helper method.
 - Avoid instantiating objects inline when passing them to methods; assign to a variable first.
+- Make all types `sealed` by default. Only omit `sealed` when a type is explicitly designed for inheritance.
 
 ### Code comments
 - Never use emoji icons in code, documentation, commit messages, or any project artifacts.
