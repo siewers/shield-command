@@ -40,6 +40,11 @@ jobs:
           dotnet-version: "10.0.x"
           dotnet-quality: preview
 
+      - name: Set version from tag
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       - name: Publish
         run: >
           dotnet publish src/ShieldCommander.UI/ShieldCommander.UI.csproj
@@ -47,11 +52,12 @@ jobs:
           -r ${{ matrix.rid }}
           --self-contained true
           -o publish/bin
+          -p:Version=${{ steps.version.outputs.value }}
 
       - name: Package macOS app bundle
         if: startsWith(matrix.rid, 'osx')
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ steps.version.outputs.value }}"
           APP="publish/Shield Commander.app"
 
           mkdir -p "$APP/Contents/MacOS"
@@ -62,36 +68,8 @@ jobs:
           cp src/ShieldCommander.UI/Assets/app-icon.icns \
              "$APP/Contents/Resources/app-icon.icns"
 
-          cat > "$APP/Contents/Info.plist" << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleName</key>
-              <string>Shield Commander</string>
-              <key>CFBundleDisplayName</key>
-              <string>Shield Commander</string>
-              <key>CFBundleIdentifier</key>
-              <string>com.shieldcommand.app</string>
-              <key>CFBundleVersion</key>
-              <string>${VERSION}</string>
-              <key>CFBundleShortVersionString</key>
-              <string>${VERSION}</string>
-              <key>CFBundleExecutable</key>
-              <string>ShieldCommander</string>
-              <key>CFBundleIconFile</key>
-              <string>app-icon</string>
-              <key>CFBundlePackageType</key>
-              <string>APPL</string>
-              <key>NSHighResolutionCapable</key>
-              <true/>
-              <key>LSMinimumSystemVersion</key>
-              <string>12.0</string>
-              <key>NSHumanReadableCopyright</key>
-              <string>Copyright © $(date +%Y) Siewers Software. All rights reserved.</string>
-          </dict>
-          </plist>
-          EOF
+          cp src/ShieldCommander.UI/Info.plist "$APP/Contents/Info.plist"
+          sed -i '' "s/__VERSION__/${VERSION}/g; s/__YEAR__/$(date +%Y)/g" "$APP/Contents/Info.plist"
 
           hdiutil create -volname "Shield Commander" \
             -srcfolder "publish/Shield Commander.app" \

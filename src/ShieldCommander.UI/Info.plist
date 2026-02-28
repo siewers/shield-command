@@ -9,12 +9,20 @@
     <key>CFBundleIdentifier</key>
     <string>com.shieldcommand.app</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>__VERSION__</string>
+    <key>CFBundleShortVersionString</key>
+    <string>__VERSION__</string>
+    <key>CFBundleExecutable</key>
+    <string>ShieldCommander</string>
     <key>CFBundleIconFile</key>
     <string>app-icon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © __YEAR__ Siewers Software. All rights reserved.</string>
 </dict>
 </plist>
