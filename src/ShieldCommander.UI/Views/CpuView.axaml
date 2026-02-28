@@ -9,7 +9,6 @@
              x:DataType="vm:ActivityMonitorViewModel">
 
     <DockPanel Margin="0,8,0,0">
-        <TextBlock DockPanel.Dock="Top" Text="{Binding CpuUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
         <!-- macOS-style CPU stats panel -->
         <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
                 BorderBrush="#555555"
@@ -77,6 +76,7 @@
                                     YAxes="{Binding CpuYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
+                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">

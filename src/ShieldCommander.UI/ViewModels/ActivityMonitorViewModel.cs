@@ -28,7 +28,10 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     private TimeSpan _chartWindow = RefreshRate.Default.ChartWindow;
     private TimeSpan _miniWindow = RefreshRate.Default.MiniWindow;
 
-    private static readonly Func<double, string> OneDecimalLabeler = v => v.ToString("F1");
+    private static readonly Func<double, string> PercentLabeler = v => v.ToString("F0") + "%";
+    private static readonly Func<double, string> MbLabeler = v => v.ToString("F0") + " MB";
+    private static readonly Func<double, string> KbsLabeler = v => v.ToString("F0") + " KB/s";
+    private static readonly Func<double, string> DegreeLabeler = v => v.ToString("F0") + "°C";
 
     private static readonly SKColor[] ZoneColors =
     [
@@ -94,11 +97,8 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     [ObservableProperty] private string _netPacketsInPerSecText = "—";
     [ObservableProperty] private string _netPacketsOutPerSecText = "—";
 
-    // CPU chart (aggregate + per-core)
+    // CPU chart (per-core)
     private long _prevCpuActive, _prevCpuTotal, _prevCpuUser, _prevCpuSystem, _prevCpuIdle;
-    private readonly ObservableCollection<DateTimePoint> _cpuPoints = [];
-    private LineSeries<DateTimePoint> _cpuAggregateSeries = null!;
-    private ChartLegendItem _cpuAggLegend = null!;
     private readonly Dictionary<string, (ObservableCollection<DateTimePoint> Points, long PrevActive, long PrevTotal, LineSeries<DateTimePoint> Series, ChartLegendItem Legend)> _coreState = new();
     private readonly DateTimeAxis _cpuXAxis;
 
@@ -107,7 +107,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] CpuXAxes { get; }
     public Axis[] CpuYAxes { get; } =
     [
-        new Axis { Name = "%", MinLimit = 0, MaxLimit = 100, Labeler = OneDecimalLabeler }
+        new Axis { MinLimit = 0, MaxLimit = 100, Labeler = PercentLabeler, TextSize = 11 }
     ];
 
     // Mini CPU load chart (stacked user + system)
@@ -130,7 +130,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] MemXAxes { get; }
     public Axis[] MemYAxes { get; } =
     [
-        new Axis { Name = "MB", MinLimit = 0, Labeler = OneDecimalLabeler }
+        new Axis { MinLimit = 0, Labeler = MbLabeler, TextSize = 11 }
     ];
 
     private bool _memMaxSet;
@@ -167,7 +167,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] ThermalXAxes { get; }
     public Axis[] ThermalYAxes { get; } =
     [
-        new Axis { Name = "°C", Labeler = OneDecimalLabeler }
+        new Axis { Labeler = DegreeLabeler, TextSize = 11 }
     ];
 
     // Mini thermal chart (avg + hottest zone trend)
@@ -199,7 +199,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] DiskXAxes { get; }
     public Axis[] DiskYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0, Labeler = OneDecimalLabeler }
+        new Axis { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 }
     ];
 
     public ObservableCollection<ISeries> DiskLoadSeries { get; } = [];
@@ -231,7 +231,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] NetXAxes { get; }
     public Axis[] NetYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0, Labeler = OneDecimalLabeler }
+        new Axis { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 }
     ];
 
     public ObservableCollection<ISeries> NetLoadSeries { get; } = [];
@@ -270,21 +270,6 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         NetLoadXAxes = [_miniNetXAxis];
         MemLoadXAxes = [_miniMemXAxis];
         ThermalLoadXAxes = [_miniThermalXAxis];
-
-        _cpuAggregateSeries = new LineSeries<DateTimePoint>
-        {
-            Values = _cpuPoints,
-            Fill = null,
-            GeometrySize = 0,
-            GeometryFill = null,
-            GeometryStroke = null,
-            Stroke = new SolidColorPaint(SKColors.DodgerBlue, 1.5f),
-            LineSmoothness = 0,
-            Name = "CPU",
-        };
-        CpuSeries.Add(_cpuAggregateSeries);
-        _cpuAggLegend = new ChartLegendItem { Name = "CPU", Color = ToAvaloniaColor(SKColors.DodgerBlue) };
-        CpuLegend.Add(_cpuAggLegend);
 
         // Mini stacked area chart for CPU load panel
         CpuLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
@@ -588,9 +573,6 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 var sysPct = (double)(systemJiffies - _prevCpuSystem) / deltaTotal * 100.0;
                 var idlePct = (double)(info.CpuIdle - _prevCpuIdle) / deltaTotal * 100.0;
 
-                _cpuPoints.Add(new DateTimePoint(now, pct));
-                TrimOldPoints(_cpuPoints, now);
-                _cpuAggLegend.Value = $"{pct:F0}%";
                 CpuUsageText = $"{pct:F0}%";
                 CpuUserText = $"{userPct:F1}%";
                 CpuSystemText = $"{sysPct:F1}%";
@@ -893,21 +875,35 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         UpdateAxisLimits(_thermalXAxis, now: now);
 
         // Enforce a minimum 10°C Y-axis range so small fluctuations aren't exaggerated
-        // Use current tick's values only — the chart auto-scales based on visible data
-        if (temperatures.Count > 0)
+        // Scan all visible data points so historical values aren't clipped
+        if (_zoneState.Count > 0)
         {
-            var min = temperatures.Min(t => t.Value);
-            var max = temperatures.Max(t => t.Value);
-            var range = max - min;
-            const double minRange = 10.0;
-            if (range < minRange)
+            var min = double.MaxValue;
+            var max = double.MinValue;
+            foreach (var (_, state) in _zoneState)
             {
-                var mid = (min + max) / 2.0;
-                min = mid - minRange / 2.0;
-                max = mid + minRange / 2.0;
+                foreach (var pt in state.Points)
+                {
+                    if (pt.Value is { } v)
+                    {
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                    }
+                }
             }
-            ThermalYAxes[0].MinLimit = Math.Floor(min);
-            ThermalYAxes[0].MaxLimit = Math.Ceiling(max);
+            if (min <= max)
+            {
+                var range = max - min;
+                const double minRange = 10.0;
+                if (range < minRange)
+                {
+                    var mid = (min + max) / 2.0;
+                    min = mid - minRange / 2.0;
+                    max = mid + minRange / 2.0;
+                }
+                ThermalYAxes[0].MinLimit = Math.Floor(min);
+                ThermalYAxes[0].MaxLimit = Math.Ceiling(max);
+            }
         }
 
         // Stats
@@ -934,7 +930,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     // --- Helpers ---
 
     private static DateTimeAxis CreateTimeAxis() =>
-        new(TimeSpan.FromSeconds(30), date => date.ToString("HH:mm:ss")) { Name = "Time" };
+        new(TimeSpan.FromSeconds(30), _ => "") { IsVisible = false };
 
     private void TrimOldPoints(ObservableCollection<DateTimePoint> points, DateTime now, bool mini = false)
     {

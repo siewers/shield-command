@@ -9,7 +9,6 @@
              x:DataType="vm:ActivityMonitorViewModel">
 
     <DockPanel Margin="0,8,0,0">
-        <TextBlock DockPanel.Dock="Top" Text="{Binding NetInSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
         <!-- macOS-style Network stats panel -->
         <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
                 BorderBrush="#555555"
@@ -88,6 +87,7 @@
                                     YAxes="{Binding NetYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
+                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding NetLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">
