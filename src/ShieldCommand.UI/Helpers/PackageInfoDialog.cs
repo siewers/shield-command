@@ -9,12 +9,14 @@ namespace ShieldCommand.UI.Helpers;
 internal static class PackageInfoDialog
 {
     /// Shows a package info dialog. Returns true if the user clicked the primary action button.
-    public static async Task<bool> ShowAsync(InstalledPackage package, string? primaryButtonText = null)
+    public static async Task<bool> ShowAsync(
+        InstalledPackage package, string? primaryButtonText = null, string? confirmMessage = null)
     {
         return await ShowCoreAsync(
             package.PackageName,
             BuildPackageRows(package),
-            primaryButtonText);
+            primaryButtonText,
+            confirmMessage);
     }
 
     /// Shows a process info dialog with process details, plus package info for user apps.

@@ -3,7 +3,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
-using ShieldCommand.Core.Models;
 using ShieldCommand.UI.Helpers;
 using ShieldCommand.UI.ViewModels;
 
@@ -18,27 +17,26 @@ public sealed partial class AppsView : UserControl
         var installButton = this.FindControl<Button>("InstallApkButton")!;
         installButton.Click += OnInstallApkClick;
 
-        PackageList.AddHandler(PointerReleasedEvent, OnPackageListPointerReleased, RoutingStrategies.Tunnel);
-        PackageList.DoubleTapped += OnPackageListDoubleTapped;
+        PackageGrid.AddHandler(PointerReleasedEvent, OnPackageGridPointerReleased, RoutingStrategies.Tunnel);
+        PackageGrid.DoubleTapped += OnPackageGridDoubleTapped;
     }
 
-    private void OnPackageListDoubleTapped(object? sender, TappedEventArgs e)
+    private void OnPackageGridDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (PackageList.SelectedItem is InstalledPackage package && DataContext is AppsViewModel vm)
+        if (DataContext is AppsViewModel { SelectedPackage: { } row } vm)
         {
-            _ = ShowInfoAndUninstallAsync(package, vm);
+            _ = ShowInfoAndUninstallAsync(row, vm);
         }
     }
 
-    private void OnPackageListPointerReleased(object? sender, PointerReleasedEventArgs e)
+    private void OnPackageGridPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (e.InitialPressMouseButton != MouseButton.Right)
         {
             return;
         }
 
-        if (PackageList.SelectedItem is not InstalledPackage package
-            || DataContext is not AppsViewModel vm)
+        if (DataContext is not AppsViewModel { SelectedPackage: { } row } vm)
         {
             return;
         }
@@ -50,31 +48,31 @@ public sealed partial class AppsView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowInfoAndUninstallAsync(package, vm)),
-                MenuHelper.CreateGoogleSearchItem(package.PackageName),
+                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowInfoAndUninstallAsync(row, vm)),
+                MenuHelper.CreateGoogleSearchItem(row.PackageName),
                 new Separator(),
-                MenuHelper.CreateItem("Uninstall", "\uf2ed", () => _ = ShowUninstallAsync(package, vm)),
+                MenuHelper.CreateItem("Uninstall", "\uf2ed", () => _ = ShowUninstallAsync(row, vm)),
             }
         };
 
-        flyout.ShowAt(PackageList, true);
+        flyout.ShowAt(PackageGrid, true);
     }
 
-    private static async Task ShowInfoAndUninstallAsync(InstalledPackage package, AppsViewModel vm)
+    private static async Task ShowInfoAndUninstallAsync(PackageRow row, AppsViewModel vm)
     {
-        var detailed = await vm.AdbService.GetPackageInfoAsync(package.PackageName, includeSize: true);
-        if (await PackageInfoDialog.ShowAsync(detailed, "Uninstall"))
+        var detailed = await vm.AdbService.GetPackageInfoAsync(row.PackageName, includeSize: true);
+        if (await PackageInfoDialog.ShowAsync(detailed, "Uninstall", $"Are you sure you want to uninstall {row.PackageName}?"))
         {
-            await vm.UninstallCommand.ExecuteAsync(package);
+            await vm.UninstallCommand.ExecuteAsync(row);
         }
     }
 
-    private static async Task ShowUninstallAsync(InstalledPackage package, AppsViewModel vm)
+    private static async Task ShowUninstallAsync(PackageRow row, AppsViewModel vm)
     {
         var dialog = new ContentDialog
         {
             Title = "Uninstall App",
-            Content = $"Are you sure you want to uninstall {package.PackageName}?",
+            Content = $"Are you sure you want to uninstall {row.PackageName}?",
             PrimaryButtonText = "Uninstall",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,
@@ -82,7 +80,7 @@ public sealed partial class AppsView : UserControl
 
         if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
-            await vm.UninstallCommand.ExecuteAsync(package);
+            await vm.UninstallCommand.ExecuteAsync(row);
         }
     }
 

@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommand.UI.ViewModels"
-             xmlns:models="using:ShieldCommand.Core.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
@@ -21,21 +20,39 @@
                            VerticalAlignment="Center"/>
         </StackPanel>
 
-        <ListBox Name="PackageList" ItemsSource="{Binding Packages}">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="models:InstalledPackage">
-                    <Grid ColumnDefinitions="*,Auto" Margin="4">
-                        <TextBlock Grid.Column="0"
-                                   Text="{Binding PackageName}"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1"
-                                   Text="{Binding VersionName}"
-                                   Foreground="Gray"
-                                   VerticalAlignment="Center"
-                                   Margin="12,0"/>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <DataGrid ItemsSource="{Binding Packages}"
+                  SelectedItem="{Binding SelectedPackage}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserReorderColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  BorderThickness="0"
+                  x:Name="PackageGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Package Name"
+                                    Binding="{Binding PackageName}"
+                                    Width="*" />
+                <DataGridTextColumn Header="Version"
+                                    Binding="{Binding VersionName}"
+                                    Width="Auto" />
+                <DataGridTemplateColumn Header="Size"
+                                        MinWidth="100"
+                                        Width="Auto"
+                                        SortMemberPath="CodeSize"
+                                        x:DataType="vm:PackageRow">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:PackageRow">
+                            <TextBlock Text="{Binding SizeDisplay}"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </DockPanel>
 </UserControl>
