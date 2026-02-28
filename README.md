@@ -26,9 +26,25 @@ Shield Commander connects to your NVIDIA Shield TV over Wi-Fi and gives you full
 
 *Coming soon*
 
+## Installation
+
+Download the latest release from the [Releases page](https://github.com/siewers/shield-commander/releases).
+
+### macOS
+
+The app is not signed with an Apple Developer certificate. macOS will block it the first time you open it. To bypass this:
+
+1. Open Terminal
+2. Run: `xattr -cr "/Applications/Shield Commander.app"`
+3. Open the app normally
+
+### ADB path
+
+Shield Commander auto-detects ADB from common install locations. If it can't find it (e.g. when running from a `.app` bundle), open the connection dialog and set the path manually under **ADB Path**.
+
 ## Requirements
 
-- macOS or Windows
+- macOS, Windows, or Linux
 - [ADB (Android Debug Bridge)](https://developer.android.com/tools/adb) installed
 - An NVIDIA Shield TV with **Developer Options** and **Network Debugging** enabled
 

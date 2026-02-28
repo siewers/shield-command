@@ -46,10 +46,26 @@ rm -rf "$OUTPUT_DIR/bin"
 # Create DMG if requested
 if [[ "${3:-}" == "--dmg" ]]; then
     DMG_PATH="${4:-$OUTPUT_DIR/ShieldCommander-macos-${RID#osx-}.dmg}"
-    hdiutil create -volname "$APP_NAME" \
-        -srcfolder "$APP_BUNDLE" \
-        -ov -format UDZO \
-        "$DMG_PATH"
+    rm -f "$DMG_PATH"
+
+    if command -v create-dmg &>/dev/null; then
+        create-dmg \
+            --volname "$APP_NAME" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "$APP_NAME.app" 150 185 \
+            --app-drop-link 450 185 \
+            --no-internet-enable \
+            "$DMG_PATH" \
+            "$APP_BUNDLE"
+    else
+        echo "create-dmg not found, falling back to hdiutil"
+        hdiutil create -volname "$APP_NAME" \
+            -srcfolder "$APP_BUNDLE" \
+            -ov -format UDZO \
+            "$DMG_PATH"
+    fi
     echo "DMG created at: $DMG_PATH"
 else
     echo ""
