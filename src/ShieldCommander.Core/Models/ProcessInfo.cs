@@ -57,7 +57,8 @@ public sealed class ProcessInfo : INotifyPropertyChanged
         Pid = pid;
         _name = name;
         PackageName = packageName;
-        var slashIdx = packageName.LastIndexOf('/');
+        // Only strip path prefix for absolute paths (e.g. /system/bin/surfaceflinger → surfaceflinger)
+        var slashIdx = packageName.StartsWith('/') ? packageName.LastIndexOf('/') : -1;
         FullName = slashIdx >= 0 ? packageName[(slashIdx + 1)..] : packageName;
         _cpuPercent = cpuPercent;
         _memoryMb = memoryMb;

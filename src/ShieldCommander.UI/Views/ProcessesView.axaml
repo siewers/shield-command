@@ -36,7 +36,7 @@
                                     Width="*" />
                 <DataGridTextColumn Header="% CPU"
                                     Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
-                                    Width="80" />
+                                    Width="90" />
                 <DataGridTemplateColumn Header="Memory"
                                         Width="100"
                                         SortMemberPath="MemoryMb"
@@ -51,10 +51,10 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Kind"
                                     Binding="{Binding Kind}"
-                                    Width="70" />
+                                    Width="75" />
                 <DataGridTextColumn Header="PID"
                                     Binding="{Binding Pid}"
-                                    Width="80" />
+                                    Width="70" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

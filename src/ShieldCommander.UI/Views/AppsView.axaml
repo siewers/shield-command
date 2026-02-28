@@ -38,10 +38,9 @@
                                     Width="*" />
                 <DataGridTextColumn Header="Version"
                                     Binding="{Binding VersionName}"
-                                    Width="Auto" />
+                                    Width="150" />
                 <DataGridTemplateColumn Header="Size"
-                                        MinWidth="100"
-                                        Width="Auto"
+                                        Width="100"
                                         SortMemberPath="CodeSize"
                                         x:DataType="vm:PackageRow">
                     <DataGridTemplateColumn.CellTemplate>

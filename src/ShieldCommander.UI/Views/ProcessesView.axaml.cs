@@ -136,7 +136,8 @@ public sealed partial class ProcessesView : UserControl
                 MenuHelper.CreateItem(
                     "Terminate",
                     "\ue4f6",
-                    () => vm.KillProcessCommand.Execute(null))
+                    () => vm.KillProcessCommand.Execute(null),
+                    isEnabled: proc.IsUserApp)
             }
         };
 

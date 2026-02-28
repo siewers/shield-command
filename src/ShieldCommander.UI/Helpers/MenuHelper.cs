@@ -18,7 +18,7 @@ internal static class MenuHelper
         return item;
     }
 
-    public static MenuItem CreateItem(string header, string glyph, Action onClick)
+    public static MenuItem CreateItem(string header, string glyph, Action onClick, bool isEnabled = true)
     {
         var item = new MenuItem
         {
@@ -45,6 +45,7 @@ internal static class MenuHelper
                 },
             },
         };
+        item.IsEnabled = isEnabled;
         item.Click += (_, _) => onClick();
         return item;
     }
