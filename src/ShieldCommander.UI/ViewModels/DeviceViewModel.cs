@@ -9,6 +9,7 @@ namespace ShieldCommander.UI.ViewModels;
 public sealed partial class DeviceViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
+    private readonly SettingsService _settings;
     private readonly DeviceDiscoveryService _discoveryService = new();
 
     [ObservableProperty]
@@ -32,9 +33,9 @@ public sealed partial class DeviceViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAdbAvailable))]
-    private string _adbPath = string.Empty;
+    private string _adbPath;
 
-    public string AdbPathPlaceholder => AdbService.FindAdb();
+    public string AdbPathPlaceholder => _adbService.FindAdb();
 
     public bool IsAdbAvailable => _adbService.IsAdbAvailable;
 
@@ -42,10 +43,11 @@ public sealed partial class DeviceViewModel : ViewModelBase
     public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
     public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
 
-    public DeviceViewModel(AdbService adbService)
+    public DeviceViewModel(AdbService adbService, SettingsService settings)
     {
         _adbService = adbService;
-        _adbPath = AppSettingsAccessor.Settings.AdbPath ?? _adbService.ResolvedPath;
+        _settings = settings;
+        _adbPath = settings.AdbPath ?? _adbService.ResolvedPath;
         LoadSavedDevices();
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
@@ -54,14 +56,14 @@ public sealed partial class DeviceViewModel : ViewModelBase
     partial void OnAdbPathChanged(string value)
     {
         var path = string.IsNullOrWhiteSpace(value) ? null : value;
-        AppSettingsAccessor.Settings.AdbPath = path;
+        _settings.AdbPath = path;
         _adbService.SetAdbPath(path);
     }
 
     private void LoadSavedDevices()
     {
         SavedDevices.Clear();
-        foreach (var device in AppSettingsAccessor.Settings.SavedDevices.OrderByDescending(d => d.LastConnected))
+        foreach (var device in _settings.SavedDevices.OrderByDescending(d => d.LastConnected))
         {
             SavedDevices.Add(device);
         }
@@ -130,7 +132,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
 
         var device = ConnectedDevices.FirstOrDefault(d => d.IpAddress.StartsWith(ipAddress));
         ConnectedDeviceName = device?.DeviceName ?? "";
-        AppSettingsAccessor.Settings.AddOrUpdateDevice(ipAddress, device?.DeviceName);
+        _settings.AddOrUpdateDevice(ipAddress, device?.DeviceName);
         LoadSavedDevices();
         RefreshSuggestions();
     }
@@ -153,7 +155,9 @@ public sealed partial class DeviceViewModel : ViewModelBase
 
                 var devices = await _adbService.GetConnectedDevicesAsync();
                 if (devices.Any(d => d.IpAddress.StartsWith(ipAddress)))
+                {
                     return true;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -167,13 +171,13 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleAutoConnect(SavedDevice device)
     {
-        AppSettingsAccessor.Settings.SetAutoConnect(device.IpAddress, !device.AutoConnect);
+        _settings.SetAutoConnect(device.IpAddress, !device.AutoConnect);
         LoadSavedDevices();
     }
 
     public async Task<bool> AutoConnectAsync()
     {
-        var device = AppSettingsAccessor.Settings.SavedDevices.FirstOrDefault(d => d.AutoConnect);
+        var device = _settings.SavedDevices.FirstOrDefault(d => d.AutoConnect);
         if (device == null)
         {
             return false;
@@ -194,14 +198,14 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [RelayCommand]
     private void RemoveSavedDevice(SavedDevice device)
     {
-        AppSettingsAccessor.Settings.RemoveDevice(device.IpAddress);
+        _settings.RemoveDevice(device.IpAddress);
         LoadSavedDevices();
     }
 
     private void RefreshSuggestions()
     {
         DeviceSuggestions.Clear();
-        foreach (var saved in AppSettingsAccessor.Settings.SavedDevices.OrderByDescending(d => d.LastConnected))
+        foreach (var saved in _settings.SavedDevices.OrderByDescending(d => d.LastConnected))
         {
             DeviceSuggestions.Add(new DeviceSuggestion
             {

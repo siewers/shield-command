@@ -1,12 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
-using ShieldCommander.Core.Models;
 using ShieldCommander.Core.Services;
 using ShieldCommander.UI.Models;
 using SkiaSharp;
@@ -17,7 +15,7 @@ public sealed partial class ChartLegendItem : ObservableObject
 {
     public string Name { get; init; } = "";
     public Avalonia.Media.Color Color { get; init; }
-    [ObservableProperty] private string _value = "—";
+    [ObservableProperty] private double _value = double.NaN;
 }
 
 public sealed partial class ActivityMonitorViewModel : ViewModelBase
@@ -31,7 +29,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     private static readonly Func<double, string> PercentLabeler = v => v.ToString("F0") + "%";
     private static readonly Func<double, string> MbLabeler = v => v.ToString("F0") + " MB";
     private static readonly Func<double, string> KbsLabeler = v => v.ToString("F0") + " KB/s";
-    private static readonly Func<double, string> DegreeLabeler = v => v.ToString("F0") + "°C";
+    private static readonly Func<double, string> DegreeLabeler = v => v.ToString("F0") + "\u00b0C";
 
     private static readonly SKColor[] ZoneColors =
     [
@@ -57,7 +55,11 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         _chartWindow = value.ChartWindow;
         _miniWindow = value.MiniWindow;
 
-        if (!IsMonitoring) return;
+        if (!IsMonitoring)
+        {
+            return;
+        }
+
         // Cancel old loop and start a new one with the new interval
         _cts?.Cancel();
         _cts?.Dispose();
@@ -67,35 +69,44 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         StartMonitoringLoop();
     }
 
+    // CPU
+    [ObservableProperty] private double _cpuUsage = double.NaN;
+    [ObservableProperty] private double _cpuUser = double.NaN;
+    [ObservableProperty] private double _cpuSystem = double.NaN;
+    [ObservableProperty] private double _cpuIdle = double.NaN;
 
-    [ObservableProperty] private string _cpuUsageText = "—";
-    [ObservableProperty] private string _cpuUserText = "—";
-    [ObservableProperty] private string _cpuSystemText = "—";
-    [ObservableProperty] private string _cpuIdleText = "—";
-    [ObservableProperty] private string _memUsageText = "—";
+    // Memory — composite strings kept as-is
+    [ObservableProperty] private string _memUsageText = "\u2014";
     [ObservableProperty] private string? _temperature;
-    [ObservableProperty] private string _avgTemperatureText = "—";
-    [ObservableProperty] private string _minTemperatureText = "—";
-    [ObservableProperty] private string _maxTemperatureText = "—";
-    [ObservableProperty] private string _hottestZoneText = "—";
-    [ObservableProperty] private string _zoneCountText = "—";
-    [ObservableProperty] private string _fanStateText = "—";
+
+    // Thermals
+    [ObservableProperty] private double _avgTemperature = double.NaN;
+    [ObservableProperty] private double _minTemperature = double.NaN;
+    [ObservableProperty] private double _maxTemperature = double.NaN;
+    [ObservableProperty] private string _hottestZoneText = "\u2014";
+    [ObservableProperty] private int _zoneCount;
+    [ObservableProperty] private string? _fanState;
+
     [ObservableProperty] private int _processCount;
     [ObservableProperty] private int _threadCount;
-    [ObservableProperty] private string _diskReadSpeedText = "—";
-    [ObservableProperty] private string _diskWriteSpeedText = "—";
-    [ObservableProperty] private string _diskDataReadText = "—";
-    [ObservableProperty] private string _diskDataWrittenText = "—";
-    [ObservableProperty] private string _diskLatencyText = "—";
-    [ObservableProperty] private string _diskRecentWriteSpeedText = "—";
-    [ObservableProperty] private string _netInSpeedText = "—";
-    [ObservableProperty] private string _netOutSpeedText = "—";
-    [ObservableProperty] private string _netPacketsInText = "—";
-    [ObservableProperty] private string _netPacketsOutText = "—";
-    [ObservableProperty] private string _netDataInText = "—";
-    [ObservableProperty] private string _netDataOutText = "—";
-    [ObservableProperty] private string _netPacketsInPerSecText = "—";
-    [ObservableProperty] private string _netPacketsOutPerSecText = "—";
+
+    // Disk
+    [ObservableProperty] private long _diskReadSpeed;
+    [ObservableProperty] private long _diskWriteSpeed;
+    [ObservableProperty] private long _diskDataRead;
+    [ObservableProperty] private long _diskDataWritten;
+    [ObservableProperty] private int _diskLatency;
+    [ObservableProperty] private long _diskRecentWriteSpeed;
+
+    // Network
+    [ObservableProperty] private long _netInSpeed;
+    [ObservableProperty] private long _netOutSpeed;
+    [ObservableProperty] private long _netPacketsIn;
+    [ObservableProperty] private long _netPacketsOut;
+    [ObservableProperty] private long _netDataIn;
+    [ObservableProperty] private long _netDataOut;
+    [ObservableProperty] private long _netPacketsInPerSec;
+    [ObservableProperty] private long _netPacketsOutPerSec;
 
     // CPU chart (per-core)
     private long _prevCpuActive, _prevCpuTotal, _prevCpuUser, _prevCpuSystem, _prevCpuIdle;
@@ -150,12 +161,12 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
     ];
 
     // Memory stats
-    [ObservableProperty] private string _memPhysicalText = "—";
-    [ObservableProperty] private string _memUsedDetailText = "—";
-    [ObservableProperty] private string _memCachedText = "—";
-    [ObservableProperty] private string _swapUsedText = "—";
-    [ObservableProperty] private string _memFreeText = "—";
-    [ObservableProperty] private string _memBuffersText = "—";
+    [ObservableProperty] private double _memPhysical = double.NaN;
+    [ObservableProperty] private double _memUsedDetail = double.NaN;
+    [ObservableProperty] private double _memCached = double.NaN;
+    [ObservableProperty] private string _swapUsedText = "\u2014";
+    [ObservableProperty] private double _memFree = double.NaN;
+    [ObservableProperty] private double _memBuffers = double.NaN;
 
     // Thermal chart — per-zone series
     private readonly Dictionary<string, (ObservableCollection<DateTimePoint> Points, ChartLegendItem Legend)> _zoneState = new();
@@ -182,8 +193,8 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         new Axis { ShowSeparatorLines = false, IsVisible = false }
     ];
 
-    // Disk I/O chart (from /proc/vmstat pgpgin/pgpgout in KB)
-    private long _prevDiskKbRead, _prevDiskKbWritten;
+    // Disk I/O chart (from /proc/vmstat pgpgin/pgpgout, normalized to bytes)
+    private long _prevDiskBytesRead, _prevDiskBytesWritten;
     private DateTime _prevDiskTime;
     private readonly ObservableCollection<DateTimePoint> _diskReadPoints = [];
     private readonly ObservableCollection<DateTimePoint> _diskWritePoints = [];
@@ -307,7 +318,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
             Name = "Used MB",
         });
 
-        // Mini memory pressure chart (stacked bottom→top: used, cached, free)
+        // Mini memory pressure chart (stacked bottom->top: used, cached, free)
         MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
         {
             Values = _miniMemUsedPoints,
@@ -517,7 +528,10 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         // CPU — core series are device-specific so remove them entirely
         _prevCpuActive = _prevCpuTotal = _prevCpuUser = _prevCpuSystem = _prevCpuIdle = 0;
         foreach (var (_, state) in _coreState)
+        {
             state.Points.Clear();
+        }
+
         _coreState.Clear();
         CpuSeries.Clear();
         CpuLegend.Clear();
@@ -534,7 +548,10 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
         // Thermals — zone series are device-specific so remove them entirely
         foreach (var (_, state) in _zoneState)
+        {
             state.Points.Clear();
+        }
+
         _zoneState.Clear();
         _thermalSeries.Clear();
         ThermalLegend.Clear();
@@ -542,7 +559,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         _miniThermalMaxPoints.Clear();
 
         // Disk — keep series (static structure), clear data
-        _prevDiskKbRead = _prevDiskKbWritten = 0;
+        _prevDiskBytesRead = _prevDiskBytesWritten = 0;
         _prevDiskTime = default;
         _diskReadPoints.Clear();
         _diskWritePoints.Clear();
@@ -558,33 +575,40 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         _miniNetInPoints.Clear();
         _miniNetOutPoints.Clear();
 
-        // Text properties
-        CpuUsageText = CpuUserText = CpuSystemText = CpuIdleText = "—";
-        MemUsageText = "—";
+        // Numeric properties
+        CpuUsage = CpuUser = CpuSystem = CpuIdle = double.NaN;
+        MemUsageText = "\u2014";
         Temperature = null;
-        AvgTemperatureText = MinTemperatureText = MaxTemperatureText = HottestZoneText = ZoneCountText = FanStateText = "—";
+        AvgTemperature = MinTemperature = MaxTemperature = double.NaN;
+        HottestZoneText = "\u2014";
+        ZoneCount = 0;
+        FanState = null;
         ProcessCount = ThreadCount = 0;
-        DiskReadSpeedText = DiskWriteSpeedText = DiskDataReadText = DiskDataWrittenText = DiskLatencyText = DiskRecentWriteSpeedText = "—";
-        NetInSpeedText = NetOutSpeedText = NetPacketsInText = NetPacketsOutText = NetDataInText = NetDataOutText = "—";
-        NetPacketsInPerSecText = NetPacketsOutPerSecText = "—";
+        DiskReadSpeed = DiskWriteSpeed = DiskRecentWriteSpeed = 0;
+        DiskDataRead = DiskDataWritten = 0;
+        DiskLatency = 0;
+        NetInSpeed = NetOutSpeed = NetPacketsInPerSec = NetPacketsOutPerSec = 0;
+        NetPacketsIn = NetPacketsOut = NetDataIn = NetDataOut = 0;
+        MemPhysical = MemUsedDetail = MemCached = MemFree = MemBuffers = double.NaN;
+        SwapUsedText = "\u2014";
         StatusText = string.Empty;
     }
 
     private async Task PollAsync()
     {
-        var info = await _adbService.GetDeviceInfoAsync(dynamicOnly: true);
+        var snapshot = await _adbService.GetSystemSnapshotAsync();
 
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-            Temperature = info.Temperature;
-            ProcessCount = info.ProcessCount;
-            ThreadCount = info.ThreadCount;
-            UpdateCpuChart(info);
-            UpdateMemoryChart(info);
-            UpdateDiskChart(info);
-            UpdateNetworkChart(info);
-            AddTemperaturePoints(info.Temperatures, info.FanState);
-            StatusText = $"Monitoring — {DateTime.Now:HH:mm:ss}";
+            Temperature = snapshot.Thermal.Summary;
+            ProcessCount = snapshot.ProcessCount;
+            ThreadCount = snapshot.ThreadCount;
+            UpdateCpuChart(snapshot.Cpu);
+            UpdateMemoryChart(snapshot.Memory);
+            UpdateDiskChart(snapshot.Disk);
+            UpdateNetworkChart(snapshot.Network);
+            AddTemperaturePoints(snapshot.Thermal);
+            StatusText = $"Monitoring \u2014 {DateTime.Now:HH:mm:ss}";
         });
     }
 
@@ -613,12 +637,12 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         SKColors.SteelBlue,
     ];
 
-    private void UpdateCpuChart(DeviceInfo info)
+    private void UpdateCpuChart(Core.Models.CpuSnapshot cpu)
     {
-        var userJiffies = info.CpuUser + info.CpuNice;
-        var systemJiffies = info.CpuSystem + info.CpuIoWait + info.CpuIrq + info.CpuSoftIrq + info.CpuSteal;
+        var userJiffies = cpu.User + cpu.Nice;
+        var systemJiffies = cpu.System + cpu.IoWait + cpu.Irq + cpu.SoftIrq + cpu.Steal;
         var active = userJiffies + systemJiffies;
-        var total = active + info.CpuIdle;
+        var total = active + cpu.Idle;
         var now = DateTime.Now;
 
         if (_prevCpuTotal > 0)
@@ -629,12 +653,12 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 var pct = (double)(active - _prevCpuActive) / deltaTotal * 100.0;
                 var userPct = (double)(userJiffies - _prevCpuUser) / deltaTotal * 100.0;
                 var sysPct = (double)(systemJiffies - _prevCpuSystem) / deltaTotal * 100.0;
-                var idlePct = (double)(info.CpuIdle - _prevCpuIdle) / deltaTotal * 100.0;
+                var idlePct = (double)(cpu.Idle - _prevCpuIdle) / deltaTotal * 100.0;
 
-                CpuUsageText = $"{pct:F0}%";
-                CpuUserText = $"{userPct:F1}%";
-                CpuSystemText = $"{sysPct:F1}%";
-                CpuIdleText = $"{idlePct:F1}%";
+                CpuUsage = pct;
+                CpuUser = userPct;
+                CpuSystem = sysPct;
+                CpuIdle = idlePct;
 
                 // Mini load chart
                 _miniUserPoints.Add(new DateTimePoint(now, userPct));
@@ -644,19 +668,15 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 UpdateAxisLimits(_miniXAxis, mini: true, now);
             }
         }
-        else
-        {
-            CpuUsageText = "Calculating...";
-        }
 
         _prevCpuActive = active;
         _prevCpuTotal = total;
         _prevCpuUser = userJiffies;
         _prevCpuSystem = systemJiffies;
-        _prevCpuIdle = info.CpuIdle;
+        _prevCpuIdle = cpu.Idle;
 
         // Per-core usage
-        foreach (var (name, coreActive, coreTotal) in info.CpuCores)
+        foreach (var (name, coreActive, coreTotal) in cpu.Cores)
         {
             if (!_coreState.TryGetValue(name, out var state))
             {
@@ -688,7 +708,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
                 state.Points.Add(new DateTimePoint(now, corePct));
                 TrimOldPoints(state.Points, now);
-                state.Legend.Value = $"{corePct:F0}%";
+                state.Legend.Value = corePct;
             }
 
             _coreState[name] = (state.Points, coreActive, coreTotal, state.Series, state.Legend);
@@ -699,15 +719,16 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
     // --- Memory ---
 
-    private void UpdateMemoryChart(DeviceInfo info)
+    private void UpdateMemoryChart(Core.Models.MemorySnapshot mem)
     {
-        if (info.MemTotalKb <= 0)
+        if (mem.Total <= 0)
         {
             return;
         }
 
-        var usedMb = (info.MemTotalKb - info.MemAvailableKb) / 1024.0;
-        var totalMb = info.MemTotalKb / 1024.0;
+        const double toMb = 1024.0 * 1024.0;
+        var usedMb = (mem.Total - mem.Available) / toMb;
+        var totalMb = mem.Total / toMb;
         var now = DateTime.Now;
 
         _memPoints.Add(new DateTimePoint(now, usedMb));
@@ -732,19 +753,19 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         MemUsageText = $"{usedMb:F0} / {totalMb:F0} MB";
 
         // Memory stats
-        var cachedMb = (info.MemCachedKb + info.MemBuffersKb) / 1024.0;
-        var freeMb = info.MemFreeKb / 1024.0;
-        var swapUsedMb = (info.SwapTotalKb - info.SwapFreeKb) / 1024.0;
-        var swapTotalMb = info.SwapTotalKb / 1024.0;
+        var cachedMb = (mem.Cached + mem.Buffers) / toMb;
+        var freeMb = mem.Free / toMb;
+        var swapUsedMb = (mem.SwapTotal - mem.SwapFree) / toMb;
+        var swapTotalMb = mem.SwapTotal / toMb;
         // "Used" here = Total - Free - Cached - Buffers (actual app memory)
         var appUsedMb = totalMb - freeMb - cachedMb;
 
-        MemPhysicalText = $"{totalMb:F0} MB";
-        MemUsedDetailText = $"{usedMb:F0} MB";
-        MemCachedText = $"{cachedMb:F0} MB";
-        MemFreeText = $"{freeMb:F0} MB";
-        MemBuffersText = $"{info.MemBuffersKb / 1024.0:F0} MB";
-        SwapUsedText = info.SwapTotalKb > 0 ? $"{swapUsedMb:F0} / {swapTotalMb:F0} MB" : "N/A";
+        MemPhysical = totalMb;
+        MemUsedDetail = usedMb;
+        MemCached = cachedMb;
+        MemFree = freeMb;
+        MemBuffers = mem.Buffers / toMb;
+        SwapUsedText = mem.SwapTotal > 0 ? $"{swapUsedMb:F0} / {swapTotalMb:F0} MB" : "N/A";
 
         // Mini memory pressure chart (used pct + cached pct)
         var usedPct = appUsedMb / totalMb * 100.0;
@@ -762,28 +783,31 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
     // --- Disk I/O ---
 
-    private void UpdateDiskChart(DeviceInfo info)
+    private void UpdateDiskChart(Core.Models.DiskSnapshot disk)
     {
-        if (info.DiskKbRead == 0 && info.DiskKbWritten == 0)
+        if (disk.BytesRead == 0 && disk.BytesWritten == 0)
         {
             return;
         }
 
         var now = DateTime.Now;
 
-        // Cumulative totals (pgpgin/pgpgout are in KB)
-        DiskDataReadText = FormatBytes(info.DiskKbRead * 1024);
-        DiskDataWrittenText = FormatBytes(info.DiskKbWritten * 1024);
-        DiskLatencyText = $"{info.DiskWriteLatencyMs} ms";
-        DiskRecentWriteSpeedText = FormatSpeed(info.DiskWriteSpeedKbps * 1024);
+        // Cumulative totals
+        DiskDataRead = disk.BytesRead;
+        DiskDataWritten = disk.BytesWritten;
+        DiskLatency = disk.WriteLatencyMs;
+        DiskRecentWriteSpeed = disk.WriteSpeed;
 
         if (_prevDiskTime != default)
         {
             var elapsed = (now - _prevDiskTime).TotalSeconds;
             if (elapsed > 0)
             {
-                var readKbPerSec = (info.DiskKbRead - _prevDiskKbRead) / elapsed;
-                var writeKbPerSec = (info.DiskKbWritten - _prevDiskKbWritten) / elapsed;
+                var readBytesPerSec = (disk.BytesRead - _prevDiskBytesRead) / elapsed;
+                var writeBytesPerSec = (disk.BytesWritten - _prevDiskBytesWritten) / elapsed;
+
+                var readKbPerSec = readBytesPerSec / 1024.0;
+                var writeKbPerSec = writeBytesPerSec / 1024.0;
 
                 _diskReadPoints.Add(new DateTimePoint(now, readKbPerSec));
                 _diskWritePoints.Add(new DateTimePoint(now, writeKbPerSec));
@@ -796,68 +820,43 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 TrimOldPoints(_miniDiskWritePoints, now, mini: true);
                 UpdateAxisLimits(_miniDiskXAxis, mini: true, now);
 
-                var readSpeed = FormatSpeed(readKbPerSec * 1024);
-                var writeSpeed = FormatSpeed(writeKbPerSec * 1024);
-                DiskReadSpeedText = readSpeed;
-                DiskWriteSpeedText = writeSpeed;
-                DiskLegend[0].Value = readSpeed;
-                DiskLegend[1].Value = writeSpeed;
+                DiskReadSpeed = (long)readBytesPerSec;
+                DiskWriteSpeed = (long)writeBytesPerSec;
+                DiskLegend[0].Value = (long)readBytesPerSec;
+                DiskLegend[1].Value = (long)writeBytesPerSec;
             }
         }
 
-        _prevDiskKbRead = info.DiskKbRead;
-        _prevDiskKbWritten = info.DiskKbWritten;
+        _prevDiskBytesRead = disk.BytesRead;
+        _prevDiskBytesWritten = disk.BytesWritten;
         _prevDiskTime = now;
 
         UpdateAxisLimits(_diskXAxis, now: now);
     }
 
-    private static string FormatBytes(long bytes) => bytes switch
-    {
-        >= 1_073_741_824L => $"{bytes / 1_073_741_824.0:F2} GB",
-        >= 1_048_576L => $"{bytes / 1_048_576.0:F1} MB",
-        >= 1024L => $"{bytes / 1024.0:F0} KB",
-        _ => $"{bytes} B",
-    };
-
-    private static string FormatSpeed(double bytesPerSec) => bytesPerSec switch
-    {
-        >= 1_048_576.0 => $"{bytesPerSec / 1_048_576.0:F1} MB/s",
-        >= 1024.0 => $"{bytesPerSec / 1024.0:F0} KB/s",
-        _ => $"{bytesPerSec:F0} B/s",
-    };
-
-    private static string FormatCount(long count) => count switch
-    {
-        >= 1_000_000_000L => $"{count / 1_000_000_000.0:F3} B",
-        >= 1_000_000L => $"{count / 1_000_000.0:F3} M",
-        >= 1_000L => $"{count / 1_000.0:F3} K",
-        _ => count.ToString("N0"),
-    };
-
     // --- Network I/O ---
 
-    private void UpdateNetworkChart(DeviceInfo info)
+    private void UpdateNetworkChart(Core.Models.NetworkSnapshot net)
     {
         var now = DateTime.Now;
 
         // Cumulative totals
-        NetPacketsInText = FormatCount(info.NetPacketsIn);
-        NetPacketsOutText = FormatCount(info.NetPacketsOut);
-        NetDataInText = FormatBytes(info.NetBytesIn);
-        NetDataOutText = FormatBytes(info.NetBytesOut);
+        NetPacketsIn = net.PacketsIn;
+        NetPacketsOut = net.PacketsOut;
+        NetDataIn = net.BytesIn;
+        NetDataOut = net.BytesOut;
 
         if (_prevNetTime != default)
         {
             var elapsed = (now - _prevNetTime).TotalSeconds;
             if (elapsed > 0)
             {
-                var inBytes = (info.NetBytesIn - _prevNetBytesIn);
-                var outBytes = (info.NetBytesOut - _prevNetBytesOut);
-                var inKbPerSec = inBytes / 1024.0 / elapsed;
-                var outKbPerSec = outBytes / 1024.0 / elapsed;
-                var pktsInPerSec = (info.NetPacketsIn - _prevNetPacketsIn) / elapsed;
-                var pktsOutPerSec = (info.NetPacketsOut - _prevNetPacketsOut) / elapsed;
+                var inBytesPerSec = (net.BytesIn - _prevNetBytesIn) / elapsed;
+                var outBytesPerSec = (net.BytesOut - _prevNetBytesOut) / elapsed;
+                var inKbPerSec = inBytesPerSec / 1024.0;
+                var outKbPerSec = outBytesPerSec / 1024.0;
+                var pktsInPerSec = (net.PacketsIn - _prevNetPacketsIn) / elapsed;
+                var pktsOutPerSec = (net.PacketsOut - _prevNetPacketsOut) / elapsed;
 
                 _netInPoints.Add(new DateTimePoint(now, inKbPerSec));
                 _netOutPoints.Add(new DateTimePoint(now, outKbPerSec));
@@ -870,21 +869,19 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 TrimOldPoints(_miniNetOutPoints, now, mini: true);
                 UpdateAxisLimits(_miniNetXAxis, mini: true, now);
 
-                var inSpeed = FormatSpeed(inBytes / elapsed);
-                var outSpeed = FormatSpeed(outBytes / elapsed);
-                NetInSpeedText = inSpeed;
-                NetOutSpeedText = outSpeed;
-                NetPacketsInPerSecText = $"{pktsInPerSec:F0}";
-                NetPacketsOutPerSecText = $"{pktsOutPerSec:F0}";
-                NetLegend[0].Value = inSpeed;
-                NetLegend[1].Value = outSpeed;
+                NetInSpeed = (long)inBytesPerSec;
+                NetOutSpeed = (long)outBytesPerSec;
+                NetPacketsInPerSec = (long)pktsInPerSec;
+                NetPacketsOutPerSec = (long)pktsOutPerSec;
+                NetLegend[0].Value = (long)inBytesPerSec;
+                NetLegend[1].Value = (long)outBytesPerSec;
             }
         }
 
-        _prevNetBytesIn = info.NetBytesIn;
-        _prevNetBytesOut = info.NetBytesOut;
-        _prevNetPacketsIn = info.NetPacketsIn;
-        _prevNetPacketsOut = info.NetPacketsOut;
+        _prevNetBytesIn = net.BytesIn;
+        _prevNetBytesOut = net.BytesOut;
+        _prevNetPacketsIn = net.PacketsIn;
+        _prevNetPacketsOut = net.PacketsOut;
         _prevNetTime = now;
 
         UpdateAxisLimits(_netXAxis, now: now);
@@ -892,8 +889,9 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
     // --- Thermals ---
 
-    private void AddTemperaturePoints(List<(string Name, double Value)> temperatures, string? fanState)
+    private void AddTemperaturePoints(Core.Models.ThermalSnapshot thermal)
     {
+        var temperatures = thermal.Zones;
         if (temperatures.Count == 0)
         {
             return;
@@ -927,12 +925,12 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
             state.Points.Add(new DateTimePoint(now, value));
             TrimOldPoints(state.Points, now);
-            state.Legend.Value = $"{value:F1}°C";
+            state.Legend.Value = value;
         }
 
         UpdateAxisLimits(_thermalXAxis, now: now);
 
-        // Enforce a minimum 10°C Y-axis range so small fluctuations aren't exaggerated
+        // Enforce a minimum 10 deg C Y-axis range so small fluctuations aren't exaggerated
         // Scan all visible data points so historical values aren't clipped
         if (_zoneState.Count > 0)
         {
@@ -944,8 +942,15 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
                 {
                     if (pt.Value is { } v)
                     {
-                        if (v < min) min = v;
-                        if (v > max) max = v;
+                        if (v < min)
+                        {
+                            min = v;
+                        }
+
+                        if (v > max)
+                        {
+                            max = v;
+                        }
                     }
                 }
             }
@@ -970,12 +975,12 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         var currentMax = temperatures.Max(t => t.Value);
         var hottest = temperatures.MaxBy(t => t.Value);
 
-        AvgTemperatureText = $"{avg:F1}°C";
-        MinTemperatureText = $"{currentMin:F1}°C";
-        MaxTemperatureText = $"{currentMax:F1}°C";
-        HottestZoneText = $"{hottest.Name} ({hottest.Value:F1}°C)";
-        ZoneCountText = $"{temperatures.Count}";
-        FanStateText = fanState ?? "—";
+        AvgTemperature = avg;
+        MinTemperature = currentMin;
+        MaxTemperature = currentMax;
+        HottestZoneText = $"{hottest.Name} ({hottest.Value:F1}\u00b0C)";
+        ZoneCount = temperatures.Count;
+        FanState = thermal.FanState;
 
         // Mini thermal chart
         _miniThermalAvgPoints.Add(new DateTimePoint(now, avg));

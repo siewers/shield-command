@@ -59,13 +59,15 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         AdbService = adbService;
         _activityMonitor = activityMonitor;
 
-        _activityMonitor.PropertyChanged += (_, e) =>
+        _activityMonitor.PropertyChanged += (_, args) =>
         {
-            if (e.PropertyName == nameof(ActivityMonitorViewModel.SelectedRefreshRate) && IsMonitoring)
+            if (args.PropertyName != nameof(ActivityMonitorViewModel.SelectedRefreshRate) || !IsMonitoring)
             {
-                Stop();
-                _ = StartAsync();
+                return;
             }
+
+            Stop();
+            _ = StartAsync();
         };
     }
 
@@ -171,10 +173,10 @@ public sealed partial class ProcessesViewModel : ViewModelBase
                 continue;
             }
 
-            var memMb = Math.Round(entry.RssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
+            var memBytes = entry.RssPages * 4096L; // pages are 4KB on ARM
             // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
             var isUserApp = entry.Uid >= 10000;
-            processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memMb, isUserApp, entry.State));
+            processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memBytes, isUserApp, entry.State));
         }
 
         // System-wide CPU% from /proc/stat idle delta (not the sum of per-process CPU%).
@@ -251,6 +253,6 @@ public sealed partial class ProcessesViewModel : ViewModelBase
     {
         target.Name = source.Name;
         target.CpuPercent = source.CpuPercent;
-        target.MemoryMb = source.MemoryMb;
+        target.Memory = source.Memory;
     }
 }

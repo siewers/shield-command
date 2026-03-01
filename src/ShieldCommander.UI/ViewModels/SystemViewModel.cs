@@ -18,8 +18,8 @@ public sealed partial class SystemViewModel : ViewModelBase
     [ObservableProperty] private string? _androidVersion;
     [ObservableProperty] private string? _apiLevel;
     [ObservableProperty] private string? _buildId;
-    [ObservableProperty] private string? _totalRam;
-    [ObservableProperty] private string? _storageTotal;
+    [ObservableProperty] private long? _totalRam;
+    [ObservableProperty] private long? _storageTotal;
 
     public SystemViewModel(AdbService adbService)
     {
@@ -33,7 +33,8 @@ public sealed partial class SystemViewModel : ViewModelBase
 
     public void Clear()
     {
-        Model = Manufacturer = Architecture = AndroidVersion = ApiLevel = BuildId = TotalRam = StorageTotal = null;
+        Model = Manufacturer = Architecture = AndroidVersion = ApiLevel = BuildId = null;
+        TotalRam = StorageTotal = null;
         StatusText = string.Empty;
     }
 
@@ -58,7 +59,7 @@ public sealed partial class SystemViewModel : ViewModelBase
             AndroidVersion = info.AndroidVersion;
             ApiLevel = info.ApiLevel;
             BuildId = info.BuildId;
-            TotalRam = info.TotalRam;
+            TotalRam = info.RamTotal;
             StorageTotal = info.StorageTotal;
 
             StatusText = string.Empty;

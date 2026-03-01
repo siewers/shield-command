@@ -5,7 +5,8 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService = new();
+    private readonly AdbService _adbService;
+
     [ObservableProperty]
     private ViewModelBase _currentPage;
 
@@ -25,19 +26,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public ActivityMonitorViewModel ActivityMonitorPage { get; }
     public ProcessesViewModel ProcessesPage { get; }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(AdbService adbService, SettingsService settings)
     {
-        DevicePage = new DeviceViewModel(_adbService);
-        AppsPage = new AppsViewModel(_adbService);
-        InstallPage = new InstallViewModel(_adbService);
-        SystemPage = new SystemViewModel(_adbService);
-        ActivityMonitorPage = new ActivityMonitorViewModel(_adbService);
-        ProcessesPage = new ProcessesViewModel(_adbService, ActivityMonitorPage);
+        _adbService = adbService;
+        DevicePage = new DeviceViewModel(adbService, settings);
+        AppsPage = new AppsViewModel(adbService);
+        InstallPage = new InstallViewModel(adbService);
+        SystemPage = new SystemViewModel(adbService);
+        ActivityMonitorPage = new ActivityMonitorViewModel(adbService);
+        ProcessesPage = new ProcessesViewModel(adbService, ActivityMonitorPage);
         _currentPage = SystemPage;
 
-        DevicePage.PropertyChanged += (_, e) =>
+        DevicePage.PropertyChanged += (_, args) =>
         {
-            if (e.PropertyName != nameof(DeviceViewModel.IsConnected))
+            if (args.PropertyName != nameof(DeviceViewModel.IsConnected))
             {
                 return;
             }

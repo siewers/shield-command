@@ -8,20 +8,9 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class PackageRow : ObservableObject
 {
-    public InstalledPackage Package { get; }
+    [ObservableProperty] private long? _codeSize;
 
-    public string PackageName => Package.PackageName;
-    public string? VersionName => Package.VersionName;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SizeDisplay))]
-    private string? _codeSize;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SizeDisplay))]
-    private bool _isSizeLoading = true;
-
-    public string SizeDisplay => IsSizeLoading ? "\u2026" : CodeSize ?? "\u2014";
+    [ObservableProperty] private bool _isSizeLoading = true;
 
     public PackageRow(InstalledPackage package)
     {
@@ -29,29 +18,26 @@ public sealed partial class PackageRow : ObservableObject
         _codeSize = package.CodeSize;
         _isSizeLoading = package.CodeSize is null;
     }
+
+    public InstalledPackage Package { get; }
+
+    public string PackageName => Package.PackageName;
+    public string? VersionName => Package.VersionName;
 }
 
-public sealed partial class AppsViewModel : ViewModelBase
+public sealed partial class AppsViewModel(AdbService adbService) : ViewModelBase
 {
-    private static readonly SemaphoreSlim s_sizeSemaphore = new(1);
+    private static readonly SemaphoreSlim SizeSemaphore = new(1);
 
-    public AdbService AdbService { get; }
+    [ObservableProperty] private bool _isBusy;
 
-    [ObservableProperty]
-    private bool _isBusy;
+    [ObservableProperty] private PackageRow? _selectedPackage;
 
-    [ObservableProperty]
-    private string _statusText = string.Empty;
+    [ObservableProperty] private string _statusText = string.Empty;
 
-    [ObservableProperty]
-    private PackageRow? _selectedPackage;
+    public AdbService AdbService { get; } = adbService;
 
     public ObservableCollection<PackageRow> Packages { get; } = [];
-
-    public AppsViewModel(AdbService adbService)
-    {
-        AdbService = adbService;
-    }
 
     public void Clear()
     {
@@ -108,7 +94,7 @@ public sealed partial class AppsViewModel : ViewModelBase
 
     private async Task LoadSizeForPackageAsync(PackageRow row)
     {
-        await s_sizeSemaphore.WaitAsync();
+        await SizeSemaphore.WaitAsync();
         try
         {
             var detailed = await AdbService.GetPackageInfoAsync(row.PackageName, includeSize: true);
@@ -121,7 +107,7 @@ public sealed partial class AppsViewModel : ViewModelBase
         finally
         {
             row.IsSizeLoading = false;
-            s_sizeSemaphore.Release();
+            SizeSemaphore.Release();
         }
     }
 
