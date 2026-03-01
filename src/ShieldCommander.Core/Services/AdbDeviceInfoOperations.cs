@@ -4,49 +4,25 @@ namespace ShieldCommander.Core.Services;
 
 internal sealed class AdbDeviceInfoOperations(AdbRunner runner)
 {
-    private const string SectionSeparator = "____SECT____";
+    private static readonly AdbCommandCollection DynamicCommands = DynamicSections.CreateCommands();
+    private readonly ShellBatchRunner _batch = new(runner);
 
     public async Task<DeviceInfo> GetDeviceInfoAsync(string? deviceSerial = null)
     {
         var info = new DeviceInfo();
-        var prefix = AdbRunner.ShellPrefix(deviceSerial);
+        await FetchStaticPropsAsync(info, AdbRunner.ShellPrefix(deviceSerial));
 
-        await FetchStaticPropsAsync(info, prefix);
-
-        // Fetch dynamic sections once to populate TotalRam and StorageTotal
-        var shellOutput = await FetchDynamicSectionsAsync(deviceSerial);
-        shellOutput = shellOutput.Replace("\r\n", "\n");
-        var sections = shellOutput.Split($"\n{SectionSeparator}\n");
-
-        string GetSection(int index) => index < sections.Length ? sections[index] : "";
-
-        var memoryInfo = DeviceInfoParser.ParseMemoryInfo(GetSection(0));
-        var diskFree = DeviceInfoParser.ParseDiskFree(GetSection(1));
-
-        info.RamTotal = memoryInfo.Total;
-        info.StorageTotal = diskFree?.Total;
+        var sections = await _batch.ExecuteAsync(DynamicCommands, deviceSerial);
+        info.RamTotal = sections.Memory.Total;
+        info.StorageTotal = sections.DiskFree?.Total;
 
         return info;
     }
 
     public async Task<SystemSnapshot> GetSystemSnapshotAsync(string? deviceSerial = null)
     {
-        var shellOutput = await FetchDynamicSectionsAsync(deviceSerial);
-        shellOutput = shellOutput.Replace("\r\n", "\n");
-        var sections = shellOutput.Split($"\n{SectionSeparator}\n");
-
-        string GetSection(int index) => index < sections.Length ? sections[index] : "";
-
-        var memoryInfo = DeviceInfoParser.ParseMemoryInfo(GetSection(0));
-        var thermal = DeviceInfoParser.ParseThermal(GetSection(3));
-        var cpu = DeviceInfoParser.ParseCpuStat(GetSection(4));
-        var threadCount = DeviceInfoParser.ParseLoadAverage(GetSection(5));
-        var processCount = DeviceInfoParser.ParseProcessCount(GetSection(6));
-        var network = DeviceInfoParser.ParseNetDev(GetSection(7));
-        var (kbRead, kbWritten) = DeviceInfoParser.ParseVmstat(GetSection(8));
-        var disk = DeviceInfoParser.ParseDiskStats(GetSection(9), kbRead, kbWritten);
-
-        return new SystemSnapshot(cpu, memoryInfo.Snapshot, disk, network, thermal, processCount, threadCount);
+        var s = await _batch.ExecuteAsync(DynamicCommands, deviceSerial);
+        return new SystemSnapshot(s.Cpu, s.Memory.Snapshot, s.Disk, s.Network, s.Thermal, s.ProcessCount, s.ThreadCount);
     }
 
     private async Task FetchStaticPropsAsync(DeviceInfo info, string prefix)
@@ -69,26 +45,5 @@ internal sealed class AdbDeviceInfoOperations(AdbRunner runner)
         info.AndroidVersion = props[3].Success ? props[3].Output.Trim() : null;
         info.ApiLevel = props[4].Success ? props[4].Output.Trim() : null;
         info.BuildId = props[5].Success ? props[5].Output.Trim() : null;
-    }
-
-    private async Task<string> FetchDynamicSectionsAsync(string? deviceSerial)
-    {
-        string[] operations =
-        [
-            "cat /proc/meminfo",
-            "df -h /data",
-            "uptime",
-            "dumpsys thermalservice",
-            "cat /proc/stat",
-            "cat /proc/loadavg",
-            "ls /proc/",
-            "cat /proc/net/dev",
-            "cat /proc/vmstat",
-            "dumpsys diskstats",
-        ];
-
-        var combinedCmd = string.Join($"; echo {SectionSeparator}; ", operations);
-
-        return await runner.RunShellWithFallbackAsync(combinedCmd, deviceSerial);
     }
 }
