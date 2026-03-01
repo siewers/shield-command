@@ -118,8 +118,8 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
 
     public void Update(SystemSnapshot snapshot)
     {
-        ProcessCount = snapshot.ProcessCount;
-        ThreadCount = snapshot.ThreadCount;
+        ProcessCount = snapshot.Cpu.ProcessCount;
+        ThreadCount = snapshot.Cpu.ThreadCount;
         UpdateCpuChart(snapshot.Cpu);
     }
 

@@ -5,6 +5,4 @@ public sealed record SystemSnapshot(
     MemorySnapshot Memory,
     DiskSnapshot Disk,
     NetworkSnapshot Network,
-    ThermalSnapshot Thermal,
-    int ProcessCount,
-    int ThreadCount);
+    ThermalSnapshot Thermal);

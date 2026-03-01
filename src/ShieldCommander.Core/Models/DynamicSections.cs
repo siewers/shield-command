@@ -5,7 +5,7 @@ namespace ShieldCommander.Core.Models;
 
 internal sealed class DynamicSections
 {
-    public MemoryInfo Memory { get; internal set; } = default!;
+    public MemoryInfo Memory { get; internal set; } = null!;
 
     public DiskFreeInfo? DiskFree { get; internal set; }
 
@@ -14,10 +14,6 @@ internal sealed class DynamicSections
     public ThermalSnapshot Thermal { get; internal set; } = null!;
 
     public CpuSnapshot Cpu { get; internal set; } = null!;
-
-    public int ThreadCount { get; internal set; }
-
-    public int ProcessCount { get; internal set; }
 
     public NetworkSnapshot Network { get; internal set; } = null!;
 
@@ -32,8 +28,6 @@ internal sealed class DynamicSections
             new UptimeCommand(),
             new ThermalCommand(),
             new CpuStatCommand(),
-            new LoadAvgCommand(),
-            new ProcessCountCommand(),
             new NetDevCommand(),
             new DiskStatsCommand(),
         };

@@ -22,7 +22,7 @@ internal sealed class AdbDeviceInfoOperations(AdbRunner runner)
     public async Task<SystemSnapshot> GetSystemSnapshotAsync(string? deviceSerial = null)
     {
         var s = await _batch.ExecuteAsync(DynamicCommands, deviceSerial);
-        return new SystemSnapshot(s.Cpu, s.Memory.Snapshot, s.Disk, s.Network, s.Thermal, s.ProcessCount, s.ThreadCount);
+        return new SystemSnapshot(s.Cpu, s.Memory.Snapshot, s.Disk, s.Network, s.Thermal);
     }
 
     private async Task FetchStaticPropsAsync(DeviceInfo info, string prefix)

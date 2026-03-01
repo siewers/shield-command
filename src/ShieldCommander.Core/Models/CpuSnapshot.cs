@@ -9,4 +9,6 @@ public sealed record CpuSnapshot(
     long Irq,
     long SoftIrq,
     long Steal,
-    List<(string Name, long Active, long Total)> Cores);
+    List<(string Name, long Active, long Total)> Cores,
+    int ProcessCount,
+    int ThreadCount);
