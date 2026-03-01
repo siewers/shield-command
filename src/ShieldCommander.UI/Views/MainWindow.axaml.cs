@@ -69,6 +69,10 @@ public sealed partial class MainWindow : Window
         {
             TitleBarLeftSpacer.Width = 0;
             TitleBarStatusButton.Margin = new Thickness(0, 0, 140, 0);
+            TitleBarAppInfo.IsVisible = true;
+            NavView.IsPaneToggleButtonVisible = false;
+            NavView.IsPaneOpen = true;
+            NavView.PaneTitle = "";
         }
 
         // Hide NavView until visual tweaks are applied to prevent layout shift
@@ -181,6 +185,60 @@ public sealed partial class MainWindow : Window
                 }
             }
         }
+
+        // Footer icons
+        var footerItems = NavView.FooterMenuItems;
+        if (footerItems.Count > 0 && footerItems[0] is NavigationViewItem settingsItem)
+        {
+            settingsItem.IconSource = new FontIconSource { Glyph = "\ue270", FontFamily = PhosphorThin, FontSize = 20 }; // gear
+        }
+        if (footerItems.Count > 1 && footerItems[1] is NavigationViewItem aboutItem)
+        {
+            aboutItem.IconSource = new FontIconSource { Glyph = "\ue3e8", FontFamily = PhosphorThin, FontSize = 20 }; // question
+        }
+    }
+
+    private void ShowSettingsFlyout()
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+
+        var flyout = new Avalonia.Controls.Flyout();
+
+        var panel = new StackPanel { Spacing = 4, MinWidth = 200 };
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Update Frequency",
+            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+            FontSize = 13,
+            Margin = new Thickness(8, 4),
+        });
+
+        foreach (var rate in RefreshRate.All)
+        {
+            var item = new RadioButton
+            {
+                Content = rate.Label,
+                IsChecked = vm.ActivityMonitorPage.SelectedRefreshRate == rate,
+                Margin = new Thickness(4, 0),
+            };
+            var capturedRate = rate;
+            item.IsCheckedChanged += (_, _) =>
+            {
+                if (item.IsChecked == true)
+                {
+                    vm.ActivityMonitorPage.SelectedRefreshRate = capturedRate;
+                }
+            };
+            panel.Children.Add(item);
+        }
+
+        flyout.Content = new Border
+        {
+            Padding = new Thickness(4),
+            Child = panel,
+        };
+
+        flyout.ShowAt(SettingsNavItem);
     }
 
     private void UpdateConnectionIndicator()
@@ -277,6 +335,21 @@ public sealed partial class MainWindow : Window
             DataContext is MainWindowViewModel vm)
         {
             vm.NavigateTo(tag);
+        }
+    }
+
+    private void NavView_ItemInvoked(object? sender, NavigationViewItemInvokedEventArgs e)
+    {
+        if (e.InvokedItemContainer is NavigationViewItem item && item.Tag is string tag)
+        {
+            if (tag == "About")
+            {
+                App.ShowAboutDialog();
+            }
+            else if (tag == "Settings")
+            {
+                ShowSettingsFlyout();
+            }
         }
     }
 }

@@ -36,10 +36,19 @@
 
     <Grid RowDefinitions="38,*">
         <!-- Title bar overlay -->
-        <Grid Grid.Row="0" ColumnDefinitions="78,*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
             <!-- Col 0: spacer for macOS traffic lights (shrinks to 0 on Windows via code-behind) -->
             <Border x:Name="TitleBarLeftSpacer" Grid.Column="0" Width="78"/>
-            <!-- Col 1: drag region (transparent, not hit testable) -->
+            <!-- Col 1: drag region — on Windows also shows app icon + title -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                        VerticalAlignment="Center" Margin="8,0,0,0"
+                        x:Name="TitleBarAppInfo" IsVisible="False"
+                        IsHitTestVisible="False">
+                <Image Source="/Assets/app-icon.png" Width="16" Height="16"
+                       VerticalAlignment="Center"/>
+                <TextBlock Text="Shield Commander" FontSize="12"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
             <!-- Col 2: clickable status -->
             <Button Grid.Column="2"
                     x:Name="TitleBarStatusButton"
@@ -71,7 +80,8 @@
                            IsPaneToggleButtonVisible="True"
                            IsSettingsVisible="False"
                            PaneTitle="Shield Commander"
-                           SelectionChanged="NavView_SelectionChanged">
+                           SelectionChanged="NavView_SelectionChanged"
+                           ItemInvoked="NavView_ItemInvoked">
             <ui:NavigationView.Resources>
                 <x:Double x:Key="NavigationViewItemOnLeftIconBoxHeight">20</x:Double>
             </ui:NavigationView.Resources>
@@ -96,6 +106,11 @@
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="False"
+                                       x:Name="SettingsNavItem"/>
+                <ui:NavigationViewItem Content="About" Tag="About" SelectsOnInvoked="False"/>
+            </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
     </Grid>
 </Window>

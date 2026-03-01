@@ -15,6 +15,21 @@ namespace ShieldCommander.UI;
 
 public sealed partial class App : Application
 {
+    public static string Version { get; } = GetVersion();
+
+    private static string GetVersion()
+    {
+        // Version format: yyyy.M.d[.revision] (e.g. 2026.2.28 or 2026.2.28.1)
+        // When running from source, the version defaults to 1.0.0.0 — show as dev build
+        var v = typeof(App).Assembly.GetName().Version;
+        if (v is null || v.Major <= 1)
+        {
+            var now = DateTime.Now;
+            return $"{now:yyyy.M.d}-dev";
+        }
+        return v.Revision > 0 ? v.ToString(4) : v.ToString(3);
+    }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -47,9 +62,11 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void AboutMenuItem_Click(object? sender, EventArgs e)
+    private void AboutMenuItem_Click(object? sender, EventArgs e) => ShowAboutDialog();
+
+    public static void ShowAboutDialog()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+        if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
             && desktop.MainWindow is not null)
         {
             var dialog = new Window
@@ -84,7 +101,7 @@ public sealed partial class App : Application
                         },
                         new TextBlock
                         {
-                            Text = "Version 1.0.0",
+                            Text = $"Version {Version}",
                             FontSize = 13,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             Foreground = Avalonia.Media.Brushes.Gray,
