@@ -137,7 +137,10 @@ public sealed class AdbShellSession : IDisposable
                 _process.Kill();
             }
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
 
         _process.Dispose();
         _process = null;
