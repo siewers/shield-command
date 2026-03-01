@@ -17,8 +17,25 @@ public sealed record AppSettings
         
     public string? AdbPath { get; set; }
 
+    public Size? GetWindowSize()
+    {
+        var windowSize = new Size(WindowWidth, WindowHeight);
+        if (windowSize == Size.Empty)
+        {
+            return null;
+        }
+
+        return windowSize;
+    }
+    
     public Point? GetWindowPosition()
     {
-            
+        var position = new Point(WindowX.GetValueOrDefault(0), WindowY.GetValueOrDefault(0));
+        if (position == Point.Empty)
+        {
+            return null;
+        }
+
+        return position;
     }
 }

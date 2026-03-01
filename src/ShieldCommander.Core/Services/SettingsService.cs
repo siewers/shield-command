@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Text.Json;
 using ShieldCommander.Core.Models;
 
@@ -22,26 +23,16 @@ public sealed class SettingsService
 
     public IReadOnlyList<SavedDevice> SavedDevices => _settings.SavedDevices.AsReadOnly();
 
-    public (double Width, double Height)? WindowSize
-    {
-        get => _settings.WindowWidth > 0 && _settings.WindowHeight > 0
-            ? (_settings.WindowWidth, _settings.WindowHeight)
-            : null;
-    }
+    public Size? WindowSize => _settings.GetWindowSize();
 
-    public (double X, double Y)? WindowPosition
-    {
-        get => _settings.WindowX is not null && _settings.WindowY is not null
-            ? (_settings.WindowX.Value, _settings.WindowY.Value)
-            : null;
-    }
+    public Point? WindowPosition => _settings.GetWindowPosition();
 
-    public void SaveWindowBounds(double x, double y, double width, double height)
+    public void SaveWindowBounds(Point position, Size size)
     {
-        _settings.WindowX = x;
-        _settings.WindowY = y;
-        _settings.WindowWidth = width;
-        _settings.WindowHeight = height;
+        _settings.WindowX = position.X;
+        _settings.WindowY = position.Y;
+        _settings.WindowWidth = size.Width;
+        _settings.WindowHeight = size.Height;
         Save();
     }
 
@@ -108,8 +99,8 @@ public sealed class SettingsService
 
         try
         {
-            var json = File.ReadAllText(_filePath);
-            _settings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            using var settingsFileStream = File.OpenRead(_filePath);
+            _settings = JsonSerializer.Deserialize<AppSettings>(settingsFileStream) ?? new AppSettings();
         }
         catch
         {
@@ -121,15 +112,5 @@ public sealed class SettingsService
     {
         var json = JsonSerializer.Serialize(_settings, JsonOptions);
         File.WriteAllText(_filePath, json);
-    }
-
-    private sealed class AppSettings
-    {
-        public List<SavedDevice> SavedDevices { get; set; } = [];
-        public double WindowWidth { get; set; }
-        public double WindowHeight { get; set; }
-        public double? WindowX { get; set; }
-        public double? WindowY { get; set; }
-        public string? AdbPath { get; set; }
     }
 }
