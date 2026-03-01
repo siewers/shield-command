@@ -5,7 +5,13 @@ namespace ShieldCommander.Core.Models;
 
 public sealed class ProcessInfo : INotifyPropertyChanged
 {
-    public ProcessInfo(int pid, string name, string packageName, double cpuPercent, long memory, bool isUserApp,
+    public ProcessInfo(
+        int pid,
+        string name,
+        string packageName,
+        double cpuPercent,
+        long memory,
+        bool isUserApp,
         char stateChar)
     {
         Pid = pid;
@@ -26,7 +32,7 @@ public sealed class ProcessInfo : INotifyPropertyChanged
             'T' => "Stopped",
             't' => "Traced",
             'X' => "Dead",
-            _ => stateChar.ToString()
+            _ => stateChar.ToString(),
         };
     }
 

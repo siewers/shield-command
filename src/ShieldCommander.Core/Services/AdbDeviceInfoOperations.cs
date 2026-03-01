@@ -73,7 +73,7 @@ internal sealed class AdbDeviceInfoOperations(AdbRunner runner)
 
     private async Task<string> FetchDynamicSectionsAsync(string? deviceSerial)
     {
-        var combinedCmd = string.Join($"; echo {SectionSeparator}; ",
+        string[] operations =
         [
             "cat /proc/meminfo",
             "df -h /data",
@@ -85,7 +85,9 @@ internal sealed class AdbDeviceInfoOperations(AdbRunner runner)
             "cat /proc/net/dev",
             "cat /proc/vmstat",
             "dumpsys diskstats",
-        ]);
+        ];
+
+        var combinedCmd = string.Join($"; echo {SectionSeparator}; ", operations);
 
         return await runner.RunShellWithFallbackAsync(combinedCmd, deviceSerial);
     }

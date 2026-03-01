@@ -15,6 +15,7 @@ internal abstract class NumericFormatConverter : IValueConverter
             int i => (double)i,
             _ => (double?)null,
         };
+
         return number.HasValue ? Format(number.Value, parameter) : "\u2014";
     }
 

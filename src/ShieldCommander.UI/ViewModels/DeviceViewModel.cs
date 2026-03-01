@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShieldCommander.Core.Models;
@@ -9,39 +10,29 @@ namespace ShieldCommander.UI.ViewModels;
 public sealed partial class DeviceViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
-    private readonly SettingsService _settings;
     private readonly DeviceDiscoveryService _discoveryService = new();
+    private readonly SettingsService _settings;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
-    private string _ipAddress = string.Empty;
-
-    [ObservableProperty]
-    private string _statusText = "Not connected";
-
-    [ObservableProperty]
-    private bool _isConnected;
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsAdbAvailable))]
+    private string _adbPath;
 
     [ObservableProperty]
     private string _connectedDeviceName = string.Empty;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
+    private string _ipAddress = string.Empty;
 
     [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
+    private bool _isConnected;
+
+    [ObservableProperty]
     private bool _isScanning;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsAdbAvailable))]
-    private string _adbPath;
-
-    public string AdbPathPlaceholder => _adbService.FindAdb();
-
-    public bool IsAdbAvailable => _adbService.IsAdbAvailable;
-
-    public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
-    public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
-    public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
+    private string _statusText = "Not connected";
 
     public DeviceViewModel(AdbService adbService, SettingsService settings)
     {
@@ -52,6 +43,21 @@ public sealed partial class DeviceViewModel : ViewModelBase
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
     }
+
+    public string AdbPathPlaceholder => _adbService.FindAdb();
+
+    public bool IsAdbAvailable => _adbService.IsAdbAvailable;
+
+    public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
+
+    public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
+
+    public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
+
+    /// Raised when the UI should show the "waiting for authorization" dialog.
+    /// The func receives a CancellationToken (cancelled when the user clicks Cancel)
+    /// and should return only after the dialog is closed.
+    public Func<CancellationToken, Task>? ShowAuthorizationDialog { get; set; }
 
     partial void OnAdbPathChanged(string value)
     {
@@ -69,12 +75,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
         }
     }
 
-    private bool CanConnect() => System.Net.IPAddress.TryParse(IpAddress, out _);
-
-    /// Raised when the UI should show the "waiting for authorization" dialog.
-    /// The func receives a CancellationToken (cancelled when the user clicks Cancel)
-    /// and should return only after the dialog is closed.
-    public Func<CancellationToken, Task>? ShowAuthorizationDialog { get; set; }
+    private bool CanConnect() => IPAddress.TryParse(IpAddress, out _);
 
     [RelayCommand(CanExecute = nameof(CanConnect))]
     private async Task ConnectAsync()
@@ -211,7 +212,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
             {
                 IpAddress = saved.IpAddress,
                 DisplayName = saved.DeviceName,
-                Source = "Saved"
+                Source = "Saved",
             });
         }
     }
@@ -231,7 +232,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
                     {
                         IpAddress = device.IpAddress,
                         DisplayName = device.DisplayName,
-                        Source = "Discovered"
+                        Source = "Discovered",
                     });
                 }
             }
@@ -240,6 +241,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
         {
             // Scan failure is non-critical for suggestions
         }
+
         IsScanning = false;
     }
 

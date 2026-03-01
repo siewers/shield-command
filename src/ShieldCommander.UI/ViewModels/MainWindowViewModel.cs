@@ -8,6 +8,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly AdbService _adbService;
 
     [ObservableProperty]
+    private string _connectionStatusText = "Disconnected";
+
+    [ObservableProperty]
     private ViewModelBase _currentPage;
 
     [ObservableProperty]
@@ -15,16 +18,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _windowTitle = "Shield Commander — Disconnected";
-
-    [ObservableProperty]
-    private string _connectionStatusText = "Disconnected";
-
-    public DeviceViewModel DevicePage { get; }
-    public AppsViewModel AppsPage { get; }
-    public InstallViewModel InstallPage { get; }
-    public SystemViewModel SystemPage { get; }
-    public ActivityMonitorOrchestrator ActivityMonitorPage { get; }
-    public ProcessesViewModel ProcessesPage { get; }
 
     public MainWindowViewModel(AdbService adbService, SettingsService settings)
     {
@@ -53,6 +46,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 WindowTitle = string.IsNullOrEmpty(name)
                     ? $"Shield Commander — {ip}"
                     : $"Shield Commander — {name} ({ip})";
+
                 ConnectionStatusText = string.IsNullOrEmpty(name)
                     ? $"Connected to {ip}"
                     : $"Connected to {ip} — {name}";
@@ -85,6 +79,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             }
         };
     }
+
+    public DeviceViewModel DevicePage { get; }
+
+    public AppsViewModel AppsPage { get; }
+
+    public InstallViewModel InstallPage { get; }
+
+    public SystemViewModel SystemPage { get; }
+
+    public ActivityMonitorOrchestrator ActivityMonitorPage { get; }
+
+    public ProcessesViewModel ProcessesPage { get; }
 
     public void CloseAdbSession() => _adbService.CloseSession();
 

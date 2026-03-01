@@ -1,10 +1,13 @@
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Media;
-using Avalonia.Platform;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using FluentAvalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using ShieldCommander.Core.Services;
@@ -27,9 +30,9 @@ public sealed class App : Application
         // InformationalVersion carries the full string including any prerelease suffix.
         // When running from source, the version defaults to 1.0.0.0 — show as dev build.
         var informational = typeof(App).Assembly
-            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
-            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
-            .FirstOrDefault()?.InformationalVersion;
+                                       .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
+                                       .OfType<AssemblyInformationalVersionAttribute>()
+                                       .FirstOrDefault()?.InformationalVersion;
 
         if (informational is not null)
         {
@@ -96,8 +99,7 @@ public sealed class App : Application
 
     public static void ShowAboutDialog()
     {
-        if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-            && desktop.MainWindow is not null)
+        if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
         {
             var dialog = new Window
             {
@@ -109,14 +111,14 @@ public sealed class App : Application
                 Content = new StackPanel
                 {
                     Spacing = 6,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(24),
                     Children =
                     {
                         new Image
                         {
-                            Source = new Avalonia.Media.Imaging.Bitmap(
+                            Source = new Bitmap(
                                 AssetLoader.Open(new Uri("avares://ShieldCommander/Assets/app-icon.png"))),
                             Width = 72,
                             Height = 72,
@@ -127,13 +129,13 @@ public sealed class App : Application
                             Text = "Shield Commander",
                             FontSize = 18,
                             FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                         },
                         new TextBlock
                         {
                             Text = $"Version {Version}",
                             FontSize = 13,
-                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             Foreground = Brushes.Gray,
                         },
                         new TextBlock
@@ -141,7 +143,7 @@ public sealed class App : Application
                             Text = "Monitoring and app management\nfor your Nvidia Shield",
                             FontSize = 12,
                             TextAlignment = TextAlignment.Center,
-                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             Foreground = Brushes.Gray,
                             Margin = new Thickness(0, 8, 0, 0),
                         },
@@ -153,20 +155,21 @@ public sealed class App : Application
                         {
                             Text = "\u00a9 2026 Siewers Software. All rights reserved.",
                             FontSize = 11,
-                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             Foreground = Brushes.Gray,
                         },
                         new TextBlock
                         {
                             Text = "Built with Avalonia UI",
                             FontSize = 10,
-                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             Foreground = Brushes.DarkGray,
                             Margin = new Thickness(0, 4, 0, 0),
                         },
-                    }
-                }
+                    },
+                },
             };
+
             dialog.ShowDialog(desktop.MainWindow);
         }
     }

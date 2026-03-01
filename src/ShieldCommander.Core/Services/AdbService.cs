@@ -4,35 +4,34 @@ namespace ShieldCommander.Core.Services;
 
 public sealed class AdbService
 {
-    private readonly AdbPathResolver _pathResolver;
-    private string _adbPath;
-    private bool? _isAdbAvailable;
-
-    private readonly AdbRunner _runner;
+    private readonly AdbDeviceInfoOperations _deviceInfo;
     private readonly AdbDeviceOperations _devices;
     private readonly AdbPackageOperations _packages;
+    private readonly AdbPathResolver _pathResolver;
     private readonly AdbProcessOperations _processes;
-    private readonly AdbDeviceInfoOperations _deviceInfo;
+
+    private readonly AdbRunner _runner;
+    private bool? _isAdbAvailable;
 
     public AdbService(SettingsService settings, AdbPathResolver pathResolver)
     {
         _pathResolver = pathResolver;
-        _adbPath = settings.AdbPath ?? pathResolver.FindAdb();
+        ResolvedPath = settings.AdbPath ?? pathResolver.FindAdb();
 
-        _runner = new AdbRunner(() => _adbPath);
+        _runner = new AdbRunner(() => ResolvedPath);
         _devices = new AdbDeviceOperations(_runner);
         _packages = new AdbPackageOperations(_runner);
         _processes = new AdbProcessOperations(_runner);
         _deviceInfo = new AdbDeviceInfoOperations(_runner);
     }
 
-    public string ResolvedPath => _adbPath;
+    public string ResolvedPath { get; private set; }
 
     public bool IsAdbAvailable => _isAdbAvailable ??= CheckAdbAvailable();
 
     public void SetAdbPath(string? path)
     {
-        _adbPath = string.IsNullOrWhiteSpace(path) ? _pathResolver.FindAdb() : path;
+        ResolvedPath = string.IsNullOrWhiteSpace(path) ? _pathResolver.FindAdb() : path;
         _isAdbAvailable = null;
     }
 
@@ -60,7 +59,9 @@ public sealed class AdbService
         _packages.GetInstalledPackagesAsync(deviceSerial);
 
     public Task<InstalledPackage> GetPackageInfoAsync(
-        string packageName, string? deviceSerial = null, bool includeSize = false) =>
+        string packageName,
+        string? deviceSerial = null,
+        bool includeSize = false) =>
         _packages.GetPackageInfoAsync(packageName, deviceSerial, includeSize);
 
     public Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null) =>
@@ -87,5 +88,5 @@ public sealed class AdbService
         _deviceInfo.GetSystemSnapshotAsync(deviceSerial);
 
     private bool CheckAdbAvailable() =>
-        File.Exists(_adbPath) || AdbPathResolver.CanRunAdb(_adbPath);
+        File.Exists(ResolvedPath) || AdbPathResolver.CanRunAdb(ResolvedPath);
 }

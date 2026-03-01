@@ -33,14 +33,15 @@ public sealed partial class InstallView : UserControl
             return;
         }
 
-#pragma warning disable CS0618 // Data is obsolete, use DataTransfer
+#pragma warning disable CS0618// Data is obsolete, use DataTransfer
         var files = e.Data.GetFiles();
 #pragma warning restore CS0618
         if (files != null)
         {
             var paths = files
-                .Select(f => f.Path.LocalPath)
-                .Where(p => p.EndsWith(".apk", StringComparison.OrdinalIgnoreCase));
+                       .Select(f => f.Path.LocalPath)
+                       .Where(p => p.EndsWith(".apk", StringComparison.OrdinalIgnoreCase));
+
             vm.AddApkFiles(paths);
         }
 

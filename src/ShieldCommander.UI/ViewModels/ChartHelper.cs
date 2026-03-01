@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using SkiaSharp;
@@ -7,8 +8,12 @@ namespace ShieldCommander.UI.ViewModels;
 
 public static class ChartHelper
 {
-    public static void TrimOldPoints(ObservableCollection<DateTimePoint> points, DateTime now,
-        TimeSpan chartWindow, TimeSpan miniWindow, bool mini = false)
+    public static void TrimOldPoints(
+        ObservableCollection<DateTimePoint> points,
+        DateTime now,
+        TimeSpan chartWindow,
+        TimeSpan miniWindow,
+        bool mini = false)
     {
         var window = mini ? miniWindow : chartWindow;
         var cutoff = now - window - TimeSpan.FromSeconds(window.TotalSeconds * 0.1);
@@ -18,8 +23,12 @@ public static class ChartHelper
         }
     }
 
-    public static void UpdateAxisLimits(DateTimeAxis axis, DateTime now,
-        TimeSpan chartWindow, TimeSpan miniWindow, bool mini = false)
+    public static void UpdateAxisLimits(
+        DateTimeAxis axis,
+        DateTime now,
+        TimeSpan chartWindow,
+        TimeSpan miniWindow,
+        bool mini = false)
     {
         if (now == default)
         {
@@ -34,6 +43,6 @@ public static class ChartHelper
     public static DateTimeAxis CreateTimeAxis() =>
         new(TimeSpan.FromSeconds(30), _ => "") { IsVisible = false };
 
-    public static Avalonia.Media.Color ToAvaloniaColor(SKColor c) =>
-        Avalonia.Media.Color.FromArgb(c.Alpha, c.Red, c.Green, c.Blue);
+    public static Color ToAvaloniaColor(SKColor c) =>
+        Color.FromArgb(c.Alpha, c.Red, c.Green, c.Blue);
 }

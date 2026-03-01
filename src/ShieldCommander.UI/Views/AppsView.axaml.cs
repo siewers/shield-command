@@ -53,7 +53,7 @@ public sealed partial class AppsView : UserControl
                 menu.CreateGoogleSearchItem(row.PackageName),
                 new Separator(),
                 menu.CreateItem("Uninstall", "\ue4a6", () => _ = ShowUninstallAsync(row, vm)),
-            }
+            },
         };
 
         flyout.ShowAt(PackageGrid, true);

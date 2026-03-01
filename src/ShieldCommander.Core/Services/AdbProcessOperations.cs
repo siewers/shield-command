@@ -101,7 +101,11 @@ internal sealed class AdbProcessOperations(AdbRunner runner)
                 continue;
             }
 
-            if (trimmed == "---") { section++; continue; }
+            if (trimmed == "---")
+            {
+                section++;
+                continue;
+            }
 
             switch (section)
             {
@@ -145,13 +149,15 @@ internal sealed class AdbProcessOperations(AdbRunner runner)
                 totalJiffies += v;
             }
         }
+
         if (fields.Length > 4)
         {
             long.TryParse(fields[4], out idleJiffies);
         }
     }
 
-    private static void ParseProcessStatLine(string trimmed,
+    private static void ParseProcessStatLine(
+        string trimmed,
         Dictionary<int, (long Jiffies, string Name, long RssPages, char State)> procData)
     {
         var commEnd = trimmed.LastIndexOf(')');

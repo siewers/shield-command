@@ -12,43 +12,50 @@
         <StackPanel Spacing="16">
             <TextBlock Text="{Binding StatusText}"
                        Foreground="Gray"
-                       IsVisible="{Binding IsBusy}"/>
+                       IsVisible="{Binding IsBusy}" />
 
             <!-- Device -->
-            <TextBlock Text="Device" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Text="Device" FontSize="16" FontWeight="SemiBold" />
             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                     CornerRadius="4" Padding="12">
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Model" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Model, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Model" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Model, FallbackValue=—}" Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Manufacturer" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Manufacturer, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Manufacturer" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Manufacturer, FallbackValue=—}"
+                               Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Architecture" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Architecture, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Architecture" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Architecture, FallbackValue=—}"
+                               Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Android" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AndroidVersion, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Android" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AndroidVersion, FallbackValue=—}"
+                               Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="API Level" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ApiLevel, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="API Level" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ApiLevel, FallbackValue=—}" Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Build" FontWeight="SemiBold" Margin="0,0,24,0"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding BuildId, FallbackValue=—}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Build" FontWeight="SemiBold" Margin="0,0,24,0" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding BuildId, FallbackValue=—}" />
                 </Grid>
             </Border>
 
             <!-- Storage -->
-            <TextBlock Text="Storage" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Text="Storage" FontSize="16" FontWeight="SemiBold" />
             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                     CornerRadius="4" Padding="12">
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total RAM" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalRam, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total RAM" FontWeight="SemiBold" Margin="0,0,24,4" />
+                    <TextBlock Grid.Row="0" Grid.Column="1"
+                               Text="{Binding TotalRam, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}"
+                               Margin="0,0,0,4" />
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total storage" FontWeight="SemiBold" Margin="0,0,24,0"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StorageTotal, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total storage" FontWeight="SemiBold"
+                               Margin="0,0,24,0" />
+                    <TextBlock Grid.Row="1" Grid.Column="1"
+                               Text="{Binding StorageTotal, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}" />
                 </Grid>
             </Border>
         </StackPanel>

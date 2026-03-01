@@ -11,20 +11,7 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
 {
-    private TimeSpan _chartWindow;
-    private TimeSpan _miniWindow;
-
     private static readonly Func<double, string> KbsLabeler = v => v.ToString("F0") + " KB/s";
-
-    [ObservableProperty] private long _diskReadSpeed;
-    [ObservableProperty] private long _diskWriteSpeed;
-    [ObservableProperty] private long _diskDataRead;
-    [ObservableProperty] private long _diskDataWritten;
-    [ObservableProperty] private int _diskLatency;
-    [ObservableProperty] private long _diskRecentWriteSpeed;
-
-    private long _prevDiskBytesRead, _prevDiskBytesWritten;
-    private DateTime _prevDiskTime;
     private readonly ObservableCollection<DateTimePoint> _diskReadPoints = [];
     private readonly ObservableCollection<DateTimePoint> _diskWritePoints = [];
     private readonly DateTimeAxis _diskXAxis;
@@ -32,25 +19,30 @@ public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
     private readonly ObservableCollection<DateTimePoint> _miniDiskReadPoints = [];
     private readonly ObservableCollection<DateTimePoint> _miniDiskWritePoints = [];
     private readonly DateTimeAxis _miniDiskXAxis;
+    private TimeSpan _chartWindow;
 
-    public ObservableCollection<ISeries> DiskSeries { get; } = [];
-    public ObservableCollection<ChartLegendItem> DiskLegend { get; } = [];
-    public Axis[] DiskXAxes { get; }
-    public Axis[] DiskYAxes { get; } =
-    [
-        new() { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 }
-    ];
+    [ObservableProperty]
+    private long _diskDataRead;
 
-    public ObservableCollection<ISeries> DiskLoadSeries { get; } = [];
-    public Axis[] DiskLoadXAxes { get; }
-    public Axis[] DiskLoadYAxes { get; } =
-    [
-        new() { ShowSeparatorLines = false, IsVisible = false }
-    ];
-    public RectangularSection[] DiskLoadSections { get; } =
-    [
-        new() { Yi = 0, Yj = 0, Stroke = new SolidColorPaint(SKColors.Gray.WithAlpha(100), 1f) }
-    ];
+    [ObservableProperty]
+    private long _diskDataWritten;
+
+    [ObservableProperty]
+    private int _diskLatency;
+
+    [ObservableProperty]
+    private long _diskReadSpeed;
+
+    [ObservableProperty]
+    private long _diskRecentWriteSpeed;
+
+    [ObservableProperty]
+    private long _diskWriteSpeed;
+
+    private TimeSpan _miniWindow;
+
+    private long _prevDiskBytesRead, _prevDiskBytesWritten;
+    private DateTime _prevDiskTime;
 
     public DiskViewModel(TimeSpan chartWindow, TimeSpan miniWindow)
     {
@@ -74,6 +66,7 @@ public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Read",
         });
+
         DiskSeries.Add(new LineSeries<DateTimePoint>
         {
             Values = _diskWritePoints,
@@ -85,6 +78,7 @@ public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Write",
         });
+
         DiskLegend.Add(new ChartLegendItem { Name = "Read", Color = ChartHelper.ToAvaloniaColor(SKColors.DodgerBlue) });
         DiskLegend.Add(new ChartLegendItem { Name = "Write", Color = ChartHelper.ToAvaloniaColor(SKColors.OrangeRed) });
 
@@ -99,6 +93,7 @@ public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Read",
         });
+
         DiskLoadSeries.Add(new LineSeries<DateTimePoint>
         {
             Values = _miniDiskWritePoints,
@@ -114,6 +109,31 @@ public sealed partial class DiskViewModel : ViewModelBase, IActivityMonitor
         ChartHelper.UpdateAxisLimits(_diskXAxis, DateTime.Now, _chartWindow, _miniWindow);
         ChartHelper.UpdateAxisLimits(_miniDiskXAxis, DateTime.Now, _chartWindow, _miniWindow, mini: true);
     }
+
+    public ObservableCollection<ISeries> DiskSeries { get; } = [];
+
+    public ObservableCollection<ChartLegendItem> DiskLegend { get; } = [];
+
+    public Axis[] DiskXAxes { get; }
+
+    public Axis[] DiskYAxes { get; } =
+    [
+        new() { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 },
+    ];
+
+    public ObservableCollection<ISeries> DiskLoadSeries { get; } = [];
+
+    public Axis[] DiskLoadXAxes { get; }
+
+    public Axis[] DiskLoadYAxes { get; } =
+    [
+        new() { ShowSeparatorLines = false, IsVisible = false },
+    ];
+
+    public RectangularSection[] DiskLoadSections { get; } =
+    [
+        new() { Yi = 0, Yj = 0, Stroke = new SolidColorPaint(SKColors.Gray.WithAlpha(100), 1f) },
+    ];
 
     public void Update(SystemSnapshot snapshot)
     {

@@ -15,10 +15,10 @@ internal sealed class AdbPackageOperations(AdbRunner runner)
         }
 
         var packageNames = result.Output
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(StripPrefix)
-            .Where(n => n.Length > 0)
-            .ToList();
+                                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(StripPrefix)
+                                 .Where(n => n.Length > 0)
+                                 .ToList();
 
         var infoTasks = packageNames.Select(name => GetPackageInfoAsync(name, deviceSerial));
         var packages = await Task.WhenAll(infoTasks);
@@ -27,7 +27,9 @@ internal sealed class AdbPackageOperations(AdbRunner runner)
     }
 
     public async Task<InstalledPackage> GetPackageInfoAsync(
-        string packageName, string? deviceSerial = null, bool includeSize = false)
+        string packageName,
+        string? deviceSerial = null,
+        bool includeSize = false)
     {
         var deviceArg = AdbRunner.DeviceArg(deviceSerial);
         var result = await runner.RunAdbAsync($"{deviceArg} shell dumpsys package {packageName}".Trim());
@@ -126,9 +128,9 @@ internal sealed class AdbPackageOperations(AdbRunner runner)
         }
 
         var statArgs = string.Join(' ', pmResult.Output
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(StripPrefix)
-            .Where(p => p.Length > 0));
+                                                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                                .Select(StripPrefix)
+                                                .Where(p => p.Length > 0));
 
         if (statArgs.Length == 0)
         {

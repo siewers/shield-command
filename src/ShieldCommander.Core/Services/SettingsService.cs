@@ -13,9 +13,10 @@ public sealed class SettingsService
 
     public SettingsService(string? configDirectory = null)
     {
-        var dir = configDirectory
-                  ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        var dir = configDirectory ??
+                  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                       "ShieldCommander");
+
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, "settings.json");
         Load();
@@ -27,15 +28,6 @@ public sealed class SettingsService
 
     public Point? WindowPosition => _settings.GetWindowPosition();
 
-    public void SaveWindowBounds(Point position, Size size)
-    {
-        _settings.WindowX = position.X;
-        _settings.WindowY = position.Y;
-        _settings.WindowWidth = size.Width;
-        _settings.WindowHeight = size.Height;
-        Save();
-    }
-
     public string? AdbPath
     {
         get => _settings.AdbPath;
@@ -46,10 +38,18 @@ public sealed class SettingsService
         }
     }
 
+    public void SaveWindowBounds(Point position, Size size)
+    {
+        _settings.WindowX = position.X;
+        _settings.WindowY = position.Y;
+        _settings.WindowWidth = size.Width;
+        _settings.WindowHeight = size.Height;
+        Save();
+    }
+
     public void AddOrUpdateDevice(string ipAddress, string? deviceName = null)
     {
-        var existing = _settings.SavedDevices.FirstOrDefault(
-            d => d.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));
+        var existing = _settings.SavedDevices.FirstOrDefault(d => d.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));
 
         if (existing != null)
         {
@@ -76,8 +76,7 @@ public sealed class SettingsService
     {
         foreach (var device in _settings.SavedDevices)
         {
-            device.AutoConnect = autoConnect
-                && device.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase);
+            device.AutoConnect = autoConnect && device.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase);
         }
 
         Save();
@@ -85,8 +84,7 @@ public sealed class SettingsService
 
     public void RemoveDevice(string ipAddress)
     {
-        _settings.SavedDevices.RemoveAll(
-            d => d.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));
+        _settings.SavedDevices.RemoveAll(d => d.IpAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));
         Save();
     }
 

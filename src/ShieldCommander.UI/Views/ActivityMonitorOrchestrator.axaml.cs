@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Avalonia.Controls;
-using ShieldCommander.UI.ViewModels;
 
 namespace ShieldCommander.UI.Views;
 
@@ -15,13 +14,13 @@ public sealed partial class ActivityMonitorOrchestrator : UserControl
         ["Thermals"] = new ThermalsView(),
     };
 
+    private ViewModels.ActivityMonitorOrchestrator? _subscribedVm;
+
     public ActivityMonitorOrchestrator()
     {
         InitializeComponent();
         DataContextChanged += (_, _) => SubscribeToViewModel();
     }
-
-    private ViewModels.ActivityMonitorOrchestrator? _subscribedVm;
 
     private void SubscribeToViewModel()
     {

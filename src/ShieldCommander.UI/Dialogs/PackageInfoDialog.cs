@@ -3,9 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using ShieldCommander.Core.Models;
-
 using ShieldCommander.UI.Formatters;
-
 
 namespace ShieldCommander.UI.Dialogs;
 
@@ -13,7 +11,9 @@ internal static class PackageInfoDialog
 {
     /// Shows a package info dialog. Returns true if the user clicked the primary action button.
     public static async Task<bool> ShowAsync(
-        InstalledPackage package, string? primaryButtonText = null, string? confirmMessage = null)
+        InstalledPackage package,
+        string? primaryButtonText = null,
+        string? confirmMessage = null)
     {
         return await ShowCoreAsync(
             package.PackageName,
@@ -42,7 +42,7 @@ internal static class PackageInfoDialog
 
         if (package is not null)
         {
-            rows.Add(("", null)); // spacer
+            rows.Add(("", null));// spacer
             rows.AddRange(BuildPackageRows(package));
         }
 
@@ -67,10 +67,10 @@ internal static class PackageInfoDialog
     }
 
     private static async Task<bool> ShowCoreAsync(
-            string title,
-            List<(string Label, string? Value)> rows,
-            string? primaryButtonText,
-            string? confirmMessage = null)
+        string title,
+        List<(string Label, string? Value)> rows,
+        string? primaryButtonText,
+        string? confirmMessage = null)
     {
         var grid = new Grid
         {
@@ -100,6 +100,7 @@ internal static class PackageInfoDialog
                 FontWeight = FontWeight.SemiBold,
                 Margin = new Thickness(0, 4, 20, 4),
             };
+
             Grid.SetRow(label, i);
             Grid.SetColumn(label, 0);
             grid.Children.Add(label);
@@ -110,6 +111,7 @@ internal static class PackageInfoDialog
                 Margin = new Thickness(0, 4),
                 TextWrapping = TextWrapping.Wrap,
             };
+
             Grid.SetRow(value, i);
             Grid.SetColumn(value, 1);
             grid.Children.Add(value);

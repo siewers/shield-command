@@ -21,24 +21,24 @@
                         BorderThickness="0,0,1,0" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Read/sec:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Read/sec:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding DiskReadSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Write/sec:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Write/sec:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding DiskWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Write latency:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Write latency:" FontSize="12" />
                         <TextBlock Grid.Row="2" Grid.Column="1"
                                    Text="{Binding DiskLatency, StringFormat='{}{0} ms'}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Recent write:" FontSize="12"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Recent write:" FontSize="12" />
                         <TextBlock Grid.Row="3" Grid.Column="1"
                                    Text="{Binding DiskRecentWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
                 <!-- Center: Mini IO chart -->
@@ -48,7 +48,7 @@
                     <StackPanel>
                         <TextBlock Text="IO" FontSize="11" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Margin="0,0,0,2"
-                                   Foreground="Gray"/>
+                                   Foreground="Gray" />
                         <Border BorderBrush="#555555"
                                 BorderThickness="1" CornerRadius="2">
                             <lvc:CartesianChart Series="{Binding DiskLoadSeries}"
@@ -57,8 +57,7 @@
                                                 Sections="{Binding DiskLoadSections}"
                                                 Height="55"
                                                 LegendPosition="Hidden"
-                                                TooltipPosition="Hidden"
-                                                />
+                                                TooltipPosition="Hidden" />
                         </Border>
                     </StackPanel>
                 </Border>
@@ -66,24 +65,24 @@
                 <Border Grid.Column="2" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Data read:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Data read:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding DiskDataRead, Converter={x:Static converters:ByteFormatConverter.Instance}}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Data written:" FontSize="12"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Data written:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding DiskDataWritten, Converter={x:Static converters:ByteFormatConverter.Instance}}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Data read/sec:" FontSize="12"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Data read/sec:" FontSize="12" />
                         <TextBlock Grid.Row="2" Grid.Column="1"
                                    Text="{Binding DiskReadSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Data written/sec:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Data written/sec:" FontSize="12" />
                         <TextBlock Grid.Row="3" Grid.Column="1"
                                    Text="{Binding DiskWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
-                                   HorizontalAlignment="Right"/>
+                                   HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
             </Grid>
@@ -95,8 +94,7 @@
                                     XAxes="{Binding DiskXAxes}"
                                     YAxes="{Binding DiskYAxes}"
                                     ZoomMode="X"
-                                    LegendPosition="Hidden"
-                                    />
+                                    LegendPosition="Hidden" />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding DiskLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">
                     <ItemsControl.ItemTemplate>
@@ -105,15 +103,16 @@
                                 <Border Width="12" Height="3" CornerRadius="1"
                                         VerticalAlignment="Center">
                                     <Border.Background>
-                                        <SolidColorBrush Color="{Binding Color}"/>
+                                        <SolidColorBrush Color="{Binding Color}" />
                                     </Border.Background>
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
-                                           MinWidth="40"/>
-                                <TextBlock Text="{Binding Value, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
-                                           FontSize="11"
-                                           Foreground="#888888" MinWidth="60"
-                                           TextAlignment="Right"/>
+                                           MinWidth="40" />
+                                <TextBlock
+                                    Text="{Binding Value, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
+                                    FontSize="11"
+                                    Foreground="#888888" MinWidth="60"
+                                    TextAlignment="Right" />
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

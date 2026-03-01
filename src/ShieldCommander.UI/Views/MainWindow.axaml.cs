@@ -1,10 +1,13 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +15,16 @@ using ShieldCommander.Core.Services;
 using ShieldCommander.UI.Models;
 using ShieldCommander.UI.Platform;
 using ShieldCommander.UI.ViewModels;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
 namespace ShieldCommander.UI.Views;
 
 public sealed partial class MainWindow : Window
 {
+    private static readonly FontFamily PhosphorThin =
+        new("avares://ShieldCommander/Assets/Fonts#Phosphor-Thin");
+
     public MainWindow()
     {
         InitializeComponent();
@@ -33,8 +41,8 @@ public sealed partial class MainWindow : Window
             {
                 if (WindowState == WindowState.Normal)
                 {
-                    var position = new System.Drawing.Point(Position.X, Position.Y);
-                    var size = new System.Drawing.Size((int)Width, (int)Height);
+                    var position = new Point(Position.X, Position.Y);
+                    var size = new Size((int)Width, (int)Height);
                     settings.SaveWindowBounds(position, size);
                 }
 
@@ -78,7 +86,7 @@ public sealed partial class MainWindow : Window
             // Small delay to ensure all templates are fully applied
             await Task.Delay(TimeSpan.FromMilliseconds(100));
 
-            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+            Dispatcher.UIThread.Post(async () =>
             {
                 foreach (var descendant in NavView.GetVisualDescendants())
                 {
@@ -97,8 +105,10 @@ public sealed partial class MainWindow : Window
                                     Width = 18,
                                     Height = 18,
                                 };
+
                                 break;
                             }
+
                             parent = parent.GetVisualParent();
                         }
                     }
@@ -110,8 +120,7 @@ public sealed partial class MainWindow : Window
                     }
 
                     // Nudge nav item text down to align with icon
-                    if (descendant is ContentPresenter { Name: "ContentPresenter" } cp
-                        && cp.GetVisualParent() is Control { Name: "ContentGrid" })
+                    if (descendant is ContentPresenter { Name: "ContentPresenter" } cp && cp.GetVisualParent() is Control { Name: "ContentGrid" })
                     {
                         cp.Margin = new Thickness(cp.Margin.Left, cp.Margin.Top + 4, cp.Margin.Right, cp.Margin.Bottom);
                     }
@@ -138,17 +147,15 @@ public sealed partial class MainWindow : Window
         };
     }
 
-    private static readonly FontFamily PhosphorThin =
-        new("avares://ShieldCommander/Assets/Fonts#Phosphor-Thin");
-
     private void SetNavigationIcons()
     {
         var topIcons = new IconSource[]
         {
-            new FontIconSource { Glyph = "\ue2ce", FontFamily = PhosphorThin, FontSize = 20 }, // info
-            new FontIconSource { Glyph = "\ue296", FontFamily = PhosphorThin, FontSize = 20 }, // grid-four
-            new FontIconSource { Glyph = "\ue154", FontFamily = PhosphorThin, FontSize = 20 }, // chart-line
+            new FontIconSource { Glyph = "\ue2ce", FontFamily = PhosphorThin, FontSize = 20 },// info
+            new FontIconSource { Glyph = "\ue296", FontFamily = PhosphorThin, FontSize = 20 },// grid-four
+            new FontIconSource { Glyph = "\ue154", FontFamily = PhosphorThin, FontSize = 20 },// chart-line
         };
+
         var items = NavView.MenuItems;
 
         for (var i = 0; i < items.Count && i < topIcons.Length; i++)
@@ -164,13 +171,14 @@ public sealed partial class MainWindow : Window
         {
             var childIcons = new IconSource[]
             {
-                new FontIconSource { Glyph = "\ue610", FontFamily = PhosphorThin, FontSize = 20 }, // cpu
-                new FontIconSource { Glyph = "\ue9c4", FontFamily = PhosphorThin, FontSize = 20 }, // memory
-                new FontIconSource { Glyph = "\ue29e", FontFamily = PhosphorThin, FontSize = 20 }, // hard-drive
-                new FontIconSource { Glyph = "\uedde", FontFamily = PhosphorThin, FontSize = 20 }, // network
-                new FontIconSource { Glyph = "\ue5c6", FontFamily = PhosphorThin, FontSize = 20 }, // thermometer
-                new FontIconSource { Glyph = "\ueadc", FontFamily = PhosphorThin, FontSize = 20 }, // list-checks
+                new FontIconSource { Glyph = "\ue610", FontFamily = PhosphorThin, FontSize = 20 },// cpu
+                new FontIconSource { Glyph = "\ue9c4", FontFamily = PhosphorThin, FontSize = 20 },// memory
+                new FontIconSource { Glyph = "\ue29e", FontFamily = PhosphorThin, FontSize = 20 },// hard-drive
+                new FontIconSource { Glyph = "\uedde", FontFamily = PhosphorThin, FontSize = 20 },// network
+                new FontIconSource { Glyph = "\ue5c6", FontFamily = PhosphorThin, FontSize = 20 },// thermometer
+                new FontIconSource { Glyph = "\ueadc", FontFamily = PhosphorThin, FontSize = 20 },// list-checks
             };
+
             var children = activityMonitor.MenuItems;
             for (var i = 0; i < children.Count && i < childIcons.Length; i++)
             {
@@ -185,11 +193,12 @@ public sealed partial class MainWindow : Window
         var footerItems = NavView.FooterMenuItems;
         if (footerItems.Count > 0 && footerItems[0] is NavigationViewItem settingsItem)
         {
-            settingsItem.IconSource = new FontIconSource { Glyph = "\ue270", FontFamily = PhosphorThin, FontSize = 20 }; // gear
+            settingsItem.IconSource = new FontIconSource { Glyph = "\ue270", FontFamily = PhosphorThin, FontSize = 20 };// gear
         }
+
         if (footerItems.Count > 1 && footerItems[1] is NavigationViewItem aboutItem)
         {
-            aboutItem.IconSource = new FontIconSource { Glyph = "\ue3e8", FontFamily = PhosphorThin, FontSize = 20 }; // question
+            aboutItem.IconSource = new FontIconSource { Glyph = "\ue3e8", FontFamily = PhosphorThin, FontSize = 20 };// question
         }
     }
 
@@ -219,6 +228,7 @@ public sealed partial class MainWindow : Window
                 IsChecked = vm.ActivityMonitorPage.SelectedRefreshRate == rate,
                 Margin = new Thickness(4, 0),
             };
+
             var capturedRate = rate;
             item.IsCheckedChanged += (_, _) =>
             {
@@ -227,6 +237,7 @@ public sealed partial class MainWindow : Window
                     vm.ActivityMonitorPage.SelectedRefreshRate = capturedRate;
                 }
             };
+
             panel.Children.Add(item);
         }
 
@@ -243,7 +254,7 @@ public sealed partial class MainWindow : Window
     {
         if (DataContext is MainWindowViewModel vm)
         {
-            var indicator = this.FindControl<Avalonia.Controls.Shapes.Ellipse>("ConnectionIndicator");
+            var indicator = this.FindControl<Ellipse>("ConnectionIndicator");
             indicator?.Fill = new SolidColorBrush(vm.IsDeviceConnected ? Color.Parse("#44BB44") : Color.Parse("#FF4444"));
 
             // Subscribe to changes
@@ -284,7 +295,7 @@ public sealed partial class MainWindow : Window
         };
 
         // Auto-close dialog when device connects
-        void OnPropertyChanged(object? s, System.ComponentModel.PropertyChangedEventArgs e)
+        void OnPropertyChanged(object? s, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(DeviceViewModel.IsConnected) && vm.DevicePage.IsConnected)
             {
@@ -292,6 +303,7 @@ public sealed partial class MainWindow : Window
                 dialog.Hide();
             }
         }
+
         vm.DevicePage.PropertyChanged += OnPropertyChanged;
 
         await dialog.ShowAsync();
@@ -302,8 +314,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateFrequency_Click(object? sender, EventArgs e)
     {
-        if (sender is NativeMenuItem { Header: { } header, Parent: { } parentMenu } menuItem
-            && DataContext is MainWindowViewModel vm)
+        if (sender is NativeMenuItem { Header: { } header, Parent: { } parentMenu } menuItem && DataContext is MainWindowViewModel vm)
         {
             // Uncheck all siblings, check the clicked item
             foreach (var item in parentMenu.Items.OfType<NativeMenuItem>())

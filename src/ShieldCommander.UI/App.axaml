@@ -6,7 +6,7 @@
              Name="Shield Commander">
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
 
     <Application.Styles>
@@ -14,7 +14,7 @@
 
         <!-- FluentAvaloniaUI's sort arrow icon is taller than the text, pushing it off-center -->
         <Style Selector="DataGridColumnHeader ContentPresenter">
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style Selector="DataGridCell:current">

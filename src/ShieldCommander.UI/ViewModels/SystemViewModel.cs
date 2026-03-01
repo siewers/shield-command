@@ -8,18 +8,36 @@ public sealed partial class SystemViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
 
-    [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _statusText = string.Empty;
+    [ObservableProperty]
+    private string? _androidVersion;
+
+    [ObservableProperty]
+    private string? _apiLevel;
+
+    [ObservableProperty]
+    private string? _architecture;
+
+    [ObservableProperty]
+    private string? _buildId;
+
+    [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
+    private string? _manufacturer;
 
     // Static
-    [ObservableProperty] private string? _model;
-    [ObservableProperty] private string? _manufacturer;
-    [ObservableProperty] private string? _architecture;
-    [ObservableProperty] private string? _androidVersion;
-    [ObservableProperty] private string? _apiLevel;
-    [ObservableProperty] private string? _buildId;
-    [ObservableProperty] private long? _totalRam;
-    [ObservableProperty] private long? _storageTotal;
+    [ObservableProperty]
+    private string? _model;
+
+    [ObservableProperty]
+    private string _statusText = string.Empty;
+
+    [ObservableProperty]
+    private long? _storageTotal;
+
+    [ObservableProperty]
+    private long? _totalRam;
 
     public SystemViewModel(AdbService adbService)
     {

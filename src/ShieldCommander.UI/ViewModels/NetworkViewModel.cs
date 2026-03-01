@@ -11,49 +11,44 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class NetworkViewModel : ViewModelBase, IActivityMonitor
 {
-    private TimeSpan _chartWindow;
-    private TimeSpan _miniWindow;
-
     private static readonly Func<double, string> KbsLabeler = v => v.ToString("F0") + " KB/s";
-
-    [ObservableProperty] private long _netInSpeed;
-    [ObservableProperty] private long _netOutSpeed;
-    [ObservableProperty] private long _netPacketsIn;
-    [ObservableProperty] private long _netPacketsOut;
-    [ObservableProperty] private long _netDataIn;
-    [ObservableProperty] private long _netDataOut;
-    [ObservableProperty] private long _netPacketsInPerSec;
-    [ObservableProperty] private long _netPacketsOutPerSec;
-
-    private long _prevNetBytesIn, _prevNetBytesOut;
-    private long _prevNetPacketsIn, _prevNetPacketsOut;
-    private DateTime _prevNetTime;
-    private readonly ObservableCollection<DateTimePoint> _netInPoints = [];
-    private readonly ObservableCollection<DateTimePoint> _netOutPoints = [];
-    private readonly DateTimeAxis _netXAxis;
 
     private readonly ObservableCollection<DateTimePoint> _miniNetInPoints = [];
     private readonly ObservableCollection<DateTimePoint> _miniNetOutPoints = [];
     private readonly DateTimeAxis _miniNetXAxis;
+    private readonly ObservableCollection<DateTimePoint> _netInPoints = [];
+    private readonly ObservableCollection<DateTimePoint> _netOutPoints = [];
+    private readonly DateTimeAxis _netXAxis;
+    private TimeSpan _chartWindow;
+    private TimeSpan _miniWindow;
 
-    public ObservableCollection<ISeries> NetSeries { get; } = [];
-    public ObservableCollection<ChartLegendItem> NetLegend { get; } = [];
-    public Axis[] NetXAxes { get; }
-    public Axis[] NetYAxes { get; } =
-    [
-        new() { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 }
-    ];
+    [ObservableProperty]
+    private long _netDataIn;
 
-    public ObservableCollection<ISeries> NetLoadSeries { get; } = [];
-    public Axis[] NetLoadXAxes { get; }
-    public Axis[] NetLoadYAxes { get; } =
-    [
-        new() { ShowSeparatorLines = false, IsVisible = false }
-    ];
-    public RectangularSection[] NetLoadSections { get; } =
-    [
-        new() { Yi = 0, Yj = 0, Stroke = new SolidColorPaint(SKColors.Gray.WithAlpha(100), 1f) }
-    ];
+    [ObservableProperty]
+    private long _netDataOut;
+
+    [ObservableProperty]
+    private long _netInSpeed;
+
+    [ObservableProperty]
+    private long _netOutSpeed;
+
+    [ObservableProperty]
+    private long _netPacketsIn;
+
+    [ObservableProperty]
+    private long _netPacketsInPerSec;
+
+    [ObservableProperty]
+    private long _netPacketsOut;
+
+    [ObservableProperty]
+    private long _netPacketsOutPerSec;
+
+    private long _prevNetBytesIn, _prevNetBytesOut;
+    private long _prevNetPacketsIn, _prevNetPacketsOut;
+    private DateTime _prevNetTime;
 
     public NetworkViewModel(TimeSpan chartWindow, TimeSpan miniWindow)
     {
@@ -77,6 +72,7 @@ public sealed partial class NetworkViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "In",
         });
+
         NetSeries.Add(new LineSeries<DateTimePoint>
         {
             Values = _netOutPoints,
@@ -88,6 +84,7 @@ public sealed partial class NetworkViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Out",
         });
+
         NetLegend.Add(new ChartLegendItem { Name = "In", Color = ChartHelper.ToAvaloniaColor(SKColors.DodgerBlue) });
         NetLegend.Add(new ChartLegendItem { Name = "Out", Color = ChartHelper.ToAvaloniaColor(SKColors.OrangeRed) });
 
@@ -102,6 +99,7 @@ public sealed partial class NetworkViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "In",
         });
+
         NetLoadSeries.Add(new LineSeries<DateTimePoint>
         {
             Values = _miniNetOutPoints,
@@ -117,6 +115,31 @@ public sealed partial class NetworkViewModel : ViewModelBase, IActivityMonitor
         ChartHelper.UpdateAxisLimits(_netXAxis, DateTime.Now, _chartWindow, _miniWindow);
         ChartHelper.UpdateAxisLimits(_miniNetXAxis, DateTime.Now, _chartWindow, _miniWindow, mini: true);
     }
+
+    public ObservableCollection<ISeries> NetSeries { get; } = [];
+
+    public ObservableCollection<ChartLegendItem> NetLegend { get; } = [];
+
+    public Axis[] NetXAxes { get; }
+
+    public Axis[] NetYAxes { get; } =
+    [
+        new() { MinLimit = 0, Labeler = KbsLabeler, TextSize = 11 },
+    ];
+
+    public ObservableCollection<ISeries> NetLoadSeries { get; } = [];
+
+    public Axis[] NetLoadXAxes { get; }
+
+    public Axis[] NetLoadYAxes { get; } =
+    [
+        new() { ShowSeparatorLines = false, IsVisible = false },
+    ];
+
+    public RectangularSection[] NetLoadSections { get; } =
+    [
+        new() { Yi = 0, Yj = 0, Stroke = new SolidColorPaint(SKColors.Gray.WithAlpha(100), 1f) },
+    ];
 
     public void Update(SystemSnapshot snapshot)
     {

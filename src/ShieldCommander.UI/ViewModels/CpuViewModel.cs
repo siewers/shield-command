@@ -11,9 +11,6 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
 {
-    private TimeSpan _chartWindow;
-    private TimeSpan _miniWindow;
-
     private static readonly Func<double, string> PercentLabeler = v => v.ToString("F0") + "%";
 
     private static readonly SKColor[] CoreColors =
@@ -28,37 +25,37 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
         SKColors.SteelBlue,
     ];
 
-    [ObservableProperty] private double _cpuUsage = double.NaN;
-    [ObservableProperty] private double _cpuUser = double.NaN;
-    [ObservableProperty] private double _cpuSystem = double.NaN;
-    [ObservableProperty] private double _cpuIdle = double.NaN;
-    [ObservableProperty] private int _processCount;
-    [ObservableProperty] private int _threadCount;
-
-    // CPU chart (per-core)
-    private long _prevCpuActive, _prevCpuTotal, _prevCpuUser, _prevCpuSystem, _prevCpuIdle;
     private readonly Dictionary<string, (ObservableCollection<DateTimePoint> Points, long PrevActive, long PrevTotal, LineSeries<DateTimePoint> Series, ChartLegendItem Legend)> _coreState = new();
     private readonly DateTimeAxis _cpuXAxis;
-
-    public ObservableCollection<ISeries> CpuSeries { get; } = [];
-    public ObservableCollection<ChartLegendItem> CpuLegend { get; } = [];
-    public Axis[] CpuXAxes { get; }
-    public Axis[] CpuYAxes { get; } =
-    [
-        new() { MinLimit = 0, MaxLimit = 100, Labeler = PercentLabeler, TextSize = 11 }
-    ];
+    private readonly ObservableCollection<DateTimePoint> _miniSystemPoints = [];
 
     // Mini CPU load chart (stacked user + system)
     private readonly ObservableCollection<DateTimePoint> _miniUserPoints = [];
-    private readonly ObservableCollection<DateTimePoint> _miniSystemPoints = [];
     private readonly DateTimeAxis _miniXAxis;
+    private TimeSpan _chartWindow;
 
-    public ObservableCollection<ISeries> CpuLoadSeries { get; } = [];
-    public Axis[] CpuLoadXAxes { get; }
-    public Axis[] CpuLoadYAxes { get; } =
-    [
-        new() { MinLimit = 0, MaxLimit = 100, ShowSeparatorLines = false, IsVisible = false }
-    ];
+    [ObservableProperty]
+    private double _cpuIdle = double.NaN;
+
+    [ObservableProperty]
+    private double _cpuSystem = double.NaN;
+
+    [ObservableProperty]
+    private double _cpuUsage = double.NaN;
+
+    [ObservableProperty]
+    private double _cpuUser = double.NaN;
+
+    private TimeSpan _miniWindow;
+
+    // CPU chart (per-core)
+    private long _prevCpuActive, _prevCpuTotal, _prevCpuUser, _prevCpuSystem, _prevCpuIdle;
+
+    [ObservableProperty]
+    private int _processCount;
+
+    [ObservableProperty]
+    private int _threadCount;
 
     public CpuViewModel(TimeSpan chartWindow, TimeSpan miniWindow)
     {
@@ -82,6 +79,7 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "System",
         });
+
         CpuLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
         {
             Values = _miniUserPoints,
@@ -98,6 +96,26 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
         ChartHelper.UpdateAxisLimits(_miniXAxis, DateTime.Now, _chartWindow, _miniWindow, mini: true);
     }
 
+    public ObservableCollection<ISeries> CpuSeries { get; } = [];
+
+    public ObservableCollection<ChartLegendItem> CpuLegend { get; } = [];
+
+    public Axis[] CpuXAxes { get; }
+
+    public Axis[] CpuYAxes { get; } =
+    [
+        new() { MinLimit = 0, MaxLimit = 100, Labeler = PercentLabeler, TextSize = 11 },
+    ];
+
+    public ObservableCollection<ISeries> CpuLoadSeries { get; } = [];
+
+    public Axis[] CpuLoadXAxes { get; }
+
+    public Axis[] CpuLoadYAxes { get; } =
+    [
+        new() { MinLimit = 0, MaxLimit = 100, ShowSeparatorLines = false, IsVisible = false },
+    ];
+
     public void Update(SystemSnapshot snapshot)
     {
         ProcessCount = snapshot.ProcessCount;
@@ -112,6 +130,7 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
         {
             state.Points.Clear();
         }
+
         _coreState.Clear();
         CpuSeries.Clear();
         CpuLegend.Clear();
@@ -183,6 +202,7 @@ public sealed partial class CpuViewModel : ViewModelBase, IActivityMonitor
                     LineSmoothness = 0,
                     Name = name,
                 };
+
                 CpuSeries.Add(series);
                 var legend = new ChartLegendItem { Name = name, Color = ChartHelper.ToAvaloniaColor(color) };
                 CpuLegend.Add(legend);

@@ -1,9 +1,10 @@
+using System.Collections;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using ShieldCommander.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
+using ShieldCommander.Core.Models;
 using ShieldCommander.UI.Dialogs;
 using ShieldCommander.UI.ViewModels;
 
@@ -11,6 +12,13 @@ namespace ShieldCommander.UI.Views;
 
 public sealed partial class ProcessesView : UserControl
 {
+    // Columns whose first sort click should be descending (highest value first).
+    private static readonly HashSet<string> DescendingFirstHeaders = ["% CPU", "Memory"];
+
+    private readonly MemoryComparer _memoryComparer;
+    private bool _isSorting;
+    private int _lastSortedColumnIndex = -1;
+
     public ProcessesView()
     {
         InitializeComponent();
@@ -23,40 +31,6 @@ public sealed partial class ProcessesView : UserControl
         ProcessGrid.Columns[2].CustomSortComparer = _memoryComparer;
     }
 
-    private readonly MemoryComparer _memoryComparer;
-
-    /// Sorts by Memory, always placing 0 (unknown) at the bottom.
-    /// The DataGrid reverses the comparer for descending, so we counteract that
-    /// for zero-entries by flipping the sign based on tracked direction.
-    private sealed class MemoryComparer : System.Collections.IComparer
-    {
-        public bool Descending { get; set; }
-
-        public int Compare(object? x, object? y)
-        {
-            var a = (x as ProcessInfo)?.Memory ?? 0;
-            var b = (y as ProcessInfo)?.Memory ?? 0;
-            var aZero = a == 0;
-            var bZero = b == 0;
-
-            if (aZero && bZero)
-            {
-                return 0;
-            }
-
-            if (aZero != bZero)
-            {
-                // In ascending mode the DataGrid uses our result directly.
-                // In descending mode the DataGrid negates our result, so we
-                // negate first so the double-negation keeps zeros at the bottom.
-                var zeroLast = aZero ? 1 : -1;
-                return Descending ? zeroLast : -zeroLast;
-            }
-
-            return a.CompareTo(b);
-        }
-    }
-
     private async void OnGridDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (DataContext is not ProcessesViewModel vm || vm.SelectedProcess is not { } proc)
@@ -66,11 +40,6 @@ public sealed partial class ProcessesView : UserControl
 
         await ShowProcessInfoAsync(vm, proc);
     }
-
-    // Columns whose first sort click should be descending (highest value first).
-    private static readonly HashSet<string> DescendingFirstHeaders = ["% CPU", "Memory"];
-    private int _lastSortedColumnIndex = -1;
-    private bool _isSorting;
 
     private void OnGridSorting(object? sender, DataGridColumnEventArgs e)
     {
@@ -138,8 +107,8 @@ public sealed partial class ProcessesView : UserControl
                     "Terminate",
                     "\ue4f6",
                     () => vm.KillProcessCommand.Execute(null),
-                    isEnabled: proc.IsUserApp)
-            }
+                    isEnabled: proc.IsUserApp),
+            },
         };
 
         flyout.Closed += (_, _) =>
@@ -153,7 +122,7 @@ public sealed partial class ProcessesView : UserControl
     private static async Task ShowProcessInfoAsync(ProcessesViewModel vm, ProcessInfo proc)
     {
         var details = await vm.AdbService.GetProcessDetailsAsync(proc.Pid, proc.PackageName);
-        InstalledPackage? package = proc.IsUserApp
+        var package = proc.IsUserApp
             ? await vm.AdbService.GetPackageInfoAsync(proc.PackageName, includeSize: true)
             : null;
 
@@ -164,6 +133,38 @@ public sealed partial class ProcessesView : UserControl
                 proc.IsUserApp ? $"Are you sure you want to terminate \"{proc.Name}\" (PID {proc.Pid})?" : null))
         {
             await vm.KillProcessCommand.ExecuteAsync(null);
+        }
+    }
+
+    /// Sorts by Memory, always placing 0 (unknown) at the bottom.
+    /// The DataGrid reverses the comparer for descending, so we counteract that
+    /// for zero-entries by flipping the sign based on tracked direction.
+    private sealed class MemoryComparer : IComparer
+    {
+        public bool Descending { get; set; }
+
+        public int Compare(object? x, object? y)
+        {
+            var a = (x as ProcessInfo)?.Memory ?? 0;
+            var b = (y as ProcessInfo)?.Memory ?? 0;
+            var aZero = a == 0;
+            var bZero = b == 0;
+
+            if (aZero && bZero)
+            {
+                return 0;
+            }
+
+            if (aZero != bZero)
+            {
+                // In ascending mode the DataGrid uses our result directly.
+                // In descending mode the DataGrid negates our result, so we
+                // negate first so the double-negation keeps zeros at the bottom.
+                var zeroLast = aZero ? 1 : -1;
+                return Descending ? zeroLast : -zeroLast;
+            }
+
+            return a.CompareTo(b);
         }
     }
 }

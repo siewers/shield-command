@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShieldCommander.Core.Models;
@@ -8,27 +9,47 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class ProcessesViewModel : ViewModelBase
 {
-    public AdbService AdbService { get; }
     private readonly ActivityMonitorOrchestrator _activityMonitor;
-    private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
-
-    // Previous snapshot for computing CPU% deltas
-    private Dictionary<int, RawProcessEntry> _prevProcs = new();
-    private long _prevTotalJiffies;
-    private long _prevIdleJiffies;
 
     [ObservableProperty]
     private bool _isMonitoring;
 
     [ObservableProperty]
-    private string _statusText = "Not monitoring";
-
-    [ObservableProperty]
     private string _loadText = "";
+
+    private long _prevIdleJiffies;
+
+    // Previous snapshot for computing CPU% deltas
+    private Dictionary<int, RawProcessEntry> _prevProcs = new();
+    private long _prevTotalJiffies;
 
     [ObservableProperty]
     private ProcessInfo? _selectedProcess;
+
+    [ObservableProperty]
+    private string _statusText = "Not monitoring";
+
+    private PeriodicTimer? _timer;
+
+    public ProcessesViewModel(AdbService adbService, ActivityMonitorOrchestrator activityMonitor)
+    {
+        AdbService = adbService;
+        _activityMonitor = activityMonitor;
+
+        _activityMonitor.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName != nameof(ActivityMonitorOrchestrator.SelectedRefreshRate) || !IsMonitoring)
+            {
+                return;
+            }
+
+            Stop();
+            _ = StartAsync();
+        };
+    }
+
+    public AdbService AdbService { get; }
 
     public ObservableCollection<ProcessInfo> Processes { get; } = [];
 
@@ -52,23 +73,6 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         {
             StatusText = $"Failed to kill PID {proc.Pid}: {result.Error}";
         }
-    }
-
-    public ProcessesViewModel(AdbService adbService, ActivityMonitorOrchestrator activityMonitor)
-    {
-        AdbService = adbService;
-        _activityMonitor = activityMonitor;
-
-        _activityMonitor.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName != nameof(ActivityMonitorOrchestrator.SelectedRefreshRate) || !IsMonitoring)
-            {
-                return;
-            }
-
-            Stop();
-            _ = StartAsync();
-        };
     }
 
     public async Task StartAsync()
@@ -148,7 +152,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         var snapshot = await AdbService.GetProcessSnapshotAsync();
         if (snapshot.Processes.Count == 0)
         {
-            return; // Bad read, skip this cycle
+            return;// Bad read, skip this cycle
         }
 
         var processes = new List<ProcessInfo>();
@@ -173,7 +177,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
                 continue;
             }
 
-            var memBytes = entry.RssPages * 4096L; // pages are 4KB on ARM
+            var memBytes = entry.RssPages * 4096L;// pages are 4KB on ARM
             // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
             var isUserApp = entry.Uid >= 10000;
             processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memBytes, isUserApp, entry.State));
@@ -194,7 +198,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
 
         var sorted = processes.OrderByDescending(p => p.CpuPercent).ToList();
 
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Post(() =>
         {
             // In-place sync: update existing ProcessInfo objects via INotifyPropertyChanged
             // instead of Clear()+re-add. This avoids destroying items that the UI holds

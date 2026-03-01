@@ -110,7 +110,7 @@ internal static class DeviceInfoParser
     {
         float maxTemp = 0;
         var temps = new List<(string Name, float Value)>();
-        var phase = 0; // 0=seeking temps, 1=in temps, 2=seeking cooling, 3=in cooling
+        var phase = 0;// 0=seeking temps, 1=in temps, 2=seeking cooling, 3=in cooling
         string? fanState = null;
 
         foreach (var line in section.Split('\n'))
@@ -130,7 +130,7 @@ internal static class DeviceInfoParser
                 case 1:
                     if (trimmed.StartsWith("Current cooling"))
                     {
-                        phase = 3; // jump directly into cooling
+                        phase = 3;// jump directly into cooling
                         break;
                     }
 
@@ -140,7 +140,8 @@ internal static class DeviceInfoParser
                     }
 
                     var (tName, tValue) = ExtractMValueEntry(trimmed);
-                    if (tValue is not null && float.TryParse(tValue,
+                    if (tValue is not null &&
+                        float.TryParse(tValue,
                             CultureInfo.InvariantCulture, out var temp))
                     {
                         temps.Add((tName, temp));
@@ -165,7 +166,7 @@ internal static class DeviceInfoParser
                 case 3:
                     if (trimmed.Length > 0 && !trimmed.Contains("mValue="))
                     {
-                        phase = 4; // done
+                        phase = 4;// done
                         break;
                     }
 
@@ -178,7 +179,7 @@ internal static class DeviceInfoParser
                     if (cValue is not null && int.TryParse(cValue, out var fanLevel))
                     {
                         fanState = fanLevel > 0 ? $"Active (Level {fanLevel})" : "Off";
-                        phase = 4; // Shield has one fan
+                        phase = 4;// Shield has one fan
                     }
 
                     break;
@@ -400,7 +401,7 @@ internal static class DeviceInfoParser
                 var numStr = trimmed[(eqIdx + 1)..].Trim();
                 if (long.TryParse(numStr, out var speed))
                 {
-                    writeSpeed = speed * 1024; // KB/s → bytes/s
+                    writeSpeed = speed * 1024;// KB/s → bytes/s
                 }
             }
         }
@@ -435,7 +436,7 @@ internal static class DeviceInfoParser
             'M' => (long)(num * 1024 * 1024),
             'G' => (long)(num * 1024 * 1024 * 1024),
             'T' => (long)(num * 1024L * 1024 * 1024 * 1024),
-            _ => 0
+            _ => 0,
         };
     }
 

@@ -41,6 +41,7 @@ public sealed class AdbPathResolver(IPlatformPaths paths)
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+
             process.Start();
             process.WaitForExit(2000);
             return process.ExitCode == 0;

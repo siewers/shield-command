@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using ShieldCommander.Core.Services.Platform;
@@ -23,9 +25,9 @@ internal sealed class MenuHelper(IPlatformShell shell)
         {
             Header = new StackPanel
             {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Orientation = Orientation.Horizontal,
                 Spacing = 8,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
                 Children =
                 {
                     new FontIcon
@@ -33,17 +35,18 @@ internal sealed class MenuHelper(IPlatformShell shell)
                         Glyph = glyph,
                         FontFamily = PhosphorThin,
                         FontSize = 20,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
                     },
                     new TextBlock
                     {
                         Text = header,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                        Margin = new Avalonia.Thickness(0, 2, 0, 0),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 2, 0, 0),
                     },
                 },
             },
         };
+
         item.IsEnabled = isEnabled;
         item.Click += (_, _) => onClick();
         return item;

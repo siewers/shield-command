@@ -22,11 +22,11 @@
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
                 <TextBlock Text="Drop APK files here"
                            HorizontalAlignment="Center"
-                           FontSize="16" Foreground="Gray"/>
+                           FontSize="16" Foreground="Gray" />
                 <Button Content="Browse..."
                         Name="BrowseButton"
                         HorizontalAlignment="Center"
-                        IsEnabled="{Binding !IsBusy}"/>
+                        IsEnabled="{Binding !IsBusy}" />
             </StackPanel>
         </Border>
 
@@ -36,13 +36,13 @@
             <Button Content="Install All"
                     Command="{Binding InstallAllCommand}"
                     IsEnabled="{Binding !IsBusy}"
-                    Classes="accent"/>
+                    Classes="accent" />
             <Button Content="Clear"
                     Command="{Binding ClearQueueCommand}"
-                    IsEnabled="{Binding !IsBusy}"/>
+                    IsEnabled="{Binding !IsBusy}" />
             <TextBlock Text="{Binding StatusText}"
                        VerticalAlignment="Center"
-                       Margin="8,0,0,0"/>
+                       Margin="8,0,0,0" />
         </StackPanel>
 
         <!-- Queued APKs -->
@@ -54,12 +54,12 @@
                         <TextBlock Grid.Column="0"
                                    Text="{Binding}"
                                    VerticalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"/>
+                                   TextTrimming="CharacterEllipsis" />
                         <Button Grid.Column="1"
                                 Content="Remove"
                                 Command="{Binding $parent[ListBox].((vm:InstallViewModel)DataContext).RemoveApkCommand}"
                                 CommandParameter="{Binding}"
-                                Padding="8,4"/>
+                                Padding="8,4" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

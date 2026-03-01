@@ -20,9 +20,11 @@
                 <NativeMenu>
                     <NativeMenuItem Header="Update Frequency">
                         <NativeMenu>
-                            <NativeMenuItem Header="Very often (1 sec)" ToggleType="CheckBox" Click="UpdateFrequency_Click" />
+                            <NativeMenuItem Header="Very often (1 sec)" ToggleType="CheckBox"
+                                            Click="UpdateFrequency_Click" />
                             <NativeMenuItem Header="Often (2 sec)" ToggleType="CheckBox" Click="UpdateFrequency_Click" />
-                            <NativeMenuItem Header="Normally (5 sec)" ToggleType="CheckBox" IsChecked="True" Click="UpdateFrequency_Click" />
+                            <NativeMenuItem Header="Normally (5 sec)" ToggleType="CheckBox" IsChecked="True"
+                                            Click="UpdateFrequency_Click" />
                         </NativeMenu>
                     </NativeMenuItem>
                 </NativeMenu>
@@ -31,23 +33,23 @@
     </NativeMenu.Menu>
 
     <Design.DataContext>
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
     <Grid RowDefinitions="38,*">
         <!-- Title bar overlay -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
             <!-- Col 0: spacer for macOS traffic lights (shrinks to 0 on Windows via code-behind) -->
-            <Border x:Name="TitleBarLeftSpacer" Grid.Column="0" Width="78"/>
+            <Border x:Name="TitleBarLeftSpacer" Grid.Column="0" Width="78" />
             <!-- Col 1: drag region — on Windows also shows app icon + title -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
                         VerticalAlignment="Center" Margin="8,0,0,0"
                         x:Name="TitleBarAppInfo" IsVisible="False"
                         IsHitTestVisible="False">
                 <Image Source="/Assets/app-icon.png" Width="16" Height="16"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center" />
                 <TextBlock Text="Shield Commander" FontSize="12"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center" />
             </StackPanel>
             <!-- Col 2: clickable status -->
             <Button Grid.Column="2"
@@ -64,9 +66,9 @@
                              Width="8" Height="8"
                              Fill="#FF4444"
                              Margin="2"
-                             VerticalAlignment="Center"/>
+                             VerticalAlignment="Center" />
                     <TextBlock Text="{Binding ConnectionStatusText}"
-                               FontSize="12"/>
+                               FontSize="12" />
                 </StackPanel>
             </Button>
         </Grid>
@@ -90,12 +92,12 @@
             </ui:NavigationView.Content>
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="System Info" Tag="SystemInfo"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
+                                       IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="Apps" Tag="Apps"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
+                                       IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="Activity Monitor" Tag="CPU"
-                                      IsEnabled="{Binding IsDeviceConnected}"
-                                      IsExpanded="True" SelectsOnInvoked="True">
+                                       IsEnabled="{Binding IsDeviceConnected}"
+                                       IsExpanded="True" SelectsOnInvoked="True">
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem Content="CPU" Tag="CPU" />
                         <ui:NavigationViewItem Content="Memory" Tag="Memory" />
@@ -108,8 +110,8 @@
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="False"
-                                       x:Name="SettingsNavItem"/>
-                <ui:NavigationViewItem Content="About" Tag="About" SelectsOnInvoked="False"/>
+                                       x:Name="SettingsNavItem" />
+                <ui:NavigationViewItem Content="About" Tag="About" SelectsOnInvoked="False" />
             </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
     </Grid>

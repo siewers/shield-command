@@ -6,15 +6,15 @@ namespace ShieldCommander.Core.Services;
 public sealed record AppSettings
 {
     public List<SavedDevice> SavedDevices { get; init; } = [];
-        
+
     public int WindowWidth { get; set; }
-        
+
     public int WindowHeight { get; set; }
-        
+
     public int? WindowX { get; set; }
-        
+
     public int? WindowY { get; set; }
-        
+
     public string? AdbPath { get; set; }
 
     public Size? GetWindowSize()
@@ -27,7 +27,7 @@ public sealed record AppSettings
 
         return windowSize;
     }
-    
+
     public Point? GetWindowPosition()
     {
         var position = new Point(WindowX.GetValueOrDefault(0), WindowY.GetValueOrDefault(0));

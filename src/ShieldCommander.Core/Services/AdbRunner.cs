@@ -80,9 +80,7 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
             var success = process.ExitCode == 0;
             if (strictCheck)
             {
-                success = success
-                    && !output.Contains("error", StringComparison.OrdinalIgnoreCase)
-                    && !output.Contains("failed", StringComparison.OrdinalIgnoreCase);
+                success = success && !output.Contains("error", StringComparison.OrdinalIgnoreCase) && !output.Contains("failed", StringComparison.OrdinalIgnoreCase);
             }
 
             return new AdbResult(success, output.Trim(), error.Trim());

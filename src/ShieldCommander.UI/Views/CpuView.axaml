@@ -21,21 +21,21 @@
                         BorderThickness="0,0,1,0" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="System:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="System:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding CpuSystem, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="#FF6B6B"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="User:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="User:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding CpuUser, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="#4DA6FF"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Idle:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Idle:" FontSize="12" />
                         <TextBlock Grid.Row="2" Grid.Column="1"
                                    Text="{Binding CpuIdle, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="Gray"
-                                   HorizontalAlignment="Right"/>
+                                   HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
                 <!-- Center: Mini CPU load chart -->
@@ -45,7 +45,7 @@
                     <StackPanel>
                         <TextBlock Text="CPU LOAD" FontSize="11" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Margin="0,0,0,2"
-                                   Foreground="Gray"/>
+                                   Foreground="Gray" />
                         <Border BorderBrush="#555555"
                                 BorderThickness="1" CornerRadius="2">
                             <lvc:CartesianChart Series="{Binding CpuLoadSeries}"
@@ -53,8 +53,7 @@
                                                 YAxes="{Binding CpuLoadYAxes}"
                                                 Height="55"
                                                 LegendPosition="Hidden"
-                                                TooltipPosition="Hidden"
-                                                />
+                                                TooltipPosition="Hidden" />
                         </Border>
                     </StackPanel>
                 </Border>
@@ -62,12 +61,12 @@
                 <Border Grid.Column="2" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ThreadCount}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Processes:" FontSize="12"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Processes:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ProcessCount}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
             </Grid>
@@ -79,8 +78,7 @@
                                     XAxes="{Binding CpuXAxes}"
                                     YAxes="{Binding CpuYAxes}"
                                     ZoomMode="X"
-                                    LegendPosition="Hidden"
-                                    />
+                                    LegendPosition="Hidden" />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">
                     <ItemsControl.ItemTemplate>
@@ -89,15 +87,16 @@
                                 <Border Width="12" Height="3" CornerRadius="1"
                                         VerticalAlignment="Center">
                                     <Border.Background>
-                                        <SolidColorBrush Color="{Binding Color}"/>
+                                        <SolidColorBrush Color="{Binding Color}" />
                                     </Border.Background>
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
-                                           MinWidth="40"/>
-                                <TextBlock Text="{Binding Value, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F0}"
-                                           FontSize="11"
-                                           Foreground="#888888" MinWidth="60"
-                                           TextAlignment="Right"/>
+                                           MinWidth="40" />
+                                <TextBlock
+                                    Text="{Binding Value, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F0}"
+                                    FontSize="11"
+                                    Foreground="#888888" MinWidth="60"
+                                    TextAlignment="Right" />
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

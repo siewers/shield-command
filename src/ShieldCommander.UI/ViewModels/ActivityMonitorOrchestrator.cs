@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ShieldCommander.Core.Services;
 using ShieldCommander.UI.Models;
@@ -8,17 +9,43 @@ public sealed partial class ActivityMonitorOrchestrator : ViewModelBase
 {
     private readonly AdbService _adbService;
     private readonly IActivityMonitor[] _panels;
-    private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
 
-    [ObservableProperty] private bool _isMonitoring;
-    [ObservableProperty] private string _selectedMetric = "CPU";
-    [ObservableProperty] private RefreshRate _selectedRefreshRate = RefreshRate.Default;
+    [ObservableProperty]
+    private bool _isMonitoring;
+
+    [ObservableProperty]
+    private string _selectedMetric = "CPU";
+
+    [ObservableProperty]
+    private RefreshRate _selectedRefreshRate = RefreshRate.Default;
+
+    private PeriodicTimer? _timer;
+
+    public ActivityMonitorOrchestrator(AdbService adbService)
+    {
+        _adbService = adbService;
+
+        var chartWindow = RefreshRate.Default.ChartWindow;
+        var miniWindow = RefreshRate.Default.MiniWindow;
+
+        CpuVm = new CpuViewModel(chartWindow, miniWindow);
+        MemoryVm = new MemoryViewModel(chartWindow, miniWindow);
+        DiskVm = new DiskViewModel(chartWindow, miniWindow);
+        NetworkVm = new NetworkViewModel(chartWindow, miniWindow);
+        ThermalVm = new ThermalViewModel(chartWindow, miniWindow);
+
+        _panels = [CpuVm, MemoryVm, DiskVm, NetworkVm, ThermalVm];
+    }
 
     public CpuViewModel CpuVm { get; }
+
     public MemoryViewModel MemoryVm { get; }
+
     public DiskViewModel DiskVm { get; }
+
     public NetworkViewModel NetworkVm { get; }
+
     public ThermalViewModel ThermalVm { get; }
 
     partial void OnSelectedRefreshRateChanged(RefreshRate value)
@@ -42,22 +69,6 @@ public sealed partial class ActivityMonitorOrchestrator : ViewModelBase
         _cts = new CancellationTokenSource();
         _timer = new PeriodicTimer(value.Interval);
         StartMonitoringLoop();
-    }
-
-    public ActivityMonitorOrchestrator(AdbService adbService)
-    {
-        _adbService = adbService;
-
-        var chartWindow = RefreshRate.Default.ChartWindow;
-        var miniWindow = RefreshRate.Default.MiniWindow;
-
-        CpuVm = new CpuViewModel(chartWindow, miniWindow);
-        MemoryVm = new MemoryViewModel(chartWindow, miniWindow);
-        DiskVm = new DiskViewModel(chartWindow, miniWindow);
-        NetworkVm = new NetworkViewModel(chartWindow, miniWindow);
-        ThermalVm = new ThermalViewModel(chartWindow, miniWindow);
-
-        _panels = [CpuVm, MemoryVm, DiskVm, NetworkVm, ThermalVm];
     }
 
     public async Task StartAsync()
@@ -116,7 +127,7 @@ public sealed partial class ActivityMonitorOrchestrator : ViewModelBase
     {
         var snapshot = await _adbService.GetSystemSnapshotAsync();
 
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Post(() =>
         {
             foreach (var panel in _panels)
             {

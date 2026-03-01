@@ -20,23 +20,23 @@
                         BorderThickness="0,0,1,0" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Physical Memory:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Physical Memory:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding MemPhysical, StringFormat='{}{0:F0} MB'}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Memory Used:" FontSize="12"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Memory Used:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding MemUsedDetail, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="#FF6B6B"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Cached Files:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Cached Files:" FontSize="12" />
                         <TextBlock Grid.Row="2" Grid.Column="1"
                                    Text="{Binding MemCached, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="#4DA6FF"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Swap Used:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Swap Used:" FontSize="12" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SwapUsedText}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
                 <!-- Center: Mini memory pressure chart -->
@@ -46,7 +46,7 @@
                     <StackPanel>
                         <TextBlock Text="MEMORY PRESSURE" FontSize="11" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Margin="0,0,0,2"
-                                   Foreground="Gray"/>
+                                   Foreground="Gray" />
                         <Border BorderBrush="#555555"
                                 BorderThickness="1" CornerRadius="2">
                             <lvc:CartesianChart Series="{Binding MemLoadSeries}"
@@ -54,8 +54,7 @@
                                                 YAxes="{Binding MemLoadYAxes}"
                                                 Height="55"
                                                 LegendPosition="Hidden"
-                                                TooltipPosition="Hidden"
-                                                />
+                                                TooltipPosition="Hidden" />
                         </Border>
                     </StackPanel>
                 </Border>
@@ -63,15 +62,15 @@
                 <Border Grid.Column="2" Padding="12,8">
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Free:" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Free:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding MemFree, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="LimeGreen"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Buffers:" FontSize="12"/>
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Buffers:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding MemBuffers, StringFormat='{}{0:F0} MB'}"
-                                   FontSize="12" HorizontalAlignment="Right"/>
+                                   FontSize="12" HorizontalAlignment="Right" />
                     </Grid>
                 </Border>
             </Grid>
@@ -82,8 +81,7 @@
                                 XAxes="{Binding MemXAxes}"
                                 YAxes="{Binding MemYAxes}"
                                 Sections="{Binding MemSections}"
-                                ZoomMode="X"
-                                />
+                                ZoomMode="X" />
         </Border>
     </DockPanel>
 </UserControl>

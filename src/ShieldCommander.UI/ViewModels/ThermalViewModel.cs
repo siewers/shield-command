@@ -11,9 +11,6 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
 {
-    private TimeSpan _chartWindow;
-    private TimeSpan _miniWindow;
-
     private static readonly Func<double, string> DegreeLabeler = v => v.ToString("F0") + "\u00b0C";
 
     private static readonly SKColor[] ZoneColors =
@@ -28,38 +25,39 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         SKColors.HotPink,
     ];
 
-    [ObservableProperty] private string? _temperature;
-    [ObservableProperty] private double _avgTemperature = double.NaN;
-    [ObservableProperty] private double _minTemperature = double.NaN;
-    [ObservableProperty] private double _maxTemperature = double.NaN;
-    [ObservableProperty] private string _hottestZoneText = "\u2014";
-    [ObservableProperty] private int _zoneCount;
-    [ObservableProperty] private string? _fanState;
-
-    // Thermal chart — per-zone series
-    private readonly Dictionary<string, (ObservableCollection<DateTimePoint> Points, ChartLegendItem Legend)> _zoneState = new();
-    private readonly ObservableCollection<ISeries> _thermalSeries = [];
-    private readonly DateTimeAxis _thermalXAxis;
-
-    public ObservableCollection<ISeries> ThermalSeries => _thermalSeries;
-    public ObservableCollection<ChartLegendItem> ThermalLegend { get; } = [];
-    public Axis[] ThermalXAxes { get; }
-    public Axis[] ThermalYAxes { get; } =
-    [
-        new() { Labeler = DegreeLabeler, TextSize = 11 }
-    ];
-
     // Mini thermal chart
     private readonly ObservableCollection<DateTimePoint> _miniThermalAvgPoints = [];
     private readonly ObservableCollection<DateTimePoint> _miniThermalMaxPoints = [];
     private readonly DateTimeAxis _miniThermalXAxis;
+    private readonly DateTimeAxis _thermalXAxis;
 
-    public ObservableCollection<ISeries> ThermalLoadSeries { get; } = [];
-    public Axis[] ThermalLoadXAxes { get; }
-    public Axis[] ThermalLoadYAxes { get; } =
-    [
-        new() { ShowSeparatorLines = false, IsVisible = false }
-    ];
+    // Thermal chart — per-zone series
+    private readonly Dictionary<string, (ObservableCollection<DateTimePoint> Points, ChartLegendItem Legend)> _zoneState = new();
+
+    [ObservableProperty]
+    private double _avgTemperature = double.NaN;
+
+    private TimeSpan _chartWindow;
+
+    [ObservableProperty]
+    private string? _fanState;
+
+    [ObservableProperty]
+    private string _hottestZoneText = "\u2014";
+
+    [ObservableProperty]
+    private double _maxTemperature = double.NaN;
+
+    private TimeSpan _miniWindow;
+
+    [ObservableProperty]
+    private double _minTemperature = double.NaN;
+
+    [ObservableProperty]
+    private string? _temperature;
+
+    [ObservableProperty]
+    private int _zoneCount;
 
     public ThermalViewModel(TimeSpan chartWindow, TimeSpan miniWindow)
     {
@@ -83,6 +81,7 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Avg",
         });
+
         ThermalLoadSeries.Add(new LineSeries<DateTimePoint>
         {
             Values = _miniThermalMaxPoints,
@@ -99,6 +98,26 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         ChartHelper.UpdateAxisLimits(_miniThermalXAxis, DateTime.Now, _chartWindow, _miniWindow, mini: true);
     }
 
+    public ObservableCollection<ISeries> ThermalSeries { get; } = [];
+
+    public ObservableCollection<ChartLegendItem> ThermalLegend { get; } = [];
+
+    public Axis[] ThermalXAxes { get; }
+
+    public Axis[] ThermalYAxes { get; } =
+    [
+        new() { Labeler = DegreeLabeler, TextSize = 11 },
+    ];
+
+    public ObservableCollection<ISeries> ThermalLoadSeries { get; } = [];
+
+    public Axis[] ThermalLoadXAxes { get; }
+
+    public Axis[] ThermalLoadYAxes { get; } =
+    [
+        new() { ShowSeparatorLines = false, IsVisible = false },
+    ];
+
     public void Update(SystemSnapshot snapshot)
     {
         Temperature = snapshot.Thermal.Summary;
@@ -111,8 +130,9 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         {
             state.Points.Clear();
         }
+
         _zoneState.Clear();
-        _thermalSeries.Clear();
+        ThermalSeries.Clear();
         ThermalLegend.Clear();
         _miniThermalAvgPoints.Clear();
         _miniThermalMaxPoints.Clear();
@@ -144,9 +164,9 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
             if (!_zoneState.TryGetValue(name, out var state))
             {
                 var points = new ObservableCollection<DateTimePoint>();
-                var colorIndex = _thermalSeries.Count % ZoneColors.Length;
+                var colorIndex = ThermalSeries.Count % ZoneColors.Length;
                 var color = ZoneColors[colorIndex];
-                _thermalSeries.Add(new LineSeries<DateTimePoint>
+                ThermalSeries.Add(new LineSeries<DateTimePoint>
                 {
                     Values = points,
                     Fill = null,
@@ -157,6 +177,7 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
                     LineSmoothness = 0,
                     Name = name,
                 });
+
                 var legend = new ChartLegendItem { Name = name, Color = ChartHelper.ToAvaloniaColor(color) };
                 ThermalLegend.Add(legend);
                 state = (points, legend);
@@ -193,6 +214,7 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
                     }
                 }
             }
+
             if (min <= max)
             {
                 var range = max - min;
@@ -203,6 +225,7 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
                     min = mid - minRange / 2.0;
                     max = mid + minRange / 2.0;
                 }
+
                 ThermalYAxes[0].MinLimit = Math.Floor(min);
                 ThermalYAxes[0].MaxLimit = Math.Ceiling(max);
             }

@@ -10,15 +10,15 @@
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
-                <Button Content="Refresh"
-                        Command="{Binding RefreshCommand}"
-                        IsEnabled="{Binding !IsBusy}"
-                        Classes="accent"/>
-                <Button Content="Install APK"
-                        Name="InstallApkButton"
-                        IsEnabled="{Binding !IsBusy}"/>
-                <TextBlock Text="{Binding StatusText}"
-                           VerticalAlignment="Center"/>
+            <Button Content="Refresh"
+                    Command="{Binding RefreshCommand}"
+                    IsEnabled="{Binding !IsBusy}"
+                    Classes="accent" />
+            <Button Content="Install APK"
+                    Name="InstallApkButton"
+                    IsEnabled="{Binding !IsBusy}" />
+            <TextBlock Text="{Binding StatusText}"
+                       VerticalAlignment="Center" />
         </StackPanel>
 
         <DataGrid ItemsSource="{Binding Packages}"
@@ -49,10 +49,11 @@
                             <Panel Margin="12,0,0,0">
                                 <TextBlock Text="&#x2026;"
                                            VerticalAlignment="Center"
-                                           IsVisible="{Binding IsSizeLoading}"/>
-                                <TextBlock Text="{Binding CodeSize, Converter={x:Static converters:ByteFormatConverter.Instance}}"
-                                           VerticalAlignment="Center"
-                                           IsVisible="{Binding !IsSizeLoading}"/>
+                                           IsVisible="{Binding IsSizeLoading}" />
+                                <TextBlock
+                                    Text="{Binding CodeSize, Converter={x:Static converters:ByteFormatConverter.Instance}}"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding !IsSizeLoading}" />
                             </Panel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

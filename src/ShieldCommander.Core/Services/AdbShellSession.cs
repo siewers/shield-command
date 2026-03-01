@@ -9,15 +9,27 @@ public sealed class AdbShellSession : IDisposable
     private readonly string _adbPath;
     private readonly string? _deviceSerial;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private bool _disposed;
     private Process? _process;
     private StreamWriter? _stdin;
     private StreamReader? _stdout;
-    private bool _disposed;
 
     public AdbShellSession(string adbPath, string? deviceSerial)
     {
         _adbPath = adbPath;
         _deviceSerial = deviceSerial;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        KillProcess();
+        _semaphore.Dispose();
     }
 
     public async Task OpenAsync()
@@ -113,7 +125,7 @@ public sealed class AdbShellSession : IDisposable
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-            }
+            },
         };
 
         process.Start();
@@ -146,17 +158,5 @@ public sealed class AdbShellSession : IDisposable
         _process = null;
         _stdin = null;
         _stdout = null;
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        KillProcess();
-        _semaphore.Dispose();
     }
 }

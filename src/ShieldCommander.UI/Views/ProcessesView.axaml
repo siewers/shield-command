@@ -13,10 +13,10 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
             <TextBlock Text="{Binding LoadText}"
                        VerticalAlignment="Center"
-                       FontWeight="SemiBold"/>
+                       FontWeight="SemiBold" />
             <TextBlock Text="{Binding StatusText}"
                        VerticalAlignment="Center"
-                       Foreground="Gray"/>
+                       Foreground="Gray" />
         </StackPanel>
 
         <DataGrid ItemsSource="{Binding Processes}"
@@ -44,9 +44,10 @@
                                         x:DataType="models:ProcessInfo">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:ProcessInfo">
-                            <TextBlock Text="{Binding Memory, Converter={x:Static converters:ByteFormatConverter.Instance}}"
-                                       VerticalAlignment="Center"
-                                       Margin="12,0,0,0"/>
+                            <TextBlock
+                                Text="{Binding Memory, Converter={x:Static converters:ByteFormatConverter.Instance}}"
+                                VerticalAlignment="Center"
+                                Margin="12,0,0,0" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

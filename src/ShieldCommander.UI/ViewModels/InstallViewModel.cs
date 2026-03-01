@@ -10,24 +10,24 @@ public sealed partial class InstallViewModel : ViewModelBase
     private readonly AdbService _adbService;
 
     [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
     private string _selectedApkPath = string.Empty;
 
     [ObservableProperty]
     private string _statusText = string.Empty;
 
-    [ObservableProperty]
-    private bool _isBusy;
+    public InstallViewModel(AdbService adbService)
+    {
+        _adbService = adbService;
+    }
 
     public ObservableCollection<string> ApkQueue { get; } = [];
 
     public bool DidInstall { get; private set; }
 
     public void ResetDidInstall() => DidInstall = false;
-
-    public InstallViewModel(AdbService adbService)
-    {
-        _adbService = adbService;
-    }
 
     public void AddApkFiles(IEnumerable<string> filePaths)
     {

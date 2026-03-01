@@ -44,8 +44,8 @@ internal sealed class AdbDeviceOperations(AdbRunner runner)
 
             var address = parts[0];
             var model = parts
-                .FirstOrDefault(p => p.StartsWith("model:"))
-                ?.Replace("model:", "");
+                       .FirstOrDefault(p => p.StartsWith("model:"))
+                      ?.Replace("model:", "");
 
             devices.Add(new ShieldDevice(address, model, IsConnected: true));
         }

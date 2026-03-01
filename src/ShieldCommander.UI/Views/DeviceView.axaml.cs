@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ShieldCommander.UI.ViewModels;
 
@@ -27,18 +28,18 @@ public sealed partial class DeviceView : UserControl
         var dialog = new ContentDialog
         {
             Title = "Waiting for Device",
-            Content = "Please check your TV and accept the connection.\n\n"
-                    + "If your device is off, turn it on — the connection will be "
-                    + "established automatically.\n\n"
-                    + "A dialog should appear on your device asking you to allow USB debugging. "
-                    + "Select \"Always allow from this computer\" and tap OK.",
+            Content = "Please check your TV and accept the connection.\n\n" +
+                      "If your device is off, turn it on — the connection will be " +
+                      "established automatically.\n\n" +
+                      "A dialog should appear on your device asking you to allow USB debugging. " +
+                      "Select \"Always allow from this computer\" and tap OK.",
             CloseButtonText = "Cancel",
         };
 
         // Auto-close when authorization is detected (token cancelled by VM)
         ct.Register(() =>
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => dialog.Hide());
+            Dispatcher.UIThread.Post(() => dialog.Hide());
         });
 
         await dialog.ShowAsync();

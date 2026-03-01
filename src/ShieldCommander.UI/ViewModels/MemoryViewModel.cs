@@ -12,44 +12,43 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class MemoryViewModel : ViewModelBase, IActivityMonitor
 {
-    private TimeSpan _chartWindow;
-    private TimeSpan _miniWindow;
-
     private static readonly Func<double, string> MbLabeler = v => v.ToString("F0") + " MB";
-
-    [ObservableProperty] private string _memUsageText = "\u2014";
-    [ObservableProperty] private double _memPhysical = double.NaN;
-    [ObservableProperty] private double _memUsedDetail = double.NaN;
-    [ObservableProperty] private double _memCached = double.NaN;
-    [ObservableProperty] private string _swapUsedText = "\u2014";
-    [ObservableProperty] private double _memFree = double.NaN;
-    [ObservableProperty] private double _memBuffers = double.NaN;
 
     // Memory chart
     private readonly ObservableCollection<DateTimePoint> _memPoints = [];
     private readonly DateTimeAxis _memXAxis;
-    private bool _memMaxSet;
-
-    public ObservableCollection<ISeries> MemSeries { get; } = [];
-    public Axis[] MemXAxes { get; }
-    public Axis[] MemYAxes { get; } =
-    [
-        new() { MinLimit = 0, Labeler = MbLabeler, TextSize = 11 }
-    ];
-    public ObservableCollection<RectangularSection> MemSections { get; } = [];
+    private readonly ObservableCollection<DateTimePoint> _miniMemCachedPoints = [];
+    private readonly ObservableCollection<DateTimePoint> _miniMemFreePoints = [];
 
     // Mini memory pressure chart
     private readonly ObservableCollection<DateTimePoint> _miniMemUsedPoints = [];
-    private readonly ObservableCollection<DateTimePoint> _miniMemCachedPoints = [];
-    private readonly ObservableCollection<DateTimePoint> _miniMemFreePoints = [];
     private readonly DateTimeAxis _miniMemXAxis;
+    private TimeSpan _chartWindow;
 
-    public ObservableCollection<ISeries> MemLoadSeries { get; } = [];
-    public Axis[] MemLoadXAxes { get; }
-    public Axis[] MemLoadYAxes { get; } =
-    [
-        new() { MinLimit = 0, ShowSeparatorLines = false, IsVisible = false }
-    ];
+    [ObservableProperty]
+    private double _memBuffers = double.NaN;
+
+    [ObservableProperty]
+    private double _memCached = double.NaN;
+
+    [ObservableProperty]
+    private double _memFree = double.NaN;
+
+    private bool _memMaxSet;
+
+    [ObservableProperty]
+    private double _memPhysical = double.NaN;
+
+    [ObservableProperty]
+    private string _memUsageText = "\u2014";
+
+    [ObservableProperty]
+    private double _memUsedDetail = double.NaN;
+
+    private TimeSpan _miniWindow;
+
+    [ObservableProperty]
+    private string _swapUsedText = "\u2014";
 
     public MemoryViewModel(TimeSpan chartWindow, TimeSpan miniWindow)
     {
@@ -85,6 +84,7 @@ public sealed partial class MemoryViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Used",
         });
+
         MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
         {
             Values = _miniMemCachedPoints,
@@ -96,6 +96,7 @@ public sealed partial class MemoryViewModel : ViewModelBase, IActivityMonitor
             LineSmoothness = 0,
             Name = "Cached",
         });
+
         MemLoadSeries.Add(new StackedAreaSeries<DateTimePoint>
         {
             Values = _miniMemFreePoints,
@@ -111,6 +112,26 @@ public sealed partial class MemoryViewModel : ViewModelBase, IActivityMonitor
         ChartHelper.UpdateAxisLimits(_memXAxis, DateTime.Now, _chartWindow, _miniWindow);
         ChartHelper.UpdateAxisLimits(_miniMemXAxis, DateTime.Now, _chartWindow, _miniWindow, mini: true);
     }
+
+    public ObservableCollection<ISeries> MemSeries { get; } = [];
+
+    public Axis[] MemXAxes { get; }
+
+    public Axis[] MemYAxes { get; } =
+    [
+        new() { MinLimit = 0, Labeler = MbLabeler, TextSize = 11 },
+    ];
+
+    public ObservableCollection<RectangularSection> MemSections { get; } = [];
+
+    public ObservableCollection<ISeries> MemLoadSeries { get; } = [];
+
+    public Axis[] MemLoadXAxes { get; }
+
+    public Axis[] MemLoadYAxes { get; } =
+    [
+        new() { MinLimit = 0, ShowSeparatorLines = false, IsVisible = false },
+    ];
 
     public void Update(SystemSnapshot snapshot)
     {
@@ -164,6 +185,7 @@ public sealed partial class MemoryViewModel : ViewModelBase, IActivityMonitor
                 LabelPaint = new SolidColorPaint(SKColors.OrangeRed),
                 LabelSize = 11,
             });
+
             _memMaxSet = true;
         }
 
