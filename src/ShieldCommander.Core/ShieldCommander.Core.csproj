@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.1.25080.5" />
     <PackageReference Include="Zeroconf" Version="3.7.16" />
   </ItemGroup>
 
