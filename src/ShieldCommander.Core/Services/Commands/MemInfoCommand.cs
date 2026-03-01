@@ -8,7 +8,7 @@ internal sealed class MemInfoCommand : IAdbShellCommand<MemoryInfo>
 
     public string CommandText => "cat /proc/meminfo";
 
-    public MemoryInfo Parse(string output)
+    public MemoryInfo Parse(ReadOnlySpan<char> output)
     {
         long total = 0;
         long available = 0;
@@ -18,7 +18,7 @@ internal sealed class MemInfoCommand : IAdbShellCommand<MemoryInfo>
         long swapTotal = 0;
         long swapFree = 0;
 
-        foreach (var line in output.Split('\n'))
+        foreach (var line in output.EnumerateLines())
         {
             var trimmed = line.Trim();
             if (trimmed.StartsWith("MemTotal:"))
@@ -55,6 +55,6 @@ internal sealed class MemInfoCommand : IAdbShellCommand<MemoryInfo>
         return new MemoryInfo(snapshot, total);
     }
 
-    public void Apply(string output, DynamicSections target)
+    public void Apply(ReadOnlySpan<char> output, DynamicSections target)
         => target.Memory = Parse(output);
 }

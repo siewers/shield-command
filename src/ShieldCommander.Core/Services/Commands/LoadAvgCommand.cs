@@ -8,16 +8,19 @@ internal sealed class LoadAvgCommand : IAdbShellCommand<int>
 
     public string CommandText => "cat /proc/loadavg";
 
-    public int Parse(string output)
+    public int Parse(ReadOnlySpan<char> output)
     {
-        var fields = output.Trim().Split(' ');
-        if (fields.Length < 4)
+        var trimmed = output.Trim();
+        Span<Range> fields = stackalloc Range[6];
+        var fieldCount = trimmed.Split(fields, ' ');
+        if (fieldCount < 4)
         {
             return 0;
         }
 
-        var parts = fields[3].Split('/');
-        if (parts.Length == 2 && int.TryParse(parts[1], out var threads))
+        var runnable = trimmed[fields[3]];
+        var slashIdx = runnable.IndexOf('/');
+        if (slashIdx >= 0 && int.TryParse(runnable[(slashIdx + 1)..], out var threads))
         {
             return threads;
         }
@@ -25,6 +28,6 @@ internal sealed class LoadAvgCommand : IAdbShellCommand<int>
         return 0;
     }
 
-    public void Apply(string output, DynamicSections target)
+    public void Apply(ReadOnlySpan<char> output, DynamicSections target)
         => target.ThreadCount = Parse(output);
 }

@@ -8,12 +8,12 @@ internal sealed class ProcessCountCommand : IAdbShellCommand<int>
 
     public string CommandText => "ls /proc/";
 
-    public int Parse(string output)
+    public int Parse(ReadOnlySpan<char> output)
     {
         var count = 0;
-        foreach (var entry in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        foreach (var line in output.EnumerateLines())
         {
-            var trimmed = entry.AsSpan().Trim();
+            var trimmed = line.Trim();
             if (trimmed.Length > 0 && ParseHelper.IsAllDigits(trimmed))
             {
                 count++;
@@ -23,6 +23,6 @@ internal sealed class ProcessCountCommand : IAdbShellCommand<int>
         return count;
     }
 
-    public void Apply(string output, DynamicSections target)
+    public void Apply(ReadOnlySpan<char> output, DynamicSections target)
         => target.ProcessCount = Parse(output);
 }

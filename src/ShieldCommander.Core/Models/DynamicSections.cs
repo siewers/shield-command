@@ -9,7 +9,7 @@ internal sealed class DynamicSections
 
     public DiskFreeInfo? DiskFree { get; internal set; }
 
-    public string? Uptime { get; internal set; }
+    public UptimeInfo? Uptime { get; internal set; }
 
     public ThermalSnapshot Thermal { get; internal set; } = null!;
 

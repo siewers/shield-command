@@ -8,10 +8,10 @@ internal interface IAdbShellCommand
 
     string CommandText { get; }
 
-    void Apply(string output, DynamicSections target);
+    void Apply(ReadOnlySpan<char> output, DynamicSections target);
 }
 
 internal interface IAdbShellCommand<out T> : IAdbShellCommand
 {
-    T Parse(string output);
+    T Parse(ReadOnlySpan<char> output);
 }

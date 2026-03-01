@@ -8,7 +8,7 @@ internal sealed class CpuStatCommand : IAdbShellCommand<CpuSnapshot>
 
     public string CommandText => "cat /proc/stat";
 
-    public CpuSnapshot Parse(string output)
+    public CpuSnapshot Parse(ReadOnlySpan<char> output)
     {
         long user = 0;
         long nice = 0;
@@ -19,37 +19,39 @@ internal sealed class CpuStatCommand : IAdbShellCommand<CpuSnapshot>
         long softIrq = 0;
         long steal = 0;
         var cores = new List<(string Name, long Active, long Total)>();
+        Span<Range> vals = stackalloc Range[10];
 
-        foreach (var statLine in output.Split('\n'))
+        foreach (var statLine in output.EnumerateLines())
         {
             if (!statLine.StartsWith("cpu"))
             {
                 continue;
             }
 
-            var vals = statLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (vals.Length < 8)
+            var valCount = statLine.Split(vals, ' ', StringSplitOptions.RemoveEmptyEntries);
+            if (valCount < 8)
             {
                 continue;
             }
 
-            long.TryParse(vals[1], out var u);
-            long.TryParse(vals[2], out var n);
-            long.TryParse(vals[3], out var s);
-            long.TryParse(vals[4], out var id);
-            long.TryParse(vals[5], out var w);
-            long.TryParse(vals[6], out var q);
-            long.TryParse(vals[7], out var sq);
+            long.TryParse(statLine[vals[1]], out var u);
+            long.TryParse(statLine[vals[2]], out var n);
+            long.TryParse(statLine[vals[3]], out var s);
+            long.TryParse(statLine[vals[4]], out var id);
+            long.TryParse(statLine[vals[5]], out var w);
+            long.TryParse(statLine[vals[6]], out var q);
+            long.TryParse(statLine[vals[7]], out var sq);
             long st = 0;
-            if (vals.Length >= 9)
+            if (valCount >= 9)
             {
-                long.TryParse(vals[8], out st);
+                long.TryParse(statLine[vals[8]], out st);
             }
 
             var active = u + n + s + w + q + sq + st;
             var total = active + id;
 
-            if (vals[0] == "cpu")
+            var label = statLine[vals[0]];
+            if (label is "cpu")
             {
                 user = u;
                 nice = n;
@@ -62,13 +64,13 @@ internal sealed class CpuStatCommand : IAdbShellCommand<CpuSnapshot>
             }
             else
             {
-                cores.Add((vals[0].ToUpperInvariant(), active, total));
+                cores.Add((label.ToString().ToUpperInvariant(), active, total));
             }
         }
 
         return new CpuSnapshot(user, nice, system, idle, ioWait, irq, softIrq, steal, cores);
     }
 
-    public void Apply(string output, DynamicSections target)
+    public void Apply(ReadOnlySpan<char> output, DynamicSections target)
         => target.Cpu = Parse(output);
 }

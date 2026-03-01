@@ -1,18 +1,23 @@
+using System.Buffers;
 using System.Globalization;
 
 namespace ShieldCommander.Core.Services.Commands;
 
 internal static class ParseHelper
 {
-    public static long KbToBytes(string memLine)
+    private static readonly SearchValues<char> Delimiters = SearchValues.Create([',', ' ', '}']);
+
+    public static long KbToBytes(ReadOnlySpan<char> memLine)
     {
-        var parts = memLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return parts.Length >= 2 && long.TryParse(parts[1], out var kb) ? kb * 1024 : 0;
+        Span<Range> ranges = stackalloc Range[3];
+        var count = memLine.Split(ranges, ' ', StringSplitOptions.RemoveEmptyEntries);
+        return count >= 2 && long.TryParse(memLine[ranges[1]], out var kb) ? kb * 1024 : 0;
     }
 
-    public static long ParseSizeWithUnit(string value)
+    public static long ParseSizeWithUnit(ReadOnlySpan<char> value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        value = value.Trim();
+        if (value.IsEmpty || value.IsWhiteSpace())
         {
             return 0;
         }
@@ -41,29 +46,29 @@ internal static class ParseHelper
         };
     }
 
-    public static (string Name, string? Value) ExtractMValueEntry(string trimmed)
+    public static (string Name, string? Value) ExtractMValueEntry(ReadOnlySpan<char> trimmed)
     {
-        var mValueIdx = trimmed.IndexOf("mValue=", StringComparison.Ordinal);
-        var valueStr = trimmed[(mValueIdx + "mValue=".Length)..];
-        var endIdx = valueStr.IndexOfAny([',', ' ', '}']);
+        var mValueIdx = trimmed.IndexOf("mValue=");
+        var valueSpan = trimmed[(mValueIdx + "mValue=".Length)..];
+        var endIdx = valueSpan.IndexOfAny(Delimiters);
         if (endIdx > 0)
         {
-            valueStr = valueStr[..endIdx];
+            valueSpan = valueSpan[..endIdx];
         }
 
         var nameStr = "Unknown";
-        var mNameIdx = trimmed.IndexOf("mName=", StringComparison.Ordinal);
+        var mNameIdx = trimmed.IndexOf("mName=");
         if (mNameIdx >= 0)
         {
-            var nameVal = trimmed[(mNameIdx + "mName=".Length)..];
-            var nameEnd = nameVal.IndexOfAny([',', ' ', '}']);
+            var nameSpan = trimmed[(mNameIdx + "mName=".Length)..];
+            var nameEnd = nameSpan.IndexOfAny(Delimiters);
             if (nameEnd > 0)
             {
-                nameStr = nameVal[..nameEnd];
+                nameStr = nameSpan[..nameEnd].ToString();
             }
         }
 
-        return (nameStr, valueStr);
+        return (nameStr, valueSpan.ToString());
     }
 
     public static bool IsAllDigits(ReadOnlySpan<char> span)

@@ -9,14 +9,14 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
 
     public string CommandText => "dumpsys thermalservice";
 
-    public ThermalSnapshot Parse(string output)
+    public ThermalSnapshot Parse(ReadOnlySpan<char> output)
     {
         float maxTemp = 0;
         var temps = new List<(string Name, float Value)>();
         var phase = 0; // 0=seeking temps, 1=in temps, 2=seeking cooling, 3=in cooling
         string? fanState = null;
 
-        foreach (var line in output.Split('\n'))
+        foreach (var line in output.EnumerateLines())
         {
             var trimmed = line.Trim();
 
@@ -37,7 +37,7 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
                         break;
                     }
 
-                    if (!trimmed.Contains("mValue="))
+                    if (trimmed.IndexOf("mValue=") < 0)
                     {
                         break;
                     }
@@ -67,13 +67,13 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
                 }
 
                 case 3:
-                    if (trimmed.Length > 0 && !trimmed.Contains("mValue="))
+                    if (trimmed.Length > 0 && trimmed.IndexOf("mValue=") < 0)
                     {
                         phase = 4; // done
                         break;
                     }
 
-                    if (!trimmed.Contains("mValue="))
+                    if (trimmed.IndexOf("mValue=") < 0)
                     {
                         break;
                     }
@@ -106,6 +106,6 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
         return new ThermalSnapshot(summary, zones, fanState);
     }
 
-    public void Apply(string output, DynamicSections target)
+    public void Apply(ReadOnlySpan<char> output, DynamicSections target)
         => target.Thermal = Parse(output);
 }

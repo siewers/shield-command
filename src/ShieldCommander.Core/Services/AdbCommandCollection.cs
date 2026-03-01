@@ -1,19 +1,16 @@
 using System.Collections;
-using System.Text;
-using System.Text.RegularExpressions;
 using ShieldCommander.Core.Models;
 using ShieldCommander.Core.Services.Commands;
 
 namespace ShieldCommander.Core.Services;
 
-internal sealed partial class AdbCommandCollection : IEnumerable<IAdbShellCommand>
+internal sealed class AdbCommandCollection : IEnumerable<IAdbShellCommand>
 {
     private const string Prefix = "____";
     private const string Suffix = "____";
-    private const string SectionNameGroup = "sectionName";
 
     private readonly List<IAdbShellCommand> _commands = [];
-    private readonly Dictionary<string, string> _results = [];
+    private readonly Dictionary<string, ReadOnlyMemory<char>> _results = [];
 
     public IEnumerator<IAdbShellCommand> GetEnumerator() => _commands.GetEnumerator();
 
@@ -22,7 +19,7 @@ internal sealed partial class AdbCommandCollection : IEnumerable<IAdbShellComman
     public void Add(IAdbShellCommand command)
     {
         _commands.Add(command);
-        _results[command.Name] = string.Empty;
+        _results[command.Name] = ReadOnlyMemory<char>.Empty;
     }
 
     public string ToCombinedCommand()
@@ -33,7 +30,7 @@ internal sealed partial class AdbCommandCollection : IEnumerable<IAdbShellComman
         UpdateResults(commandResults);
         foreach (var cmd in _commands)
         {
-            cmd.Apply(_results[cmd.Name], target);
+            cmd.Apply(_results[cmd.Name].Span, target);
         }
     }
 
@@ -41,42 +38,43 @@ internal sealed partial class AdbCommandCollection : IEnumerable<IAdbShellComman
     {
         foreach (var key in _results.Keys)
         {
-            // Clear all old results on update
-            _results[key] = string.Empty;
+            _results[key] = ReadOnlyMemory<char>.Empty;
         }
 
         string? currentSectionName = null;
-        var resultBuilder = new StringBuilder();
+        var sectionStart = -1;
+        var span = commandResults.AsSpan();
+        var pos = 0;
 
-        using var reader = new StringReader(commandResults);
-        while (reader.ReadLine() is { } line)
+        while (pos < span.Length)
         {
-            var sectionMatch = SectionDelimiterRegex().Match(line);
+            var newlineIdx = span[pos..].IndexOf('\n');
+            var lineEnd = newlineIdx >= 0 ? pos + newlineIdx : span.Length;
+            var line = span[pos..lineEnd];
 
-            if (sectionMatch.Success)
+            // Strip trailing \r
+            if (line.Length > 0 && line[^1] == '\r')
+            {
+                line = line[..^1];
+            }
+
+            if (line.StartsWith(Prefix) && line.EndsWith(Suffix) && line.Length > Prefix.Length + Suffix.Length)
             {
                 if (currentSectionName is not null)
                 {
-                    // New section - flush the results
-                    _results[currentSectionName] = resultBuilder.ToString();
+                    _results[currentSectionName] = commandResults.AsMemory(sectionStart, pos - sectionStart);
                 }
 
-                currentSectionName = sectionMatch.Groups[SectionNameGroup].Value;
-                resultBuilder.Clear();
+                currentSectionName = line[Prefix.Length..^Suffix.Length].ToString();
+                sectionStart = newlineIdx >= 0 ? lineEnd + 1 : lineEnd;
             }
-            else if (currentSectionName is not null)
-            {
-                resultBuilder.AppendLine(line);
-            }
+
+            pos = newlineIdx >= 0 ? lineEnd + 1 : span.Length;
         }
 
         if (currentSectionName is not null)
         {
-            // Flush the remaining results to the last section
-            _results[currentSectionName] = resultBuilder.ToString();
+            _results[currentSectionName] = commandResults.AsMemory(sectionStart, span.Length - sectionStart);
         }
     }
-
-    [GeneratedRegex($"^{Prefix}(?<{SectionNameGroup}>.+?){Suffix}$")]
-    private partial Regex SectionDelimiterRegex();
 }
