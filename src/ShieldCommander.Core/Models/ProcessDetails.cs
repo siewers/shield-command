@@ -6,6 +6,6 @@ public sealed record ProcessDetails(
     string? State = null,
     string? Uid = null,
     string? Threads = null,
-    string? VmRss = null,
+    long? VmRss = null,
     string? PPid = null,
     string? CpuGroup = null);

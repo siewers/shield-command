@@ -12,4 +12,4 @@ public sealed record InstalledPackage(
     string? DataDir = null,
     string? Uid = null,
     string? CodePath = null,
-    string? CodeSize = null);
+    long? CodeSize = null);

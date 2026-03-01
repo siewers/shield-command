@@ -1,6 +1,3 @@
 namespace ShieldCommander.Core.Models;
 
-public class DiskFreeInfo
-{
-    
-}
+public sealed record DiskFreeInfo(long? Total);
