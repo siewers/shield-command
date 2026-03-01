@@ -4,7 +4,10 @@ using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.UI.Helpers;
+using ShieldCommander.UI.Formatters;
+
+
+namespace ShieldCommander.UI.Dialogs;
 
 internal static class PackageInfoDialog
 {
@@ -34,7 +37,7 @@ internal static class PackageInfoDialog
             ("Parent PID", process.PPid),
             ("UID", process.Uid),
             ("Threads", process.Threads),
-            ("Memory (RSS)", FormatVmRss(process.VmRss)),
+            ("Memory (RSS)", UnitFormatter.Bytes(process.VmRss)),
         };
 
         if (package is not null)
@@ -58,33 +61,12 @@ internal static class PackageInfoDialog
             ("Last Updated", package.LastUpdateTime),
             ("Target SDK", package.TargetSdk),
             ("Min SDK", package.MinSdk),
-            ("Size", package.CodeSize),
+            ("Size", UnitFormatter.Bytes(package.CodeSize)),
             ("Data Dir", package.DataDir),
         ];
     }
 
-    private static string? FormatVmRss(string? vmRss)
-    {
-        if (vmRss is null)
-        {
-            return null;
-        }
-
-        // Format: "123456 kB"
-        var parts = vmRss.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length >= 2 && long.TryParse(parts[0], out var kb))
-        {
-            return kb >= 1024 * 1024
-                ? $"{kb / (1024.0 * 1024.0):F1} GB"
-                : kb >= 1024
-                    ? $"{kb / 1024.0:F1} MB"
-                    : $"{kb} KB";
-        }
-
-        return vmRss;
-    }
-
-    private static async Task<bool> ShowCoreAsync(
+private static async Task<bool> ShowCoreAsync(
         string title,
         List<(string Label, string? Value)> rows,
         string? primaryButtonText,
