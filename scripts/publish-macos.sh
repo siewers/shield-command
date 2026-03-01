@@ -37,8 +37,10 @@ cp "$REPO_ROOT/src/ShieldCommander.UI/Assets/app-icon.icns" \
    "$APP_BUNDLE/Contents/Resources/app-icon.icns"
 
 # Copy and populate Info.plist template
+# CFBundleVersion must be numeric-only — strip any prerelease suffix
+BUNDLE_VERSION="${VERSION%%-*}"
 cp "$REPO_ROOT/src/ShieldCommander.UI/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
-sed -i '' "s/__VERSION__/${VERSION}/g; s/__YEAR__/$(date +%Y)/g" "$APP_BUNDLE/Contents/Info.plist"
+sed -i '' "s/__BUNDLE_VERSION__/${BUNDLE_VERSION}/g; s/__VERSION__/${VERSION}/g; s/__YEAR__/$(date +%Y)/g" "$APP_BUNDLE/Contents/Info.plist"
 
 # Clean up intermediate output
 rm -rf "$OUTPUT_DIR/bin"
