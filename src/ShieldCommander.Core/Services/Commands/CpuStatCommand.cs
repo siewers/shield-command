@@ -101,7 +101,7 @@ internal sealed class CpuStatCommand : IAdbShellCommand<CpuSnapshot>
             }
 
             // Count all-digit entries from ls /proc/ for process count
-            if (foundLoadAvg && ParseHelper.IsAllDigits(trimmed))
+            if (foundLoadAvg && trimmed.IsAllDigits())
             {
                 processCount++;
             }

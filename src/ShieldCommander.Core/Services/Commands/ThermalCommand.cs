@@ -13,84 +13,35 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
     {
         float maxTemp = 0;
         var temps = new List<(string Name, float Value)>();
-        var phase = 0; // 0=seeking temps, 1=in temps, 2=seeking cooling, 3=in cooling
-        string? fanState = null;
+        var inTemps = false;
 
         foreach (var line in output.EnumerateLines())
         {
             var trimmed = line.Trim();
 
-            switch (phase)
+            if (!inTemps)
             {
-                case 0:
-                    if (trimmed.StartsWith("Current temperatures from HAL"))
-                    {
-                        phase = 1;
-                    }
-
-                    break;
-
-                case 1:
-                    if (trimmed.StartsWith("Current cooling"))
-                    {
-                        phase = 3; // jump directly into cooling
-                        break;
-                    }
-
-                    if (trimmed.IndexOf("mValue=") < 0)
-                    {
-                        break;
-                    }
-
-                    var (tName, tValue) = ParseHelper.ExtractMValueEntry(trimmed);
-                    if (tValue is not null &&
-                        float.TryParse(tValue,
-                            CultureInfo.InvariantCulture, out var temp))
-                    {
-                        temps.Add((tName, temp));
-                        if (temp > maxTemp)
-                        {
-                            maxTemp = temp;
-                        }
-                    }
-
-                    break;
-
-                case 2:
+                if (trimmed.StartsWith("Current temperatures from HAL"))
                 {
-                    if (trimmed.StartsWith("Current cooling devices from HAL"))
-                    {
-                        phase = 3;
-                    }
-
-                    break;
+                    inTemps = true;
                 }
 
-                case 3:
-                    if (trimmed.Length > 0 && trimmed.IndexOf("mValue=") < 0)
-                    {
-                        phase = 4; // done
-                        break;
-                    }
-
-                    if (trimmed.IndexOf("mValue=") < 0)
-                    {
-                        break;
-                    }
-
-                    var (_, cValue) = ParseHelper.ExtractMValueEntry(trimmed);
-                    if (cValue is not null && int.TryParse(cValue, out var fanLevel))
-                    {
-                        fanState = fanLevel > 0 ? $"Active (Level {fanLevel})" : "Off";
-                        phase = 4; // Shield has one fan
-                    }
-
-                    break;
+                continue;
             }
 
-            if (phase == 4)
+            if (trimmed.IndexOf("mValue=") < 0)
             {
                 break;
+            }
+
+            trimmed.ExtractDumpsysFields(out var tName, out var tValue);
+            if (float.TryParse(tValue, CultureInfo.InvariantCulture, out var temp))
+            {
+                temps.Add((tName.ToString(), temp));
+                if (temp > maxTemp)
+                {
+                    maxTemp = temp;
+                }
             }
         }
 
@@ -103,7 +54,7 @@ internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
             zones = temps.Select(t => (t.Name, (double)t.Value)).ToList();
         }
 
-        return new ThermalSnapshot(summary, zones, fanState);
+        return new ThermalSnapshot(summary, zones);
     }
 
     public void Apply(ReadOnlySpan<char> output, DynamicSections target)

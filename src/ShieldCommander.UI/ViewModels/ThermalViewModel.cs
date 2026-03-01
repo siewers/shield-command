@@ -40,9 +40,6 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
     private TimeSpan _chartWindow;
 
     [ObservableProperty]
-    private string? _fanState;
-
-    [ObservableProperty]
     private string _hottestZoneText = "\u2014";
 
     [ObservableProperty]
@@ -140,7 +137,6 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         AvgTemperature = MinTemperature = MaxTemperature = double.NaN;
         HottestZoneText = "\u2014";
         ZoneCount = 0;
-        FanState = null;
     }
 
     public void SetWindows(TimeSpan chartWindow, TimeSpan miniWindow)
@@ -242,7 +238,6 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         MaxTemperature = currentMax;
         HottestZoneText = $"{hottest.Name} ({hottest.Value:F1}\u00b0C)";
         ZoneCount = temperatures.Count;
-        FanState = thermal.FanState;
 
         // Mini thermal chart
         _miniThermalAvgPoints.Add(new DateTimePoint(now, avg));

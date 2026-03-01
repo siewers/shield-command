@@ -40,7 +40,7 @@ internal sealed class DiskFreeCommand : IAdbShellCommand<DiskFreeInfo?>
             return null;
         }
 
-        var totalBytes = ParseHelper.ParseSizeWithUnit(dataLine[cols[1]]);
+        var totalBytes = dataLine[cols[1]].ParseSizeWithUnit();
         if (totalBytes > 0)
         {
             return new DiskFreeInfo(totalBytes);

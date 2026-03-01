@@ -59,7 +59,7 @@
                 </Border>
                 <!-- Right: Hottest zone / Zone count / Fan -->
                 <Border Grid.Column="2" Padding="12,8">
-                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
+                    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Hottest:" FontSize="12" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HottestZoneText}"
@@ -67,10 +67,6 @@
                                    HorizontalAlignment="Right" />
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Zones:" FontSize="12" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ZoneCount}"
-                                   FontSize="12" HorizontalAlignment="Right" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Fan:" FontSize="12" />
-                        <TextBlock Grid.Row="2" Grid.Column="1"
-                                   Text="{Binding FanState, TargetNullValue=\u2014}"
                                    FontSize="12" HorizontalAlignment="Right" />
                     </Grid>
                 </Border>

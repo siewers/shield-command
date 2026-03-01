@@ -23,31 +23,31 @@ internal sealed class MemInfoCommand : IAdbShellCommand<MemoryInfo>
             var trimmed = line.Trim();
             if (trimmed.StartsWith("MemTotal:"))
             {
-                total = ParseHelper.KbToBytes(trimmed);
+                total = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("MemFree:"))
             {
-                free = ParseHelper.KbToBytes(trimmed);
+                free = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("MemAvailable:"))
             {
-                available = ParseHelper.KbToBytes(trimmed);
+                available = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("Buffers:"))
             {
-                buffers = ParseHelper.KbToBytes(trimmed);
+                buffers = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("Cached:"))
             {
-                cached = ParseHelper.KbToBytes(trimmed);
+                cached = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("SwapTotal:"))
             {
-                swapTotal = ParseHelper.KbToBytes(trimmed);
+                swapTotal = trimmed.KbToBytes();
             }
             else if (trimmed.StartsWith("SwapFree:"))
             {
-                swapFree = ParseHelper.KbToBytes(trimmed);
+                swapFree = trimmed.KbToBytes();
             }
         }
 
