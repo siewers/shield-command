@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
@@ -44,10 +45,10 @@
                     CornerRadius="4" Padding="12">
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Total RAM" FontWeight="SemiBold" Margin="0,0,24,4"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalRam, FallbackValue=—}" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalRam, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}" Margin="0,0,0,4"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Storage" FontWeight="SemiBold" Margin="0,0,24,0"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StorageTotal, FallbackValue=—}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total storage" FontWeight="SemiBold" Margin="0,0,24,0"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StorageTotal, Converter={x:Static converters:ByteFormatConverter.Instance}, TargetNullValue=\u2014}"/>
                 </Grid>
             </Border>
         </StackPanel>

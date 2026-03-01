@@ -21,14 +21,17 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Physical Memory:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemPhysicalText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding MemPhysical, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Memory Used:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MemUsedDetailText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding MemUsedDetail, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Cached Files:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MemCachedText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding MemCached, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Swap Used:" FontSize="12"/>
@@ -61,11 +64,13 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Free:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemFreeText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding MemFree, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" Foreground="LimeGreen"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Buffers:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MemBuffersText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding MemBuffers, StringFormat='{}{0:F0} MB'}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                     </Grid>
                 </Border>

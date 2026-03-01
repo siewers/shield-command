@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,15 +22,18 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="System:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CpuSystemText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding CpuSystem, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="User:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CpuUserText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding CpuUser, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Idle:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CpuIdleText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding CpuIdle, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F1}"
                                    FontSize="12" Foreground="Gray"
                                    HorizontalAlignment="Right"/>
                     </Grid>
@@ -90,7 +94,8 @@
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
                                            MinWidth="40"/>
-                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                <TextBlock Text="{Binding Value, Converter={x:Static converters:PercentFormatConverter.Instance}, ConverterParameter=F0}"
+                                           FontSize="11"
                                            Foreground="#888888" MinWidth="60"
                                            TextAlignment="Right"/>
                             </StackPanel>

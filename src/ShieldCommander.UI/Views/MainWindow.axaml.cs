@@ -1,17 +1,16 @@
-using System;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using ShieldCommander.Core.Services;
 using ShieldCommander.UI.Models;
+using ShieldCommander.UI.Platform;
 using ShieldCommander.UI.ViewModels;
 
 namespace ShieldCommander.UI.Views;
@@ -22,7 +21,11 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         SetNavigationIcons();
-        ApplyVisualTweaks();
+
+        var platformUI = App.Services.GetRequiredService<IPlatformUI>();
+        platformUI.ApplyTitleBarLayout(TitleBarLeftSpacer, TitleBarStatusButton, NavView, TitleBarAppInfo);
+
+        var settings = App.Services.GetRequiredService<SettingsService>();
 
         Closing += async (_, _) =>
         {
@@ -30,7 +33,9 @@ public sealed partial class MainWindow : Window
             {
                 if (WindowState == WindowState.Normal)
                 {
-                    AppSettingsAccessor.Settings.SaveWindowBounds(Position.X, Position.Y, Width, Height);
+                    var position = new System.Drawing.Point(Position.X, Position.Y);
+                    var size = new System.Drawing.Size((int)Width, (int)Height);
+                    settings.SaveWindowBounds(position, size);
                 }
 
                 vm.ActivityMonitorPage.Stop();
@@ -46,54 +51,44 @@ public sealed partial class MainWindow : Window
 
         Opened += (_, _) =>
         {
-            var settings = AppSettingsAccessor.Settings;
-            if (settings.WindowSize is var (w, h))
+            var windowSize = settings.WindowSize;
+            if (windowSize.HasValue)
             {
-                Width = w;
-                Height = h;
+                Width = windowSize.Value.Width;
+                Height = windowSize.Value.Height;
             }
 
-            if (settings.WindowPosition is var (x, y))
+            var windowPosition = settings.WindowPosition;
+            if (windowPosition.HasValue)
             {
-                Position = new PixelPoint((int)x, (int)y);
+                Position = new PixelPoint(windowPosition.Value.X, windowPosition.Value.Y);
             }
         };
+
+        ApplyVisualTweaks();
     }
 
     private void ApplyVisualTweaks()
     {
-        // Adjust title bar spacing per platform:
-        // macOS: traffic lights on the left → 78px left spacer, no right margin
-        // Windows: min/max/close on the right → no left spacer, right margin for buttons
-        if (!OperatingSystem.IsMacOS())
-        {
-            TitleBarLeftSpacer.Width = 0;
-            TitleBarStatusButton.Margin = new Thickness(0, 0, 140, 0);
-            TitleBarAppInfo.IsVisible = true;
-            NavView.IsPaneToggleButtonVisible = false;
-            NavView.IsPaneOpen = true;
-            NavView.PaneTitle = "";
-        }
-
         // Hide NavView until visual tweaks are applied to prevent layout shift
         NavView.Opacity = 0;
 
         Loaded += async (_, _) =>
         {
             // Small delay to ensure all templates are fully applied
-            await System.Threading.Tasks.Task.Delay(100);
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 foreach (var descendant in NavView.GetVisualDescendants())
                 {
-                    if (descendant is Viewbox vb && vb.Name == "IconHost")
+                    if (descendant is Viewbox { Name: "IconHost" } vb)
                     {
                         // Replace hamburger icon with app icon
                         var parent = vb.GetVisualParent();
                         while (parent != null && parent != NavView)
                         {
-                            if (parent is Button btn && btn.Name == "TogglePaneButton")
+                            if (parent is Button { Name: "TogglePaneButton" })
                             {
                                 vb.Child = new Image
                                 {
@@ -109,14 +104,14 @@ public sealed partial class MainWindow : Window
                     }
 
                     // Nudge the PaneTitle text down to align with the icon
-                    if (descendant is TextBlock tb && tb.Name == "PaneTitleTextBlock")
+                    if (descendant is TextBlock { Name: "PaneTitleTextBlock" } tb)
                     {
                         tb.Margin = new Thickness(tb.Margin.Left, tb.Margin.Top + 2, tb.Margin.Right, tb.Margin.Bottom);
                     }
 
                     // Nudge nav item text down to align with icon
-                    if (descendant is ContentPresenter cp && cp.Name == "ContentPresenter"
-                        && cp.GetVisualParent() is Control cpParent && cpParent.Name == "ContentGrid")
+                    if (descendant is ContentPresenter { Name: "ContentPresenter" } cp
+                        && cp.GetVisualParent() is Control { Name: "ContentGrid" })
                     {
                         cp.Margin = new Thickness(cp.Margin.Left, cp.Margin.Top + 4, cp.Margin.Right, cp.Margin.Bottom);
                     }
@@ -131,7 +126,7 @@ public sealed partial class MainWindow : Window
                 NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault();
 
                 // Auto-connect or open device dialog on startup
-                if (DataContext is MainWindowViewModel vm && !vm.IsDeviceConnected)
+                if (DataContext is MainWindowViewModel { IsDeviceConnected: false } vm)
                 {
                     var autoConnected = await vm.DevicePage.AutoConnectAsync();
                     if (!autoConnected)
@@ -143,7 +138,7 @@ public sealed partial class MainWindow : Window
         };
     }
 
-    private static readonly Avalonia.Media.FontFamily PhosphorThin =
+    private static readonly FontFamily PhosphorThin =
         new("avares://ShieldCommander/Assets/Fonts#Phosphor-Thin");
 
     private void SetNavigationIcons()
@@ -200,15 +195,18 @@ public sealed partial class MainWindow : Window
 
     private void ShowSettingsFlyout()
     {
-        if (DataContext is not MainWindowViewModel vm) return;
+        if (DataContext is not MainWindowViewModel vm)
+        {
+            return;
+        }
 
-        var flyout = new Avalonia.Controls.Flyout();
+        var flyout = new Flyout();
 
         var panel = new StackPanel { Spacing = 4, MinWidth = 200 };
         panel.Children.Add(new TextBlock
         {
             Text = "Update Frequency",
-            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+            FontWeight = FontWeight.SemiBold,
             FontSize = 13,
             Margin = new Thickness(8, 4),
         });
@@ -246,19 +244,14 @@ public sealed partial class MainWindow : Window
         if (DataContext is MainWindowViewModel vm)
         {
             var indicator = this.FindControl<Avalonia.Controls.Shapes.Ellipse>("ConnectionIndicator");
-            if (indicator != null)
-            {
-                indicator.Fill = new SolidColorBrush(
-                    vm.IsDeviceConnected ? Color.Parse("#44BB44") : Color.Parse("#FF4444"));
-            }
+            indicator?.Fill = new SolidColorBrush(vm.IsDeviceConnected ? Color.Parse("#44BB44") : Color.Parse("#FF4444"));
 
             // Subscribe to changes
             vm.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(MainWindowViewModel.IsDeviceConnected) && indicator != null)
                 {
-                    indicator.Fill = new SolidColorBrush(
-                        vm.IsDeviceConnected ? Color.Parse("#44BB44") : Color.Parse("#FF4444"));
+                    indicator.Fill = new SolidColorBrush(vm.IsDeviceConnected ? Color.Parse("#44BB44") : Color.Parse("#FF4444"));
                 }
             };
         }
@@ -269,7 +262,7 @@ public sealed partial class MainWindow : Window
         await OpenDeviceDialog();
     }
 
-    private async System.Threading.Tasks.Task OpenDeviceDialog()
+    private async Task OpenDeviceDialog()
     {
         if (DataContext is not MainWindowViewModel vm)
         {
@@ -289,7 +282,7 @@ public sealed partial class MainWindow : Window
             CloseButtonText = "Close",
             DefaultButton = ContentDialogButton.Close,
         };
-
+        
         // Auto-close dialog when device connects
         void OnPropertyChanged(object? s, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -309,9 +302,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateFrequency_Click(object? sender, EventArgs e)
     {
-        if (sender is NativeMenuItem menuItem
-            && menuItem.Header is string header
-            && menuItem.Parent is NativeMenu parentMenu
+        if (sender is NativeMenuItem { Header: { } header, Parent: { } parentMenu } menuItem
             && DataContext is MainWindowViewModel vm)
         {
             // Uncheck all siblings, check the clicked item
@@ -340,7 +331,7 @@ public sealed partial class MainWindow : Window
 
     private void NavView_ItemInvoked(object? sender, NavigationViewItemInvokedEventArgs e)
     {
-        if (e.InvokedItemContainer is NavigationViewItem item && item.Tag is string tag)
+        if (e.InvokedItemContainer is NavigationViewItem { Tag: string tag })
         {
             if (tag == "About")
             {

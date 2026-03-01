@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,15 +22,18 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Average:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AvgTemperatureText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding AvgTemperature, Converter={x:Static converters:TemperatureFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Min:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MinTemperatureText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding MinTemperature, Converter={x:Static converters:TemperatureFormatConverter.Instance}}"
                                    FontSize="12" Foreground="LimeGreen"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Max:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaxTemperatureText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding MaxTemperature, Converter={x:Static converters:TemperatureFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                     </Grid>
@@ -63,10 +67,11 @@
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Zones:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ZoneCountText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ZoneCount}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Fan:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FanStateText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding FanState, TargetNullValue=\u2014}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                     </Grid>
                 </Border>
@@ -94,7 +99,8 @@
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
                                            MinWidth="40"/>
-                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                <TextBlock Text="{Binding Value, Converter={x:Static converters:TemperatureFormatConverter.Instance}}"
+                                           FontSize="11"
                                            Foreground="#888888" MinWidth="60"
                                            TextAlignment="Right"/>
                             </StackPanel>

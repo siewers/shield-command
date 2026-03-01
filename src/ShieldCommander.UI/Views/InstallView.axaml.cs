@@ -1,4 +1,3 @@
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -41,7 +40,7 @@ public sealed partial class InstallView : UserControl
         {
             var paths = files
                 .Select(f => f.Path.LocalPath)
-                .Where(p => p.EndsWith(".apk", System.StringComparison.OrdinalIgnoreCase));
+                .Where(p => p.EndsWith(".apk", StringComparison.OrdinalIgnoreCase));
             vm.AddApkFiles(paths);
         }
 

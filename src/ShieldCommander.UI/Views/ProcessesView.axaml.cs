@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using ShieldCommander.Core.Models;
-using ShieldCommander.UI.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using ShieldCommander.UI.Dialogs;
 using ShieldCommander.UI.ViewModels;
 
 namespace ShieldCommander.UI.Views;
@@ -25,7 +25,7 @@ public sealed partial class ProcessesView : UserControl
 
     private readonly MemoryComparer _memoryComparer;
 
-    /// Sorts by MemoryMb, always placing 0 (unknown) at the bottom.
+    /// Sorts by Memory, always placing 0 (unknown) at the bottom.
     /// The DataGrid reverses the comparer for descending, so we counteract that
     /// for zero-entries by flipping the sign based on tracked direction.
     private sealed class MemoryComparer : System.Collections.IComparer
@@ -34,8 +34,8 @@ public sealed partial class ProcessesView : UserControl
 
         public int Compare(object? x, object? y)
         {
-            var a = (x as ProcessInfo)?.MemoryMb ?? 0;
-            var b = (y as ProcessInfo)?.MemoryMb ?? 0;
+            var a = (x as ProcessInfo)?.Memory ?? 0;
+            var b = (y as ProcessInfo)?.Memory ?? 0;
             var aZero = a == 0;
             var bZero = b == 0;
 
@@ -124,16 +124,17 @@ public sealed partial class ProcessesView : UserControl
 
         // MenuFlyout instead of ContextMenu: ContextMenu freezes the DataGrid
         // even with in-place collection updates (Avalonia + FluentAvaloniaUI issue)
+        var menu = App.Services.GetRequiredService<MenuHelper>();
         var flyout = new MenuFlyout
         {
             // Let the dismiss click pass through so a single click selects another row
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\ue2ce", () => _ = ShowProcessInfoAsync(vm, proc)),
-                MenuHelper.CreateGoogleSearchItem(searchName),
+                menu.CreateItem("Info", "\ue2ce", () => _ = ShowProcessInfoAsync(vm, proc)),
+                menu.CreateGoogleSearchItem(searchName),
                 new Separator(),
-                MenuHelper.CreateItem(
+                menu.CreateItem(
                     "Terminate",
                     "\ue4f6",
                     () => vm.KillProcessCommand.Execute(null),

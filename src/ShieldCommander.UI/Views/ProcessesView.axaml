@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
              xmlns:models="using:ShieldCommander.Core.Models"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
@@ -39,11 +40,11 @@
                                     Width="90" />
                 <DataGridTemplateColumn Header="Memory"
                                         Width="100"
-                                        SortMemberPath="MemoryMb"
+                                        SortMemberPath="Memory"
                                         x:DataType="models:ProcessInfo">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:ProcessInfo">
-                            <TextBlock Text="{Binding MemoryDisplay}"
+                            <TextBlock Text="{Binding Memory, Converter={x:Static converters:ByteFormatConverter.Instance}}"
                                        VerticalAlignment="Center"
                                        Margin="12,0,0,0"/>
                         </DataTemplate>

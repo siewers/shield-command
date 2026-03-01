@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,18 +22,22 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Read/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DiskReadSpeedText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding DiskReadSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Write/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DiskWriteSpeedText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding DiskWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Write latency:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiskLatencyText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding DiskLatency, StringFormat='{}{0} ms'}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Recent write:" FontSize="12"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DiskRecentWriteSpeedText}"
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding DiskRecentWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                     </Grid>
                 </Border>
@@ -62,17 +67,21 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Data read:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DiskDataReadText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding DiskDataRead, Converter={x:Static converters:ByteFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Data written:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DiskDataWrittenText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding DiskDataWritten, Converter={x:Static converters:ByteFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Data read/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiskReadSpeedText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding DiskReadSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Data written/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DiskWriteSpeedText}"
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding DiskWriteSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                     </Grid>
@@ -101,7 +110,8 @@
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
                                            MinWidth="40"/>
-                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                <TextBlock Text="{Binding Value, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
+                                           FontSize="11"
                                            Foreground="#888888" MinWidth="60"
                                            TextAlignment="Right"/>
                             </StackPanel>

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,17 +22,21 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Packets in:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetPacketsInText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding NetPacketsIn, Converter={x:Static converters:CountFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Packets out:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetPacketsOutText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding NetPacketsOut, Converter={x:Static converters:CountFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Packets in/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetPacketsInPerSecText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding NetPacketsInPerSec}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Packets out/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetPacketsOutPerSecText}"
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding NetPacketsOutPerSec}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                     </Grid>
@@ -62,17 +67,21 @@
                     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                           RowSpacing="2" ColumnSpacing="12">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Data received:" FontSize="12"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding NetDataInText}"
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding NetDataIn, Converter={x:Static converters:ByteFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Data sent:" FontSize="12"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding NetDataOutText}"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding NetDataOut, Converter={x:Static converters:ByteFormatConverter.Instance}}"
                                    FontSize="12" HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Data received/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NetInSpeedText}"
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding NetInSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#4DA6FF"
                                    HorizontalAlignment="Right"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Data sent/sec:" FontSize="12"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NetOutSpeedText}"
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding NetOutSpeed, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
                                    FontSize="12" Foreground="#FF6B6B"
                                    HorizontalAlignment="Right"/>
                     </Grid>
@@ -101,7 +110,8 @@
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="12"
                                            MinWidth="40"/>
-                                <TextBlock Text="{Binding Value}" FontSize="11"
+                                <TextBlock Text="{Binding Value, Converter={x:Static converters:SpeedFormatConverter.Instance}}"
+                                           FontSize="11"
                                            Foreground="#888888" MinWidth="60"
                                            TextAlignment="Right"/>
                             </StackPanel>

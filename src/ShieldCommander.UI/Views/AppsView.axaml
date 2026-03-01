@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShieldCommander.UI.ViewModels"
+             xmlns:converters="using:ShieldCommander.UI.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
@@ -45,9 +46,14 @@
                                         x:DataType="vm:PackageRow">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="vm:PackageRow">
-                            <TextBlock Text="{Binding SizeDisplay}"
-                                       VerticalAlignment="Center"
-                                       Margin="12,0,0,0"/>
+                            <Panel Margin="12,0,0,0">
+                                <TextBlock Text="&#x2026;"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSizeLoading}"/>
+                                <TextBlock Text="{Binding CodeSize, Converter={x:Static converters:ByteFormatConverter.Instance}}"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding !IsSizeLoading}"/>
+                            </Panel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

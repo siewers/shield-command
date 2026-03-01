@@ -1,9 +1,9 @@
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
-using ShieldCommander.UI.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using ShieldCommander.UI.Dialogs;
 using ShieldCommander.UI.ViewModels;
 
 namespace ShieldCommander.UI.Views;
@@ -43,15 +43,16 @@ public sealed partial class AppsView : UserControl
 
         e.Handled = true;
 
+        var menu = App.Services.GetRequiredService<MenuHelper>();
         var flyout = new MenuFlyout
         {
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\ue2ce", () => _ = ShowInfoAndUninstallAsync(row, vm)),
-                MenuHelper.CreateGoogleSearchItem(row.PackageName),
+                menu.CreateItem("Info", "\ue2ce", () => _ = ShowInfoAndUninstallAsync(row, vm)),
+                menu.CreateGoogleSearchItem(row.PackageName),
                 new Separator(),
-                MenuHelper.CreateItem("Uninstall", "\ue4a6", () => _ = ShowUninstallAsync(row, vm)),
+                menu.CreateItem("Uninstall", "\ue4a6", () => _ = ShowUninstallAsync(row, vm)),
             }
         };
 
