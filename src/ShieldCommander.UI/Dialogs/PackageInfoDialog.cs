@@ -66,11 +66,11 @@ internal static class PackageInfoDialog
         ];
     }
 
-private static async Task<bool> ShowCoreAsync(
-        string title,
-        List<(string Label, string? Value)> rows,
-        string? primaryButtonText,
-        string? confirmMessage = null)
+    private static async Task<bool> ShowCoreAsync(
+            string title,
+            List<(string Label, string? Value)> rows,
+            string? primaryButtonText,
+            string? confirmMessage = null)
     {
         var grid = new Grid
         {
