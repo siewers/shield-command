@@ -6,7 +6,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
              x:Class="ShieldCommander.UI.Views.MemoryView"
-             x:DataType="vm:ActivityMonitorViewModel">
+             x:DataType="vm:MemoryViewModel">
 
     <DockPanel Margin="0,8,0,0">
         <!-- Memory stats panel -->

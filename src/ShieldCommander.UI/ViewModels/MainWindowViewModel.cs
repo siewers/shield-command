@@ -23,7 +23,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public AppsViewModel AppsPage { get; }
     public InstallViewModel InstallPage { get; }
     public SystemViewModel SystemPage { get; }
-    public ActivityMonitorViewModel ActivityMonitorPage { get; }
+    public ActivityMonitorOrchestrator ActivityMonitorPage { get; }
     public ProcessesViewModel ProcessesPage { get; }
 
     public MainWindowViewModel(AdbService adbService, SettingsService settings)
@@ -33,7 +33,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AppsPage = new AppsViewModel(adbService);
         InstallPage = new InstallViewModel(adbService);
         SystemPage = new SystemViewModel(adbService);
-        ActivityMonitorPage = new ActivityMonitorViewModel(adbService);
+        ActivityMonitorPage = new ActivityMonitorOrchestrator(adbService);
         ProcessesPage = new ProcessesViewModel(adbService, ActivityMonitorPage);
         _currentPage = SystemPage;
 
@@ -117,7 +117,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private ActivityMonitorViewModel SetActivityMetric(string metric)
+    private ActivityMonitorOrchestrator SetActivityMetric(string metric)
     {
         ActivityMonitorPage.SelectedMetric = metric;
         return ActivityMonitorPage;

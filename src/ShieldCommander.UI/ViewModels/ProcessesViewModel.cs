@@ -9,7 +9,7 @@ namespace ShieldCommander.UI.ViewModels;
 public sealed partial class ProcessesViewModel : ViewModelBase
 {
     public AdbService AdbService { get; }
-    private readonly ActivityMonitorViewModel _activityMonitor;
+    private readonly ActivityMonitorOrchestrator _activityMonitor;
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
 
@@ -54,14 +54,14 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         }
     }
 
-    public ProcessesViewModel(AdbService adbService, ActivityMonitorViewModel activityMonitor)
+    public ProcessesViewModel(AdbService adbService, ActivityMonitorOrchestrator activityMonitor)
     {
         AdbService = adbService;
         _activityMonitor = activityMonitor;
 
         _activityMonitor.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName != nameof(ActivityMonitorViewModel.SelectedRefreshRate) || !IsMonitoring)
+            if (args.PropertyName != nameof(ActivityMonitorOrchestrator.SelectedRefreshRate) || !IsMonitoring)
             {
                 return;
             }

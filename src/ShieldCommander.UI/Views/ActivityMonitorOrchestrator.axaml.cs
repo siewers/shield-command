@@ -4,7 +4,7 @@ using ShieldCommander.UI.ViewModels;
 
 namespace ShieldCommander.UI.Views;
 
-public sealed partial class ActivityMonitorView : UserControl
+public sealed partial class ActivityMonitorOrchestrator : UserControl
 {
     private readonly Dictionary<string, Control> _metricViews = new()
     {
@@ -15,13 +15,13 @@ public sealed partial class ActivityMonitorView : UserControl
         ["Thermals"] = new ThermalsView(),
     };
 
-    public ActivityMonitorView()
+    public ActivityMonitorOrchestrator()
     {
         InitializeComponent();
         DataContextChanged += (_, _) => SubscribeToViewModel();
     }
 
-    private ActivityMonitorViewModel? _subscribedVm;
+    private ViewModels.ActivityMonitorOrchestrator? _subscribedVm;
 
     private void SubscribeToViewModel()
     {
@@ -30,18 +30,28 @@ public sealed partial class ActivityMonitorView : UserControl
             _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
-        _subscribedVm = DataContext as ActivityMonitorViewModel;
+        _subscribedVm = DataContext as ViewModels.ActivityMonitorOrchestrator;
 
         if (_subscribedVm is not null)
         {
+            AssignChildDataContexts(_subscribedVm);
             _subscribedVm.PropertyChanged += OnViewModelPropertyChanged;
             UpdateContent(_subscribedVm.SelectedMetric);
         }
     }
 
+    private void AssignChildDataContexts(ViewModels.ActivityMonitorOrchestrator vm)
+    {
+        _metricViews["CPU"].DataContext = vm.CpuVm;
+        _metricViews["Memory"].DataContext = vm.MemoryVm;
+        _metricViews["Disk"].DataContext = vm.DiskVm;
+        _metricViews["Network"].DataContext = vm.NetworkVm;
+        _metricViews["Thermals"].DataContext = vm.ThermalVm;
+    }
+
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ActivityMonitorViewModel.SelectedMetric) && _subscribedVm is not null)
+        if (e.PropertyName == nameof(ViewModels.ActivityMonitorOrchestrator.SelectedMetric) && _subscribedVm is not null)
         {
             UpdateContent(_subscribedVm.SelectedMetric);
         }

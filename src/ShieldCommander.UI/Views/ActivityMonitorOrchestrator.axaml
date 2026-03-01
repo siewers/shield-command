@@ -4,8 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
-             x:Class="ShieldCommander.UI.Views.ActivityMonitorView"
-             x:DataType="vm:ActivityMonitorViewModel">
+             x:Class="ShieldCommander.UI.Views.ActivityMonitorOrchestrator"
+             x:DataType="vm:ActivityMonitorOrchestrator">
 
     <ContentControl x:Name="MetricContent" />
 </UserControl>

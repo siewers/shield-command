@@ -282,7 +282,7 @@ public sealed partial class MainWindow : Window
             CloseButtonText = "Close",
             DefaultButton = ContentDialogButton.Close,
         };
-        
+
         // Auto-close dialog when device connects
         void OnPropertyChanged(object? s, System.ComponentModel.PropertyChangedEventArgs e)
         {
