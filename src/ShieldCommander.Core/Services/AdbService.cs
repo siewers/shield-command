@@ -37,7 +37,7 @@ public sealed class AdbService
 
     public string FindAdb() => _pathResolver.FindAdb();
 
-    public Task OpenSessionAsync(string? deviceSerial = null) => _runner.OpenSessionAsync(deviceSerial);
+    public Task OpenSessionAsync() => _runner.OpenSessionAsync();
 
     public void CloseSession() => _runner.CloseSession();
 

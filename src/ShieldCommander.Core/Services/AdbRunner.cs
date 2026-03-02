@@ -7,10 +7,10 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
 {
     private AdbShellSession? _session;
 
-    public async Task OpenSessionAsync(string? deviceSerial = null)
+    public async Task OpenSessionAsync()
     {
         CloseSession();
-        _session = new AdbShellSession(getAdbPath(), deviceSerial);
+        _session = new AdbShellSession(getAdbPath());
         await _session.OpenAsync();
     }
 
@@ -19,12 +19,6 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
         _session?.Dispose();
         _session = null;
     }
-
-    public static string DeviceArg(string? deviceSerial) =>
-        deviceSerial != null ? $"-s {deviceSerial}" : "";
-
-    public static string ShellPrefix(string? deviceSerial) =>
-        deviceSerial != null ? $"-s {deviceSerial} shell" : "shell";
 
     public async Task<string?> RunShellAsync(string command, CancellationToken ct = default)
     {
@@ -36,7 +30,7 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
         return null;
     }
 
-    public async Task<string> RunShellWithFallbackAsync(string command, string? deviceSerial = null)
+    public async Task<string> RunShellWithFallbackAsync(string command)
     {
         if (_session is not null)
         {
@@ -47,8 +41,7 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
             }
         }
 
-        var prefix = ShellPrefix(deviceSerial);
-        var result = await RunAdbAsync($"{prefix} \"{command}\"", strictCheck: false);
+        var result = await RunAdbAsync($"shell \"{command}\"", strictCheck: false);
         return result.Output;
     }
 

@@ -6,13 +6,13 @@ namespace ShieldCommander.Core.Services;
 internal sealed class AdbDeviceOperations(AdbRunner runner)
 {
     public Task<AdbResult> ConnectAsync(string ipAddress, int port = 5555)
-        => new ConnectDeviceCommand(ipAddress, port).ExecuteAsync(runner, null);
+        => new ConnectDeviceCommand(ipAddress, port).ExecuteAsync(runner);
 
     public Task<AdbResult> DisconnectAsync(string ipAddress)
-        => new DisconnectDeviceCommand(ipAddress).ExecuteAsync(runner, null);
+        => new DisconnectDeviceCommand(ipAddress).ExecuteAsync(runner);
 
     public Task<AdbResult> DisconnectAllAsync()
-        => new DisconnectDeviceCommand().ExecuteAsync(runner, null);
+        => new DisconnectDeviceCommand().ExecuteAsync(runner);
 
     public async Task<List<ShieldDevice>> GetConnectedDevicesAsync()
     {

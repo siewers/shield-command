@@ -10,7 +10,7 @@ internal sealed class AdbProcessOperations(AdbRunner runner)
         => new ProcessStatusQuery(pid, name).ExecuteAsync(runner);
 
     public Task<AdbResult> TerminateProcessAsync(int pid, string packageName)
-        => new TerminateProcessCommand(pid, packageName).ExecuteAsync(runner, null);
+        => new TerminateProcessCommand(pid, packageName).ExecuteAsync(runner);
 
     public Task<ProcessSnapshot> GetProcessSnapshotAsync()
         => new ProcessSnapshotQuery().ExecuteAsync(runner);

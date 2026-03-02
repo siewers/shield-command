@@ -6,7 +6,7 @@ internal sealed class DisconnectDeviceCommand(string? ipAddress = null) : IAdbCo
 {
     public string Name => "DisconnectDevice";
 
-    public async Task<AdbResult> ExecuteAsync(AdbRunner runner, string? deviceSerial)
+    public async Task<AdbResult> ExecuteAsync(AdbRunner runner)
     {
         return ipAddress is not null
             ? await runner.RunAdbAsync($"disconnect {ipAddress}")

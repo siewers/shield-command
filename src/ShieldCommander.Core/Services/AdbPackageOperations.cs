@@ -30,10 +30,10 @@ internal sealed class AdbPackageOperations(AdbRunner runner)
     }
 
     public Task<AdbResult> InstallApkAsync(string apkFilePath)
-        => new InstallPackageCommand(apkFilePath).ExecuteAsync(runner, null);
+        => new InstallPackageCommand(apkFilePath).ExecuteAsync(runner);
 
     public Task<AdbResult> UninstallPackageAsync(string packageName)
-        => new UninstallPackageCommand(packageName).ExecuteAsync(runner, null);
+        => new UninstallPackageCommand(packageName).ExecuteAsync(runner);
 
     private async Task<long?> MeasurePackageSizeAsync(string packageName)
     {

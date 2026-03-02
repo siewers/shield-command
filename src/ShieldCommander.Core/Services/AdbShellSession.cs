@@ -3,22 +3,14 @@ using System.Text;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class AdbShellSession : IDisposable
+public sealed class AdbShellSession(string adbPath) : IDisposable
 {
     private const string EndMarker = "<<SHIELDCMD_END>>";
-    private readonly string _adbPath;
-    private readonly string? _deviceSerial;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private bool _disposed;
     private Process? _process;
     private StreamWriter? _stdin;
     private StreamReader? _stdout;
-
-    public AdbShellSession(string adbPath, string? deviceSerial)
-    {
-        _adbPath = adbPath;
-        _deviceSerial = deviceSerial;
-    }
 
     public void Dispose()
     {
@@ -112,14 +104,12 @@ public sealed class AdbShellSession : IDisposable
     {
         KillProcess();
 
-        var args = _deviceSerial != null ? $"-s {_deviceSerial} shell" : "shell";
-
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = _adbPath,
-                Arguments = args,
+                FileName = adbPath,
+                Arguments = "shell",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
