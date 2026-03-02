@@ -9,11 +9,11 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class DeviceViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
-    private readonly AdbPathProvider _pathProvider;
-    private readonly AdbPathResolver _pathResolver;
-    private readonly DeviceDiscoveryService _discoveryService = new();
-    private readonly SettingsService _settings;
+    private readonly IAdbService _adbService;
+    private readonly IAdbPathProvider _pathProvider;
+    private readonly IAdbPathResolver _pathResolver;
+    private readonly IDeviceDiscoveryService _discoveryService;
+    private readonly ISettingsService _settings;
 
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsAdbAvailable))]
     private string _adbPath;
@@ -36,12 +36,13 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Not connected";
 
-    public DeviceViewModel(AdbService adbService, AdbPathProvider pathProvider, AdbPathResolver pathResolver, SettingsService settings)
+    public DeviceViewModel(IAdbService adbService, IAdbPathProvider pathProvider, IAdbPathResolver pathResolver, ISettingsService settings, IDeviceDiscoveryService discoveryService)
     {
         _adbService = adbService;
         _pathProvider = pathProvider;
         _pathResolver = pathResolver;
         _settings = settings;
+        _discoveryService = discoveryService;
 
         var resolved = settings.AdbPath ?? pathResolver.FindAdb();
         pathProvider.CurrentPath = resolved;

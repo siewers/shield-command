@@ -72,12 +72,12 @@ public sealed class App : Application
 
             var services = new ServiceCollection();
             services.AddPlatformServices();
-            services.AddSingleton<SettingsService>();
-            services.AddSingleton<AdbPathResolver>();
-            services.AddSingleton<AdbPathProvider>();
-            services.AddSingleton<AdbRunner>();
-            services.AddSingleton<AdbService>();
-            services.AddSingleton<DeviceDiscoveryService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<IAdbPathResolver, AdbPathResolver>();
+            services.AddSingleton<IAdbPathProvider, AdbPathProvider>();
+            services.AddSingleton<IAdbRunner, AdbRunner>();
+            services.AddSingleton<IAdbService, AdbService>();
+            services.AddSingleton<IDeviceDiscoveryService, DeviceDiscoveryService>();
             services.AddSingleton<MenuHelper>();
             services.AddTransient<MainWindowViewModel>();
 

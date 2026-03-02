@@ -6,7 +6,7 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class SystemViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    private readonly IAdbService _adbService;
 
     [ObservableProperty]
     private string? _androidVersion;
@@ -39,7 +39,7 @@ public sealed partial class SystemViewModel : ViewModelBase
     [ObservableProperty]
     private long? _totalRam;
 
-    public SystemViewModel(AdbService adbService)
+    public SystemViewModel(IAdbService adbService)
     {
         _adbService = adbService;
     }

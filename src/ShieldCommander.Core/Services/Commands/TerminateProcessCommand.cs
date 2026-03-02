@@ -6,7 +6,7 @@ internal sealed class TerminateProcessCommand(int pid, string packageName) : IAd
 {
     public string Name => "TerminateProcess";
 
-    public async Task<AdbResult> ExecuteAsync(AdbRunner runner)
+    public async Task<AdbResult> ExecuteAsync(IAdbRunner runner)
     {
         var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
         var output = (await runner.RunShellAsync(forceStopCmd)).Trim();

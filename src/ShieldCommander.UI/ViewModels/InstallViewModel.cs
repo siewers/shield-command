@@ -7,7 +7,7 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class InstallViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    private readonly IAdbService _adbService;
 
     [ObservableProperty]
     private bool _isBusy;
@@ -18,7 +18,7 @@ public sealed partial class InstallViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = string.Empty;
 
-    public InstallViewModel(AdbService adbService)
+    public InstallViewModel(IAdbService adbService)
     {
         _adbService = adbService;
     }

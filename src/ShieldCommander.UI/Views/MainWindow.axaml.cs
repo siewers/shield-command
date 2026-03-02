@@ -33,7 +33,7 @@ public sealed partial class MainWindow : Window
         var platformUI = App.Services.GetRequiredService<IPlatformUI>();
         platformUI.ApplyTitleBarLayout(TitleBarLeftSpacer, TitleBarStatusButton, NavView, TitleBarAppInfo);
 
-        var settings = App.Services.GetRequiredService<SettingsService>();
+        var settings = App.Services.GetRequiredService<ISettingsService>();
 
         Closing += async (_, _) =>
         {

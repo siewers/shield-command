@@ -6,7 +6,7 @@ internal sealed class ConnectDeviceCommand(string ipAddress, int port = 5555) : 
 {
     public string Name => "ConnectDevice";
 
-    public async Task<AdbResult> ExecuteAsync(AdbRunner runner)
+    public async Task<AdbResult> ExecuteAsync(IAdbRunner runner)
     {
         return await runner.RunAdbAsync($"connect {ipAddress}:{port}");
     }

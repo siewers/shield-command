@@ -3,7 +3,7 @@ using Zeroconf;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class DeviceDiscoveryService
+public sealed class DeviceDiscoveryService : IDeviceDiscoveryService
 {
     // Shield advertises as Android TV remote service
     private static readonly string[] ServiceTypes =

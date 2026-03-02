@@ -32,7 +32,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
 
     private PeriodicTimer? _timer;
 
-    public ProcessesViewModel(AdbService adbService, ActivityMonitorOrchestrator activityMonitor)
+    public ProcessesViewModel(IAdbService adbService, ActivityMonitorOrchestrator activityMonitor)
     {
         AdbService = adbService;
         _activityMonitor = activityMonitor;
@@ -49,7 +49,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         };
     }
 
-    public AdbService AdbService { get; }
+    public IAdbService AdbService { get; }
 
     public ObservableCollection<ProcessInfo> Processes { get; } = [];
 

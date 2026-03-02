@@ -6,7 +6,7 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    private readonly IAdbService _adbService;
 
     [ObservableProperty]
     private string _connectionStatusText = "Disconnected";
@@ -20,10 +20,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _windowTitle = "Shield Commander — Disconnected";
 
-    public MainWindowViewModel(AdbService adbService, AdbPathProvider pathProvider, AdbPathResolver pathResolver, SettingsService settings)
+    public MainWindowViewModel(IAdbService adbService, IAdbPathProvider pathProvider, IAdbPathResolver pathResolver, ISettingsService settings, IDeviceDiscoveryService discoveryService)
     {
         _adbService = adbService;
-        DevicePage = new DeviceViewModel(adbService, pathProvider, pathResolver, settings);
+        DevicePage = new DeviceViewModel(adbService, pathProvider, pathResolver, settings, discoveryService);
         AppsPage = new AppsViewModel(adbService);
         InstallPage = new InstallViewModel(adbService);
         SystemPage = new SystemViewModel(adbService);

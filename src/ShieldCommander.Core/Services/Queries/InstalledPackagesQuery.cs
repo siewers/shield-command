@@ -7,7 +7,7 @@ internal sealed class InstalledPackagesQuery : IAdbQuery<List<InstalledPackage>>
     private const string PackageDelimiter = "===PKG===";
     private const string SizeDelimiter = "---SIZE---";
 
-    public async Task<List<InstalledPackage>> ExecuteAsync(AdbRunner runner)
+    public async Task<List<InstalledPackage>> ExecuteAsync(IAdbRunner runner)
     {
         var cmd = "for p in $(pm list packages -3 | sed 's/package://g'); do " + $"echo '{PackageDelimiter}'\"$p\"; " + "dumpsys package $p; " + $"echo '{SizeDelimiter}'; " + "stat -c %s $(pm path $p | sed 's/package://g') 2>/dev/null; " + "done";
 

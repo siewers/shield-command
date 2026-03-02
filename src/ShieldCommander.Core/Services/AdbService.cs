@@ -4,19 +4,17 @@ using ShieldCommander.Core.Services.Queries;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class AdbService
+public sealed class AdbService : IAdbService
 {
     private static readonly AdbBatchQueryCollection<DynamicSections> DynamicCommands = DynamicSections.CreateCommands();
 
     private readonly AdbRunner _runner;
-    private readonly ShellBatchRunner _batch;
 
     public event Action? SessionLost;
 
-    public AdbService(AdbRunner runner)
+    public AdbService(IAdbRunner runner)
     {
-        _runner = runner;
-        _batch = new ShellBatchRunner(runner);
+        _runner = (AdbRunner)runner;
         _runner.SessionLost += () => SessionLost?.Invoke();
     }
 
@@ -66,7 +64,9 @@ public sealed class AdbService
 
     public async Task<SystemSnapshot> GetSystemSnapshotAsync()
     {
-        var s = await _batch.ExecuteAsync(DynamicCommands);
+        var output = await _runner.RunShellAsync(DynamicCommands.ToCombinedCommand());
+        var s = new DynamicSections();
+        DynamicCommands.ApplyAll(output, s);
         return new SystemSnapshot(s.Cpu, s.Memory.Snapshot, s.Disk, s.Network, s.Thermal);
     }
 }

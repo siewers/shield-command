@@ -3,7 +3,7 @@ using ShieldCommander.Core.Services.Platform;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class AdbPathResolver(IPlatformPaths paths)
+public sealed class AdbPathResolver(IPlatformPaths paths) : IAdbPathResolver
 {
     public string FindAdb()
     {
@@ -29,7 +29,7 @@ public sealed class AdbPathResolver(IPlatformPaths paths)
 
     public bool IsAvailable(string adbPath) => File.Exists(adbPath) || CanRunAdb(adbPath);
 
-    public bool CanRunAdb(string adbPath)
+    private bool CanRunAdb(string adbPath)
     {
         try
         {

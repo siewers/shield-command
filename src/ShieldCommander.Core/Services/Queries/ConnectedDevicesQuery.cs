@@ -4,7 +4,7 @@ namespace ShieldCommander.Core.Services.Queries;
 
 internal sealed class ConnectedDevicesQuery : IAdbQuery<List<ShieldDevice>>
 {
-    public async Task<List<ShieldDevice>> ExecuteAsync(AdbRunner runner)
+    public async Task<List<ShieldDevice>> ExecuteAsync(IAdbRunner runner)
     {
         var result = await runner.RunAdbAsync("devices -l");
 

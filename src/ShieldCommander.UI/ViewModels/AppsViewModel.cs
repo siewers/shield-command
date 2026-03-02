@@ -28,7 +28,7 @@ public sealed partial class PackageRow : ObservableObject
     public string? VersionName => Package.VersionName;
 }
 
-public sealed partial class AppsViewModel(AdbService adbService) : ViewModelBase
+public sealed partial class AppsViewModel(IAdbService adbService) : ViewModelBase
 {
     private static readonly SemaphoreSlim SizeSemaphore = new(1);
 
@@ -41,7 +41,7 @@ public sealed partial class AppsViewModel(AdbService adbService) : ViewModelBase
     [ObservableProperty]
     private string _statusText = string.Empty;
 
-    public AdbService AdbService { get; } = adbService;
+    public IAdbService AdbService { get; } = adbService;
 
     public ObservableCollection<PackageRow> Packages { get; } = [];
 

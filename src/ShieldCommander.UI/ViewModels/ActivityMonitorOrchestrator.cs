@@ -7,7 +7,7 @@ namespace ShieldCommander.UI.ViewModels;
 
 public sealed partial class ActivityMonitorOrchestrator : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    private readonly IAdbService _adbService;
     private readonly IActivityMonitor[] _panels;
     private CancellationTokenSource? _cts;
 
@@ -22,7 +22,7 @@ public sealed partial class ActivityMonitorOrchestrator : ViewModelBase
 
     private PeriodicTimer? _timer;
 
-    public ActivityMonitorOrchestrator(AdbService adbService)
+    public ActivityMonitorOrchestrator(IAdbService adbService)
     {
         _adbService = adbService;
 

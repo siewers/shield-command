@@ -5,7 +5,7 @@ using ShieldCommander.Core.Services.Queries;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class AdbRunner(AdbPathProvider pathProvider)
+public sealed class AdbRunner(IAdbPathProvider pathProvider) : IAdbRunner
 {
     private AdbShellSession? _session;
 

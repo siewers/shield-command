@@ -16,7 +16,7 @@ internal sealed class DeviceInfoQuery : IAdbQuery<DeviceInfo>
         new StorageTotalQuery(),
     ];
 
-    public async Task<DeviceInfo> ExecuteAsync(AdbRunner runner)
+    public async Task<DeviceInfo> ExecuteAsync(IAdbRunner runner)
     {
         var output = await runner.RunShellAsync(Commands.ToCombinedCommand());
         return Parse(output);

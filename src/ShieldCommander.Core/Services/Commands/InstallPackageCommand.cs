@@ -6,7 +6,7 @@ internal sealed class InstallPackageCommand(string apkFilePath) : IAdbCommand
 {
     public string Name => "InstallPackage";
 
-    public async Task<AdbResult> ExecuteAsync(AdbRunner runner)
+    public async Task<AdbResult> ExecuteAsync(IAdbRunner runner)
     {
         return await runner.RunAdbAsync($"install -r \"{apkFilePath}\"");
     }

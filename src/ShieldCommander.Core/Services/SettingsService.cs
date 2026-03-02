@@ -4,7 +4,7 @@ using ShieldCommander.Core.Models;
 
 namespace ShieldCommander.Core.Services;
 
-public sealed class SettingsService
+public sealed class SettingsService : ISettingsService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
