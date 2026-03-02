@@ -6,7 +6,7 @@ namespace ShieldCommander.Core.Services;
 
 public sealed class AdbService
 {
-    private static readonly AdbCommandCollection DynamicCommands = DynamicSections.CreateCommands();
+    private static readonly AdbBatchQueryCollection<DynamicSections> DynamicCommands = DynamicSections.CreateCommands();
 
     private readonly AdbRunner _runner;
     private readonly ShellBatchRunner _batch;
@@ -61,26 +61,8 @@ public sealed class AdbService
         _runner.ExecuteAsync(new ProcessSnapshotQuery());
 
     // Device info
-    public async Task<DeviceInfo> GetDeviceInfoAsync()
-    {
-        var propsTask = _runner.ExecuteAsync(new DevicePropertiesQuery());
-        var sectionsTask = _batch.ExecuteAsync(DynamicCommands);
-
-        var props = await propsTask;
-        var sections = await sectionsTask;
-
-        return new DeviceInfo
-        {
-            Model = props.Model,
-            Manufacturer = props.Manufacturer,
-            Architecture = props.Architecture,
-            AndroidVersion = props.AndroidVersion,
-            ApiLevel = props.ApiLevel,
-            BuildId = props.BuildId,
-            RamTotal = sections.Memory.Total,
-            StorageTotal = sections.DiskFree?.Total,
-        };
-    }
+    public Task<DeviceInfo> GetDeviceInfoAsync() =>
+        _runner.ExecuteAsync(new DeviceInfoQuery());
 
     public async Task<SystemSnapshot> GetSystemSnapshotAsync()
     {
