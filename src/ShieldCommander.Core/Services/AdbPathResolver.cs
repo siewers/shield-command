@@ -27,7 +27,9 @@ public sealed class AdbPathResolver(IPlatformPaths paths)
         return exe;
     }
 
-    public static bool CanRunAdb(string adbPath)
+    public bool IsAvailable(string adbPath) => File.Exists(adbPath) || CanRunAdb(adbPath);
+
+    public bool CanRunAdb(string adbPath)
     {
         try
         {

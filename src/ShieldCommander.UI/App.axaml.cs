@@ -74,6 +74,8 @@ public sealed class App : Application
             services.AddPlatformServices();
             services.AddSingleton<SettingsService>();
             services.AddSingleton<AdbPathResolver>();
+            services.AddSingleton<AdbPathProvider>();
+            services.AddSingleton<AdbRunner>();
             services.AddSingleton<AdbService>();
             services.AddSingleton<DeviceDiscoveryService>();
             services.AddSingleton<MenuHelper>();

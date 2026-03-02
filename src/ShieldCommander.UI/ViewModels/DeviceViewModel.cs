@@ -10,6 +10,8 @@ namespace ShieldCommander.UI.ViewModels;
 public sealed partial class DeviceViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
+    private readonly AdbPathProvider _pathProvider;
+    private readonly AdbPathResolver _pathResolver;
     private readonly DeviceDiscoveryService _discoveryService = new();
     private readonly SettingsService _settings;
 
@@ -34,19 +36,25 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Not connected";
 
-    public DeviceViewModel(AdbService adbService, SettingsService settings)
+    public DeviceViewModel(AdbService adbService, AdbPathProvider pathProvider, AdbPathResolver pathResolver, SettingsService settings)
     {
         _adbService = adbService;
+        _pathProvider = pathProvider;
+        _pathResolver = pathResolver;
         _settings = settings;
-        _adbPath = settings.AdbPath ?? _adbService.ResolvedPath;
+
+        var resolved = settings.AdbPath ?? pathResolver.FindAdb();
+        pathProvider.CurrentPath = resolved;
+        _adbPath = resolved;
+
         LoadSavedDevices();
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
     }
 
-    public string AdbPathPlaceholder => _adbService.FindAdb();
+    public string AdbPathPlaceholder => _pathResolver.FindAdb();
 
-    public bool IsAdbAvailable => _adbService.IsAdbAvailable;
+    public bool IsAdbAvailable => _pathResolver.IsAvailable(_pathProvider.CurrentPath);
 
     public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
 
@@ -63,7 +71,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
     {
         var path = string.IsNullOrWhiteSpace(value) ? null : value;
         _settings.AdbPath = path;
-        _adbService.SetAdbPath(path);
+        _pathProvider.CurrentPath = path ?? _pathResolver.FindAdb();
     }
 
     private void LoadSavedDevices()
