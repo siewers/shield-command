@@ -106,7 +106,7 @@ public sealed partial class ProcessesView : UserControl
                 menu.CreateItem(
                     "Terminate",
                     "\ue4f6",
-                    () => vm.KillProcessCommand.Execute(null),
+                    () => vm.TerminateProcessCommand.Execute(null),
                     isEnabled: proc.IsUserApp),
             },
         };
@@ -132,7 +132,7 @@ public sealed partial class ProcessesView : UserControl
                 proc.IsUserApp ? "Terminate" : null,
                 proc.IsUserApp ? $"Are you sure you want to terminate \"{proc.Name}\" (PID {proc.Pid})?" : null))
         {
-            await vm.KillProcessCommand.ExecuteAsync(null);
+            await vm.TerminateProcessCommand.ExecuteAsync(null);
         }
     }
 

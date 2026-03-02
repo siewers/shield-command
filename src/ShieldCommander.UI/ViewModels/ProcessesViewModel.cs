@@ -56,22 +56,22 @@ public sealed partial class ProcessesViewModel : ViewModelBase
     public bool IsPollingSuspended { get; set; }
 
     [RelayCommand]
-    private async Task KillProcessAsync()
+    private async Task TerminateProcessAsync()
     {
         if (SelectedProcess is not { } proc)
         {
             return;
         }
 
-        var result = await AdbService.KillProcessAsync(proc.Pid, proc.PackageName);
+        var result = await AdbService.TerminateProcessAsync(proc.Pid, proc.PackageName);
         if (result.Success)
         {
             Processes.Remove(proc);
-            StatusText = $"Killed {proc.Name} (PID {proc.Pid})";
+            StatusText = $"Terminated {proc.Name} (PID {proc.Pid})";
         }
         else
         {
-            StatusText = $"Failed to kill PID {proc.Pid}: {result.Error}";
+            StatusText = $"Failed to terminate PID {proc.Pid}: {result.Error}";
         }
     }
 

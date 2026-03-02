@@ -55,37 +55,34 @@ public sealed class AdbService
         _devices.GetConnectedDevicesAsync();
 
     // Package operations
-    public Task<List<InstalledPackage>> GetInstalledPackagesAsync(string? deviceSerial = null) =>
-        _packages.GetInstalledPackagesAsync(deviceSerial);
+    public Task<List<InstalledPackage>> GetInstalledPackagesAsync() =>
+        _packages.GetInstalledPackagesAsync();
 
-    public Task<InstalledPackage> GetPackageInfoAsync(
-        string packageName,
-        string? deviceSerial = null,
-        bool includeSize = false) =>
-        _packages.GetPackageInfoAsync(packageName, deviceSerial, includeSize);
+    public Task<InstalledPackage> GetPackageInfoAsync(string packageName, bool includeSize = false) =>
+        _packages.GetPackageInfoAsync(packageName, includeSize);
 
-    public Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null) =>
-        _packages.InstallApkAsync(apkFilePath, deviceSerial);
+    public Task<AdbResult> InstallApkAsync(string apkFilePath) =>
+        _packages.InstallApkAsync(apkFilePath);
 
-    public Task<AdbResult> UninstallPackageAsync(string packageName, string? deviceSerial = null) =>
-        _packages.UninstallPackageAsync(packageName, deviceSerial);
+    public Task<AdbResult> UninstallPackageAsync(string packageName) =>
+        _packages.UninstallPackageAsync(packageName);
 
     // Process operations
-    public Task<ProcessDetails> GetProcessDetailsAsync(int pid, string name, string? deviceSerial = null) =>
-        _processes.GetProcessDetailsAsync(pid, name, deviceSerial);
+    public Task<ProcessDetails> GetProcessDetailsAsync(int pid, string name) =>
+        _processes.GetProcessDetailsAsync(pid, name);
 
-    public Task<AdbResult> KillProcessAsync(int pid, string packageName, string? deviceSerial = null) =>
-        _processes.KillProcessAsync(pid, packageName, deviceSerial);
+    public Task<AdbResult> TerminateProcessAsync(int pid, string packageName) =>
+        _processes.TerminateProcessAsync(pid, packageName);
 
-    public Task<ProcessSnapshot> GetProcessSnapshotAsync(string? deviceSerial = null) =>
-        _processes.GetProcessSnapshotAsync(deviceSerial);
+    public Task<ProcessSnapshot> GetProcessSnapshotAsync() =>
+        _processes.GetProcessSnapshotAsync();
 
     // Device info
-    public Task<DeviceInfo> GetDeviceInfoAsync(string? deviceSerial = null) =>
-        _deviceInfo.GetDeviceInfoAsync(deviceSerial);
+    public Task<DeviceInfo> GetDeviceInfoAsync() =>
+        _deviceInfo.GetDeviceInfoAsync();
 
-    public Task<SystemSnapshot> GetSystemSnapshotAsync(string? deviceSerial = null) =>
-        _deviceInfo.GetSystemSnapshotAsync(deviceSerial);
+    public Task<SystemSnapshot> GetSystemSnapshotAsync() =>
+        _deviceInfo.GetSystemSnapshotAsync();
 
     private bool CheckAdbAvailable() =>
         File.Exists(ResolvedPath) || AdbPathResolver.CanRunAdb(ResolvedPath);
