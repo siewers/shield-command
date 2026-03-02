@@ -13,9 +13,9 @@ Run the tag-release script and push the tag:
 5. Push the tag with `git push origin <tag>`
 
 Stability levels produce these tag formats:
-- `stable` (default): `v2026.3.2` (triggers a full release)
-- `alpha`: `v2026.3.2-alpha` (triggers a pre-release)
-- `beta`: `v2026.3.2-beta` (triggers a pre-release)
-- `rc`: `v2026.3.2-rc` (triggers a pre-release)
+- `stable` (default): `v2026.3.2`
+- `alpha`: `v2026.3.2-alpha`
+- `beta`: `v2026.3.2-beta`
+- `rc`: `v2026.3.2-rc`
 
 If a tag already exists for that date+stability, a numeric suffix is appended (e.g. `v2026.3.2-beta.1`).
