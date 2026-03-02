@@ -6,25 +6,28 @@ internal sealed class ProcessSnapshotQuery : IAdbQuery<ProcessSnapshot>
 {
     public async Task<ProcessSnapshot> ExecuteAsync(AdbRunner runner)
     {
-        const string cmd = "cat /proc/stat; echo ---; cat /proc/[0-9]*/stat; echo ---; ls -ldn /proc/[0-9]*";
+        const string cmd = "cat /proc/stat; echo ---; "
+                         + "cat /proc/[0-9]*/stat; echo ---; "
+                         + "ls -ldn /proc/[0-9]*; echo ---; "
+                         + "ps -A -o PID,ARGS";
 
-        var cmdlineTask = runner.RunAdbAsync("shell \"ps -A -o PID,ARGS\"", strictCheck: false);
-        var shellTask = runner.RunShellWithFallbackAsync(cmd);
+        var output = await runner.RunShellAsync(cmd);
 
-        var output = await shellTask;
+        return string.IsNullOrWhiteSpace(output)
+            ? new ProcessSnapshot(new Dictionary<int, RawProcessEntry>(), 0, 0)
+            : Parse(output);
+    }
 
+    public ProcessSnapshot Parse(string output)
+    {
         var procs = new Dictionary<int, RawProcessEntry>();
         var totalJiffies = 0L;
         var idleJiffies = 0L;
 
-        if (string.IsNullOrWhiteSpace(output))
-        {
-            return new ProcessSnapshot(procs, totalJiffies, idleJiffies);
-        }
-
         var procData = new Dictionary<int, (long Jiffies, string Name, long RssPages, char State)>();
         var section = 0;
         var uidByPid = new Dictionary<int, int>();
+        var cmdlineByPid = new Dictionary<int, string>();
 
         foreach (var line in output.Split('\n'))
         {
@@ -51,11 +54,11 @@ internal sealed class ProcessSnapshotQuery : IAdbQuery<ProcessSnapshot>
                 case 2:
                     ParseProcDirLine(trimmed, uidByPid);
                     break;
+                case 3:
+                    ParseCmdlineLine(trimmed, cmdlineByPid);
+                    break;
             }
         }
-
-        var cmdlineResult = await cmdlineTask;
-        var cmdlineByPid = ParseCmdlineOutput(cmdlineResult);
 
         foreach (var (pid, (jiffies, name, rssPages, state)) in procData)
         {
@@ -142,41 +145,29 @@ internal sealed class ProcessSnapshotQuery : IAdbQuery<ProcessSnapshot>
         }
     }
 
-    private static Dictionary<int, string> ParseCmdlineOutput(AdbResult cmdlineResult)
+    private static void ParseCmdlineLine(string trimmed, Dictionary<int, string> cmdlineByPid)
     {
-        var cmdlineByPid = new Dictionary<int, string>();
-        if (cmdlineResult.Output is not { Length: > 0 })
+        if (trimmed.StartsWith("PID"))
         {
-            return cmdlineByPid;
+            return;
         }
 
-        foreach (var line in cmdlineResult.Output.Split('\n'))
+        var spaceIdx = trimmed.IndexOf(' ');
+        if (spaceIdx < 0 || !int.TryParse(trimmed[..spaceIdx], out var cmdPid))
         {
-            var trimmed = line.Trim();
-            if (trimmed.Length == 0 || trimmed.StartsWith("PID"))
-            {
-                continue;
-            }
-
-            var spaceIdx = trimmed.IndexOf(' ');
-            if (spaceIdx < 0 || !int.TryParse(trimmed[..spaceIdx], out var cmdPid))
-            {
-                continue;
-            }
-
-            var args = trimmed[(spaceIdx + 1)..].Trim();
-            var firstArgEnd = args.IndexOf(' ');
-            if (firstArgEnd > 0)
-            {
-                args = args[..firstArgEnd];
-            }
-
-            if (args.Length > 0)
-            {
-                cmdlineByPid[cmdPid] = args;
-            }
+            return;
         }
 
-        return cmdlineByPid;
+        var args = trimmed[(spaceIdx + 1)..].Trim();
+        var firstArgEnd = args.IndexOf(' ');
+        if (firstArgEnd > 0)
+        {
+            args = args[..firstArgEnd];
+        }
+
+        if (args.Length > 0)
+        {
+            cmdlineByPid[cmdPid] = args;
+        }
     }
 }

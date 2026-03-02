@@ -9,13 +9,13 @@ internal sealed class PackageInfoQuery(string packageName) : IAdbQuery<Installed
         var cmd = $"dumpsys package {packageName}; echo ---; "
                 + $"stat -c %s $(pm path {packageName} | sed 's/package://g') 2>/dev/null";
 
-        var output = await runner.RunShellWithFallbackAsync(cmd);
+        var output = await runner.RunShellAsync(cmd);
 
-        if (output.Length == 0)
-        {
-            return new InstalledPackage(packageName);
-        }
+        return output.Length > 0 ? Parse(output) : new InstalledPackage(packageName);
+    }
 
+    public InstalledPackage Parse(string output)
+    {
         var sections = output.Split("---", 2, StringSplitOptions.None);
         var package = PackageParsing.ParseDumpsys(packageName, sections[0]);
         var codeSize = sections.Length > 1 ? PackageParsing.ParseSize(sections[1]) : null;

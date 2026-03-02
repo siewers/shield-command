@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ShieldCommander.Core.Services;
 
@@ -19,16 +20,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _windowTitle = "Shield Commander — Disconnected";
 
-    public MainWindowViewModel(AdbService adbService, SettingsService settings)
+    public MainWindowViewModel(AdbService adbService, AdbPathProvider pathProvider, AdbPathResolver pathResolver, SettingsService settings)
     {
         _adbService = adbService;
-        DevicePage = new DeviceViewModel(adbService, settings);
+        DevicePage = new DeviceViewModel(adbService, pathProvider, pathResolver, settings);
         AppsPage = new AppsViewModel(adbService);
         InstallPage = new InstallViewModel(adbService);
         SystemPage = new SystemViewModel(adbService);
         ActivityMonitorPage = new ActivityMonitorOrchestrator(adbService);
         ProcessesPage = new ProcessesViewModel(adbService, ActivityMonitorPage);
         _currentPage = SystemPage;
+
+        adbService.SessionLost += () =>
+            Dispatcher.UIThread.Post(() => DevicePage.IsConnected = false);
 
         DevicePage.PropertyChanged += (_, args) =>
         {

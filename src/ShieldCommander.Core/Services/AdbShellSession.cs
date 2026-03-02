@@ -12,6 +12,8 @@ public sealed class AdbShellSession(string adbPath) : IDisposable
     private StreamWriter? _stdin;
     private StreamReader? _stdout;
 
+    public event Action? SessionLost;
+
     public void Dispose()
     {
         if (_disposed)
@@ -47,13 +49,15 @@ public sealed class AdbShellSession(string adbPath) : IDisposable
         await _semaphore.WaitAsync(ct);
         try
         {
-            if (_process is null || _process.HasExited)
+            if (_process is null || _stdin is null || _stdout is null)
             {
-                StartProcess();
+                return null;
             }
 
-            if (_stdin is null || _stdout is null)
+            if (_process.HasExited)
             {
+                KillProcess();
+                SessionLost?.Invoke();
                 return null;
             }
 
@@ -70,8 +74,8 @@ public sealed class AdbShellSession(string adbPath) : IDisposable
                 var line = await _stdout.ReadLineAsync(ct);
                 if (line is null)
                 {
-                    // Process died — try to restart on next call
                     KillProcess();
+                    SessionLost?.Invoke();
                     return sb.Length > 0 ? sb.ToString() : null;
                 }
 
@@ -91,7 +95,13 @@ public sealed class AdbShellSession(string adbPath) : IDisposable
         }
         catch
         {
+            var wasAlive = _process is not null;
             KillProcess();
+            if (wasAlive)
+            {
+                SessionLost?.Invoke();
+            }
+
             return null;
         }
         finally

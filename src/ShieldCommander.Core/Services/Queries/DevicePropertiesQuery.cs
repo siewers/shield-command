@@ -14,8 +14,11 @@ internal sealed class DevicePropertiesQuery : IAdbQuery<DeviceProperties>
             "getprop ro.build.version.sdk",
             "getprop ro.build.display.id");
 
-        var output = await runner.RunShellWithFallbackAsync(cmd);
+        return Parse(await runner.RunShellAsync(cmd));
+    }
 
+    public DeviceProperties Parse(string output)
+    {
         var parts = output.Split("---");
 
         return new DeviceProperties(

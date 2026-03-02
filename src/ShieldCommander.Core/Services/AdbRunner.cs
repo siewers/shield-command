@@ -1,17 +1,23 @@
 using System.Diagnostics;
 using ShieldCommander.Core.Models;
+using ShieldCommander.Core.Services.Commands;
+using ShieldCommander.Core.Services.Queries;
 
 namespace ShieldCommander.Core.Services;
 
-internal sealed class AdbRunner(Func<string> getAdbPath)
+public sealed class AdbRunner(AdbPathProvider pathProvider)
 {
     private AdbShellSession? _session;
+
+    public event Action? SessionLost;
 
     public async Task OpenSessionAsync()
     {
         CloseSession();
-        _session = new AdbShellSession(getAdbPath());
-        await _session.OpenAsync();
+        var session = new AdbShellSession(pathProvider.CurrentPath);
+        session.SessionLost += () => SessionLost?.Invoke();
+        await session.OpenAsync();
+        _session = session;
     }
 
     public void CloseSession()
@@ -20,30 +26,16 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
         _session = null;
     }
 
-    public async Task<string?> RunShellAsync(string command, CancellationToken ct = default)
+    public async Task<string> RunShellAsync(string command, CancellationToken ct = default)
     {
-        if (_session is not null)
-        {
-            return await _session.RunAsync(command, ct);
-        }
-
-        return null;
+        return _session is not null
+            ? await _session.RunAsync(command, ct) ?? string.Empty
+            : string.Empty;
     }
 
-    public async Task<string> RunShellWithFallbackAsync(string command)
-    {
-        if (_session is not null)
-        {
-            var output = await RunShellAsync(command);
-            if (output is not null)
-            {
-                return output;
-            }
-        }
+    internal Task<AdbResult> ExecuteAsync(IAdbCommand command) => command.ExecuteAsync(this);
 
-        var result = await RunAdbAsync($"shell \"{command}\"", strictCheck: false);
-        return result.Output;
-    }
+    internal Task<T> ExecuteAsync<T>(IAdbQuery<T> query) => query.ExecuteAsync(this);
 
     public Task<AdbResult> RunAdbAsync(string arguments) => RunAdbAsync(arguments, strictCheck: true);
 
@@ -54,7 +46,7 @@ internal sealed class AdbRunner(Func<string> getAdbPath)
             using var process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
-                FileName = getAdbPath(),
+                FileName = pathProvider.CurrentPath,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

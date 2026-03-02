@@ -16,13 +16,13 @@ internal sealed class InstalledPackagesQuery : IAdbQuery<List<InstalledPackage>>
                 + "stat -c %s $(pm path $p | sed 's/package://g') 2>/dev/null; "
                 + "done";
 
-        var output = await runner.RunShellWithFallbackAsync(cmd);
+        var output = await runner.RunShellAsync(cmd);
 
-        if (string.IsNullOrWhiteSpace(output))
-        {
-            return [];
-        }
+        return string.IsNullOrWhiteSpace(output) ? [] : Parse(output);
+    }
 
+    public List<InstalledPackage> Parse(string output)
+    {
         var packages = new List<InstalledPackage>();
         var blocks = output.Split(PackageDelimiter, StringSplitOptions.RemoveEmptyEntries);
 
