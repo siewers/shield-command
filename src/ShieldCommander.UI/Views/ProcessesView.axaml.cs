@@ -123,7 +123,7 @@ public sealed partial class ProcessesView : UserControl
     {
         var details = await vm.AdbService.GetProcessDetailsAsync(proc.Pid, proc.PackageName);
         var package = proc.IsUserApp
-            ? await vm.AdbService.GetPackageInfoAsync(proc.PackageName, includeSize: true)
+            ? await vm.AdbService.GetPackageInfoAsync(proc.PackageName)
             : null;
 
         if (await PackageInfoDialog.ShowAsync(

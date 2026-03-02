@@ -61,7 +61,7 @@ public sealed partial class AppsView : UserControl
 
     private static async Task ShowInfoAndUninstallAsync(PackageRow row, AppsViewModel vm)
     {
-        var detailed = await vm.AdbService.GetPackageInfoAsync(row.PackageName, includeSize: true);
+        var detailed = await vm.AdbService.GetPackageInfoAsync(row.PackageName);
         if (await PackageInfoDialog.ShowAsync(detailed, "Uninstall", $"Are you sure you want to uninstall {row.PackageName}?"))
         {
             await vm.UninstallCommand.ExecuteAsync(row);

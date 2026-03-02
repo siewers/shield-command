@@ -103,7 +103,7 @@ public sealed partial class AppsViewModel(AdbService adbService) : ViewModelBase
         await SizeSemaphore.WaitAsync();
         try
         {
-            var detailed = await AdbService.GetPackageInfoAsync(row.PackageName, includeSize: true);
+            var detailed = await AdbService.GetPackageInfoAsync(row.PackageName);
             row.CodeSize = detailed.CodeSize;
         }
         catch

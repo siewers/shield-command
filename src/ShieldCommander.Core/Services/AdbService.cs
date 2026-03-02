@@ -58,8 +58,8 @@ public sealed class AdbService
     public Task<List<InstalledPackage>> GetInstalledPackagesAsync() =>
         _packages.GetInstalledPackagesAsync();
 
-    public Task<InstalledPackage> GetPackageInfoAsync(string packageName, bool includeSize = false) =>
-        _packages.GetPackageInfoAsync(packageName, includeSize);
+    public Task<InstalledPackage> GetPackageInfoAsync(string packageName) =>
+        _packages.GetPackageInfoAsync(packageName);
 
     public Task<AdbResult> InstallApkAsync(string apkFilePath) =>
         _packages.InstallApkAsync(apkFilePath);
