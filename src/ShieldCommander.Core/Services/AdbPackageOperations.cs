@@ -1,4 +1,5 @@
 using ShieldCommander.Core.Models;
+using ShieldCommander.Core.Services.Commands;
 
 namespace ShieldCommander.Core.Services;
 
@@ -107,17 +108,11 @@ internal sealed class AdbPackageOperations(AdbRunner runner)
             targetSdk, minSdk, dataDir, uid, codePath, codeSize);
     }
 
-    public async Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null)
-    {
-        var deviceArg = AdbRunner.DeviceArg(deviceSerial);
-        return await runner.RunAdbAsync($"{deviceArg} install -r \"{apkFilePath}\"".Trim());
-    }
+    public Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null)
+        => new InstallPackageCommand(apkFilePath).ExecuteAsync(runner, deviceSerial);
 
-    public async Task<AdbResult> UninstallPackageAsync(string packageName, string? deviceSerial = null)
-    {
-        var deviceArg = AdbRunner.DeviceArg(deviceSerial);
-        return await runner.RunAdbAsync($"{deviceArg} uninstall {packageName}".Trim());
-    }
+    public Task<AdbResult> UninstallPackageAsync(string packageName, string? deviceSerial = null)
+        => new UninstallPackageCommand(packageName).ExecuteAsync(runner, deviceSerial);
 
     private async Task<long?> MeasurePackageSizeAsync(string packageName, string deviceArg)
     {

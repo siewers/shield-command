@@ -1,4 +1,5 @@
 using ShieldCommander.Core.Models;
+using ShieldCommander.Core.Services.Commands;
 
 namespace ShieldCommander.Core.Services;
 
@@ -52,21 +53,8 @@ internal sealed class AdbProcessOperations(AdbRunner runner)
         return new ProcessDetails(pid, name, state, uid, threads, vmRss, ppid);
     }
 
-    public async Task<AdbResult> KillProcessAsync(int pid, string packageName, string? deviceSerial = null)
-    {
-        var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
-        var output = (await runner.RunShellWithFallbackAsync(forceStopCmd, deviceSerial)).Trim();
-        if (output.Contains("EXIT:0") && !output.Contains("Error"))
-        {
-            return new AdbResult(true, output);
-        }
-
-        var killCmd = $"kill -9 {pid} 2>&1; echo EXIT:$?";
-        output = (await runner.RunShellWithFallbackAsync(killCmd, deviceSerial)).Trim();
-        var success = output.Contains("EXIT:0");
-        var error = output.Replace("EXIT:0", "").Replace("EXIT:1", "").Trim();
-        return new AdbResult(success, output, error);
-    }
+    public Task<AdbResult> KillProcessAsync(int pid, string packageName, string? deviceSerial = null)
+        => new TerminateProcessCommand(pid, packageName).ExecuteAsync(runner, deviceSerial);
 
     public async Task<ProcessSnapshot> GetProcessSnapshotAsync(string? deviceSerial = null)
     {

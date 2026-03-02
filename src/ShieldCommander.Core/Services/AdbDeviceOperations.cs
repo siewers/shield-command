@@ -1,23 +1,18 @@
 using ShieldCommander.Core.Models;
+using ShieldCommander.Core.Services.Commands;
 
 namespace ShieldCommander.Core.Services;
 
 internal sealed class AdbDeviceOperations(AdbRunner runner)
 {
-    public async Task<AdbResult> ConnectAsync(string ipAddress, int port = 5555)
-    {
-        return await runner.RunAdbAsync($"connect {ipAddress}:{port}");
-    }
+    public Task<AdbResult> ConnectAsync(string ipAddress, int port = 5555)
+        => new ConnectDeviceCommand(ipAddress, port).ExecuteAsync(runner, null);
 
-    public async Task<AdbResult> DisconnectAsync(string ipAddress)
-    {
-        return await runner.RunAdbAsync($"disconnect {ipAddress}");
-    }
+    public Task<AdbResult> DisconnectAsync(string ipAddress)
+        => new DisconnectDeviceCommand(ipAddress).ExecuteAsync(runner, null);
 
-    public async Task<AdbResult> DisconnectAllAsync()
-    {
-        return await runner.RunAdbAsync("disconnect");
-    }
+    public Task<AdbResult> DisconnectAllAsync()
+        => new DisconnectDeviceCommand().ExecuteAsync(runner, null);
 
     public async Task<List<ShieldDevice>> GetConnectedDevicesAsync()
     {
