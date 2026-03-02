@@ -1,9 +1,9 @@
 using System.Globalization;
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class ThermalCommand : IAdbShellCommand<ThermalSnapshot>
+internal sealed class ThermalQuery : IAdbShellQuery<ThermalSnapshot>
 {
     public string Name => nameof(DynamicSections.Thermal);
 

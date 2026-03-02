@@ -1,22 +1,22 @@
 using System.Collections;
 using ShieldCommander.Core.Models;
-using ShieldCommander.Core.Services.Commands;
+using ShieldCommander.Core.Services.Queries;
 
 namespace ShieldCommander.Core.Services;
 
-internal sealed class AdbCommandCollection : IEnumerable<IAdbShellCommand>
+internal sealed class AdbCommandCollection : IEnumerable<IAdbShellQuery>
 {
     private const string Prefix = "____";
     private const string Suffix = "____";
 
-    private readonly List<IAdbShellCommand> _commands = [];
+    private readonly List<IAdbShellQuery> _commands = [];
     private readonly Dictionary<string, ReadOnlyMemory<char>> _results = [];
 
-    public IEnumerator<IAdbShellCommand> GetEnumerator() => _commands.GetEnumerator();
+    public IEnumerator<IAdbShellQuery> GetEnumerator() => _commands.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => _commands.GetEnumerator();
 
-    public void Add(IAdbShellCommand command)
+    public void Add(IAdbShellQuery command)
     {
         _commands.Add(command);
         _results[command.Name] = ReadOnlyMemory<char>.Empty;
@@ -42,39 +42,41 @@ internal sealed class AdbCommandCollection : IEnumerable<IAdbShellCommand>
         }
 
         string? currentSectionName = null;
-        var sectionStart = -1;
+        var sectionStart = 0;
         var span = commandResults.AsSpan();
-        var pos = 0;
 
-        while (pos < span.Length)
+        foreach (var line in span.EnumerateLines())
         {
-            var newlineIdx = span[pos..].IndexOf('\n');
-            var lineEnd = newlineIdx >= 0 ? pos + newlineIdx : span.Length;
-            var line = span[pos..lineEnd];
-
-            // Strip trailing \r
-            if (line.Length > 0 && line[^1] == '\r')
+            if (!line.StartsWith(Prefix) || !line.EndsWith(Suffix) || line.Length <= Prefix.Length + Suffix.Length)
             {
-                line = line[..^1];
+                continue;
             }
 
-            if (line.StartsWith(Prefix) && line.EndsWith(Suffix) && line.Length > Prefix.Length + Suffix.Length)
-            {
-                if (currentSectionName is not null)
-                {
-                    _results[currentSectionName] = commandResults.AsMemory(sectionStart, pos - sectionStart);
-                }
+            span.Overlaps(line, out var lineStart);
 
-                currentSectionName = line[Prefix.Length..^Suffix.Length].ToString();
-                sectionStart = newlineIdx >= 0 ? lineEnd + 1 : lineEnd;
+            if (currentSectionName is not null)
+            {
+                _results[currentSectionName] = commandResults.AsMemory(sectionStart, lineStart - sectionStart);
             }
 
-            pos = newlineIdx >= 0 ? lineEnd + 1 : span.Length;
+            currentSectionName = line[Prefix.Length..^Suffix.Length].ToString();
+            var afterLine = lineStart + line.Length;
+            if (afterLine < span.Length && span[afterLine] == '\r')
+            {
+                afterLine++;
+            }
+
+            if (afterLine < span.Length && span[afterLine] == '\n')
+            {
+                afterLine++;
+            }
+
+            sectionStart = afterLine;
         }
 
         if (currentSectionName is not null)
         {
-            _results[currentSectionName] = commandResults.AsMemory(sectionStart, span.Length - sectionStart);
+            _results[currentSectionName] = commandResults.AsMemory(sectionStart, commandResults.Length - sectionStart);
         }
     }
 }

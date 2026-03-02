@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.Globalization;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
 internal static class SpanParsingExtensions
 {

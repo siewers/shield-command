@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal interface IAdbShellCommand
+internal interface IAdbShellQuery
 {
     string Name { get; }
 
@@ -11,7 +11,7 @@ internal interface IAdbShellCommand
     void Apply(ReadOnlySpan<char> output, DynamicSections target);
 }
 
-internal interface IAdbShellCommand<out T> : IAdbShellCommand
+internal interface IAdbShellQuery<out T> : IAdbShellQuery
 {
     T Parse(ReadOnlySpan<char> output);
 }

@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class DiskStatsCommand : IAdbShellCommand<DiskSnapshot>
+internal sealed class DiskStatsQuery : IAdbShellQuery<DiskSnapshot>
 {
     public string Name => nameof(DynamicSections.Disk);
 

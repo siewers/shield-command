@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class DiskFreeCommand : IAdbShellCommand<DiskFreeInfo?>
+internal sealed class DiskFreeQuery : IAdbShellQuery<DiskFreeInfo?>
 {
     public string Name => nameof(DynamicSections.DiskFree);
 

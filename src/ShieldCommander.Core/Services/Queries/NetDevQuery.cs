@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class NetDevCommand : IAdbShellCommand<NetworkSnapshot>
+internal sealed class NetDevQuery : IAdbShellQuery<NetworkSnapshot>
 {
     public string Name => nameof(DynamicSections.Network);
 

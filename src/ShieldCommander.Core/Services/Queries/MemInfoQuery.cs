@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class MemInfoCommand : IAdbShellCommand<MemoryInfo>
+internal sealed class MemInfoQuery : IAdbShellQuery<MemoryInfo>
 {
     public string Name => nameof(DynamicSections.Memory);
 

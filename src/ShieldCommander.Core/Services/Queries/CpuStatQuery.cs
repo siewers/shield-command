@@ -1,8 +1,8 @@
 using ShieldCommander.Core.Models;
 
-namespace ShieldCommander.Core.Services.Commands;
+namespace ShieldCommander.Core.Services.Queries;
 
-internal sealed class CpuStatCommand : IAdbShellCommand<CpuSnapshot>
+internal sealed class CpuStatQuery : IAdbShellQuery<CpuSnapshot>
 {
     public string Name => nameof(DynamicSections.Cpu);
 

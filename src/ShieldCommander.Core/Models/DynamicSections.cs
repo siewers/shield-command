@@ -1,5 +1,5 @@
 using ShieldCommander.Core.Services;
-using ShieldCommander.Core.Services.Commands;
+using ShieldCommander.Core.Services.Queries;
 
 namespace ShieldCommander.Core.Models;
 
@@ -23,13 +23,13 @@ internal sealed class DynamicSections
     {
         var commands = new AdbCommandCollection
         {
-            new MemInfoCommand(),
-            new DiskFreeCommand(),
-            new UptimeCommand(),
-            new ThermalCommand(),
-            new CpuStatCommand(),
-            new NetDevCommand(),
-            new DiskStatsCommand(),
+            new MemInfoQuery(),
+            new DiskFreeQuery(),
+            new UptimeQuery(),
+            new ThermalQuery(),
+            new CpuStatQuery(),
+            new NetDevQuery(),
+            new DiskStatsQuery(),
         };
 
         return commands;
