@@ -233,7 +233,7 @@ public sealed partial class ThermalViewModel : ViewModelBase, IActivityMonitor
         var avg = temperatures.Average(t => t.Value);
         var currentMin = temperatures.Min(t => t.Value);
         var currentMax = temperatures.Max(t => t.Value);
-        var hottest = temperatures.MaxBy(t => t.Value);
+        var hottest = temperatures.MaxBy(t => t.Value)!;
 
         AvgTemperature = avg;
         MinTemperature = currentMin;
