@@ -24,7 +24,12 @@ Shield Commander connects to your NVIDIA Shield TV over Wi-Fi and gives you full
 
 ## Screenshots
 
-*Coming soon*
+<p>
+  <a href="assets/screenshots/cpu.jpg"><img src="assets/screenshots/cpu.jpg" width="400" alt="CPU" /></a>
+  <a href="assets/screenshots/apps.jpg"><img src="assets/screenshots/apps.jpg" width="400" alt="Apps" /></a>
+  <a href="assets/screenshots/thermals.jpg"><img src="assets/screenshots/thermals.jpg" width="400" alt="Thermals" /></a>
+  <a href="assets/screenshots/processes.jpg"><img src="assets/screenshots/processes.jpg" width="400" alt="Processes" /></a>
+</p>
 
 ## Installation
 

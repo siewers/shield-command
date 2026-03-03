@@ -77,7 +77,7 @@
         <ui:NavigationView Grid.Row="1"
                            x:Name="NavView"
                            PaneDisplayMode="Left"
-                           OpenPaneLength="200"
+                           OpenPaneLength="240"
                            IsBackButtonVisible="False"
                            IsPaneToggleButtonVisible="True"
                            IsSettingsVisible="False"
