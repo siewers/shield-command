@@ -17,4 +17,10 @@ public sealed class DeviceInfo
     public long? RamTotal { get; set; }
 
     public long? StorageTotal { get; set; }
+
+    public TimeSpan? Uptime { get; set; }
+
+    public string? Hostname { get; set; }
+
+    public string? IpAddress { get; set; }
 }

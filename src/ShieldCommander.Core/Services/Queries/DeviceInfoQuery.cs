@@ -14,6 +14,9 @@ internal sealed class DeviceInfoQuery : IAdbQuery<DeviceInfo>
         new BuildIdQuery(),
         new RamTotalQuery(),
         new StorageTotalQuery(),
+        new UptimeQuery(),
+        new HostnameQuery(),
+        new IpAddressQuery(),
     ];
 
     public async Task<DeviceInfo> ExecuteAsync(IAdbRunner runner)
@@ -156,6 +159,49 @@ internal sealed class DeviceInfoQuery : IAdbQuery<DeviceInfo>
             if (bytes > 0)
             {
                 target.StorageTotal = bytes;
+            }
+        }
+    }
+
+    private sealed class HostnameQuery : IAdbBatchQuery<DeviceInfo>
+    {
+        public string Name => nameof(DeviceInfo.Hostname);
+
+        public string CommandText => "settings get global device_name";
+
+        public void Apply(ReadOnlySpan<char> output, DeviceInfo target) => target.Hostname = TrimProp(output);
+    }
+
+    private sealed class IpAddressQuery : IAdbBatchQuery<DeviceInfo>
+    {
+        public string Name => nameof(DeviceInfo.IpAddress);
+
+        public string CommandText => "ip -f inet addr show";
+
+        public void Apply(ReadOnlySpan<char> output, DeviceInfo target)
+        {
+            foreach (var line in output.EnumerateLines())
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("inet "))
+                {
+                    continue;
+                }
+
+                // Format: "inet 192.168.1.100/24 ..."
+                var afterInet = trimmed[5..];
+                var slashIdx = afterInet.IndexOf('/');
+                var spaceIdx = afterInet.IndexOf(' ');
+                var endIdx = slashIdx >= 0 ? slashIdx : spaceIdx >= 0 ? spaceIdx : afterInet.Length;
+
+                var ip = afterInet[..endIdx].Trim();
+                if (ip.Length == 0 || ip.SequenceEqual("127.0.0.1"))
+                {
+                    continue;
+                }
+
+                target.IpAddress = ip.ToString();
+                break;
             }
         }
     }
