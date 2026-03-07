@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Imposter" Version="0.1.4" />
-    <PackageReference Include="TUnit" Version="1.18.0"/>
+    <PackageReference Include="TUnit" Version="1.19.0"/>
   </ItemGroup>
 
   <ItemGroup>
